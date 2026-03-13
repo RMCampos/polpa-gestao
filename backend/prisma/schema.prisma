@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  email      String   @unique
+  password   String
+  role       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  disabledAt DateTime?
+}
+
+model Customer {
+  id         String         @id @default(uuid()) @db.Uuid
+  name       String
+  document   String         @unique
+  phone      String?
+  pos        CustomerPos[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  disabledAt DateTime?
+}
+
+model CustomerPos {
+  id         String   @id @default(uuid()) @db.Uuid
+  customerId String   @db.Uuid
+  customer   Customer @relation(fields: [customerId], references: [id])
+  address    String
+  phone      String
+  sales      Sale[]
+  routes     RouteCustomerPos[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  disabledAt DateTime?
+}
+
+model Product {
+  id         String         @id @default(uuid()) @db.Uuid
+  name       String
+  price      Float
+  stock      Int
+  cost       Float
+  sales      SaleProduct[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  disabledAt DateTime?
+}
+
+model Sale {
+  id             String         @id @default(uuid()) @db.Uuid
+  customerPosId  String         @db.Uuid
+  customerPos    CustomerPos    @relation(fields: [customerPosId], references: [id])
+  paymentMethod  String
+  paymentDueDate DateTime?
+  paymentDate    DateTime?
+  comments       String?
+  products       SaleProduct[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model SaleProduct {
+  saleId    String   @db.Uuid
+  productId String   @db.Uuid
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([saleId, productId])
+}
+
+model Route {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  completed      Boolean  @default(false)
+  dayOfWeek      Int
+  customerPos    RouteCustomerPos[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RouteCustomerPos {
+  routeId       String      @db.Uuid
+  customerPosId String      @db.Uuid
+  route         Route       @relation(fields: [routeId], references: [id])
+  customerPos   CustomerPos @relation(fields: [customerPosId], references: [id])
+
+  @@id([routeId, customerPosId])
+}

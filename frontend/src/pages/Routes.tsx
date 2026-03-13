@@ -1,0 +1,309 @@
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import axios from 'axios';
+
+export default function RoutesPage() {
+  const [routesData, setRoutesData] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [showStopsModal, setShowStopsModal] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<any>(null);
+  const [selectedPosIdToAdd, setSelectedPosIdToAdd] = useState('');
+  const [newRoute, setNewRoute] = useState({ name: '', completed: false, dayOfWeek: 0, customerPosIds: [] as string[] });
+  const [editingRoute, setEditingRoute] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem('token');
+
+  const fetchRoutes = async () => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.get('http://localhost:3000/api/routes', config);
+      setRoutesData(res.data);
+    } catch (err) {
+      console.error('Failed to load routes', err);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.get('http://localhost:3000/api/customers', config);
+      setCustomers(res.data);
+    } catch (err) {
+      console.error('Failed to load customers', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRoutes();
+    fetchCustomers();
+  }, [token]);
+
+  const handleSaveRoute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (editingRoute) {
+        await axios.put(`http://localhost:3000/api/routes/${editingRoute}`, newRoute, config);
+      } else {
+        await axios.post('http://localhost:3000/api/routes', newRoute, config);
+      }
+      setShowModal(false);
+      setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPosIds: [] });
+      setEditingRoute(null);
+      fetchRoutes();
+    } catch (err) {
+      alert('Failed to save route.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleRouteCompleted = async (route: any) => {
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`http://localhost:3000/api/routes/${route.id}`, { completed: !route.completed }, config);
+      fetchRoutes();
+    } catch (err) {
+      alert('Failed to toggle route status.');
+    }
+  };
+
+  const openNewModal = () => {
+    setEditingRoute(null);
+    setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPosIds: [] });
+    setShowModal(true);
+  };
+
+  const openEditModal = (route: any) => {
+    setEditingRoute(route.id);
+    setNewRoute({ name: route.name, completed: route.completed, dayOfWeek: route.dayOfWeek, customerPosIds: route.customerPos?.map((cp: any) => cp.customerPosId) || [] });
+    setShowModal(true);
+  };
+
+  const openStopsModal = (route: any) => {
+    setSelectedRoute(route);
+    setSelectedPosIdToAdd('');
+    fetchCustomers();
+    setShowStopsModal(true);
+  };
+
+  const handleAddStop = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRoute || !selectedPosIdToAdd) return;
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const existingPosIds = selectedRoute.customerPos?.map((cp: any) => cp.customerPosId) || [];
+      if (existingPosIds.includes(selectedPosIdToAdd)) {
+        alert('This POS is already a stop on this route.');
+        setLoading(false);
+        return;
+      }
+      
+      const newPosIds = [...existingPosIds, selectedPosIdToAdd];
+      await axios.put(`http://localhost:3000/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
+      
+      setSelectedPosIdToAdd('');
+      fetchRoutes();
+      const res = await axios.get(`http://localhost:3000/api/routes/${selectedRoute.id}`, config);
+      setSelectedRoute(res.data);
+    } catch (err) {
+      alert('Failed to add stop.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveStop = async (posIdToRemove: string) => {
+    if (!selectedRoute) return;
+    if (!confirm('Are you sure you want to remove this stop from the route?')) return;
+    
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const existingPosIds = selectedRoute.customerPos?.map((cp: any) => cp.customerPosId) || [];
+      const newPosIds = existingPosIds.filter((id: string) => id !== posIdToRemove);
+      
+      await axios.put(`http://localhost:3000/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
+      
+      fetchRoutes();
+      const res = await axios.get(`http://localhost:3000/api/routes/${selectedRoute.id}`, config);
+      setSelectedRoute(res.data);
+    } catch (err) {
+      alert('Failed to remove stop.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  return (
+    <div className="animate-fade-in">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="fw-bold m-0">Delivery Routes</h2>
+        <button className="btn btn-primary" onClick={openNewModal}>+ New Route</button>
+      </div>
+
+      <div className="row g-4">
+        {routesData.map((route: any) => (
+          <div key={route.id} className="col-12 col-xl-6">
+            <div className="glass-card p-4 h-100">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="fw-bold text-white m-0" style={{ cursor: 'pointer' }} onClick={() => toggleRouteCompleted(route)}>{route.name}</h4>
+                <div className="d-flex align-items-center gap-2">
+                  <span className={`badge ${route.completed ? 'bg-success' : 'bg-warning text-dark'}`} style={{ cursor: 'pointer' }} onClick={() => toggleRouteCompleted(route)}>
+                    {route.completed ? 'Completed' : 'Pending'}
+                  </span>
+                  <span className="badge bg-primary">{daysOfWeek[route.dayOfWeek]}</span>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h6 className="text-secondary mb-2">Delivery Stops ({route.customerPos?.length || 0})</h6>
+                <ul className="list-group list-group-flush border border-secondary rounded overflow-hidden" style={{ background: 'transparent' }}>
+                  {route.customerPos?.map((cp: any, idx: number) => (
+                    <li key={`${route.id}-${cp.customerPosId}`} className="list-group-item d-flex justify-content-between align-items-center text-white" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'var(--glass-border)' }}>
+                      <div>
+                        <strong>{idx + 1}. {cp.customerPos?.customer?.name || 'Unknown'}</strong>
+                        <div className="text-secondary small">{cp.customerPos?.address}</div>
+                      </div>
+                    </li>
+                  ))}
+                  {(!route.customerPos || route.customerPos.length === 0) && (
+                    <li className="list-group-item text-secondary" style={{ background: 'rgba(255,255,255,0.05)' }}>No stops added.</li>
+                  )}
+                </ul>
+              </div>
+              
+              <div className="mt-4 d-flex gap-2">
+                <button className="btn btn-outline-light flex-grow-1" onClick={() => openEditModal(route)}>Edit</button>
+                <button className="btn btn-outline-primary flex-grow-1" onClick={() => openStopsModal(route)}>Manage Stops</button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {routesData.length === 0 && (
+          <div className="col-12 text-center text-secondary mt-4">
+            <p>No routes configured.</p>
+          </div>
+        )}
+      </div>
+
+      {showModal && createPortal(
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content glass-card">
+                <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <h5 className="modal-title text-white">{editingRoute ? 'Edit Route' : 'New Route'}</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
+                </div>
+                <form onSubmit={handleSaveRoute}>
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label className="form-label text-secondary">Route Name</label>
+                      <input type="text" className="form-control" value={newRoute.name} onChange={e => setNewRoute({...newRoute, name: e.target.value})} required />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label text-secondary">Day of Week</label>
+                      <select className="form-select" value={newRoute.dayOfWeek} onChange={e => setNewRoute({...newRoute, dayOfWeek: parseInt(e.target.value)})} required>
+                        {daysOfWeek.map((day, idx) => (
+                          <option key={idx} value={idx}>{day}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-3 form-check">
+                      <input type="checkbox" className="form-check-input" id="completedCheck" checked={newRoute.completed} onChange={e => setNewRoute({...newRoute, completed: e.target.checked})} />
+                      <label className="form-check-label text-secondary" htmlFor="completedCheck">Completed</label>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label text-secondary">Stops (POS IDs)</label>
+                      <p className="text-secondary small">Stops management is handleable from the details view. <br/> Leave assigned POS intact to prevent overriding them during edits.</p>
+                    </div>
+                  </div>
+                  <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
+                    <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Route'}</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+
+      {showStopsModal && selectedRoute && createPortal(
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
+            <div className="modal-dialog modal-dialog-centered modal-lg">
+              <div className="modal-content glass-card">
+                <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <h5 className="modal-title text-white">Manage Stops - {selectedRoute.name}</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowStopsModal(false)}></button>
+                </div>
+                <div className="modal-body">
+                  
+                  <h6 className="text-secondary mb-3">Current Stops in Route ({selectedRoute.customerPos?.length || 0})</h6>
+                  <ul className="list-group mb-4" style={{ borderRadius: '8px' }}>
+                    {selectedRoute.customerPos?.map((cp: any, idx: number) => (
+                      <li key={`${selectedRoute.id}-${cp.customerPosId}`} className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
+                        <div>
+                          <strong>{idx + 1}. {cp.customerPos?.customer?.name || 'Unknown'}</strong>
+                          <div className="text-secondary small">{cp.customerPos?.address}</div>
+                        </div>
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveStop(cp.customerPosId)} disabled={loading}>Remove</button>
+                      </li>
+                    ))}
+                    {(!selectedRoute.customerPos || selectedRoute.customerPos.length === 0) && (
+                      <li className="list-group-item bg-dark text-secondary border-secondary">No stops added yet.</li>
+                    )}
+                  </ul>
+
+                  <div className="card bg-transparent border-secondary">
+                    <div className="card-header border-secondary text-white fw-bold bg-dark bg-opacity-50">
+                      Add a new Stop
+                    </div>
+                    <div className="card-body">
+                      <form onSubmit={handleAddStop}>
+                        <div className="row g-3">
+                          <div className="col-md-9">
+                            <select className="form-select form-select-sm" value={selectedPosIdToAdd} onChange={e => setSelectedPosIdToAdd(e.target.value)} required>
+                              <option value="" disabled>Select a Customer POS...</option>
+                              {customers.map((c: any) => (
+                                c.pos?.length > 0 && (
+                                  <optgroup key={c.id} label={c.name}>
+                                    {c.pos.map((p: any) => (
+                                      <option key={p.id} value={p.id}>{p.address} {p.phone ? `(${p.phone})` : ''}</option>
+                                    ))}
+                                  </optgroup>
+                                )
+                              ))}
+                            </select>
+                          </div>
+                          <div className="col-md-3">
+                            <button type="submit" className="btn btn-sm btn-success w-100" disabled={loading || !selectedPosIdToAdd}>{loading ? '...' : 'Add Stop'}</button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+
+                </div>
+                <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <button type="button" className="btn btn-outline-light" onClick={() => setShowStopsModal(false)}>Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+    </div>
+  );
+}
