@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import type { Product } from '../types';
 
 export default function Products() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newProduct, setNewProduct] = useState<any>({ name: '', price: '', stock: '', cost: '' });
+  const [newProduct, setNewProduct] = useState<Product>({ id: '', name: '' });
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('token');
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const res = await axios.get('http://localhost:3000/api/products', config);
@@ -18,11 +19,11 @@ export default function Products() {
     } catch (err) {
       console.error('Failed to load products', err);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchProducts();
-  }, [token]);
+  }, [fetchProducts]);
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +36,11 @@ export default function Products() {
         await axios.post('http://localhost:3000/api/products', newProduct, config);
       }
       setShowModal(false);
-      setNewProduct({ name: '', price: '', stock: '', cost: '' });
+      setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
       setEditingProduct(null);
       fetchProducts();
     } catch (err) {
-      alert('Failed to save product.');
+      alert('Failed to save product: ' + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }
@@ -47,13 +48,17 @@ export default function Products() {
 
   const openNewModal = () => {
     setEditingProduct(null);
-    setNewProduct({ name: '', price: '', stock: '', cost: '' });
+    setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
     setShowModal(true);
   };
 
-  const openEditModal = (p: any) => {
+  const openEditModal = (p: Product) => {
+    if (!p.id) {
+      alert('Product ID is missing. Cannot edit this product.');
+      return;
+    }
     setEditingProduct(p.id);
-    setNewProduct({ name: p.name, price: p.price, stock: p.stock, cost: p.cost });
+    setNewProduct({ id: p.id, name: p.name, price: p.price, stock: p.stock, cost: p.cost });
     setShowModal(true);
   };
 
@@ -65,7 +70,7 @@ export default function Products() {
       </div>
 
       <div className="row g-4">
-        {products.map((p: any) => (
+        {products.map((p: Product) => (
           <div key={p.id} className="col-12 col-md-6 col-lg-4">
             <div className="glass-card p-4 h-100 d-flex flex-column">
               <h4 className="fw-bold text-white mb-2">{p.name}</h4>
@@ -105,15 +110,15 @@ export default function Products() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Price (R$)</label>
-                      <input type="number" step="0.01" className="form-control" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} placeholder="0.00" required />
+                      <input type="number" step="0.01" className="form-control" value={newProduct.price > 0 ? newProduct.price : ''} onChange={e => setNewProduct({...newProduct, price: parseFloat(e.target.value)})} placeholder="0.00" required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Cost (R$)</label>
-                      <input type="number" step="0.01" className="form-control" value={newProduct.cost} onChange={e => setNewProduct({...newProduct, cost: e.target.value})} placeholder="0.00" required />
+                      <input type="number" step="0.01" className="form-control" value={newProduct.cost > 0 ? newProduct.cost : ''} onChange={e => setNewProduct({...newProduct, cost: parseFloat(e.target.value)})} placeholder="0.00" required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">In Stock</label>
-                      <input type="number" className="form-control" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} placeholder="0" required />
+                      <input type="number" className="form-control" value={newProduct.stock > 0 ? newProduct.stock : ''} onChange={e => setNewProduct({...newProduct, stock: parseInt(e.target.value)})} placeholder="0" required />
                     </div>
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>

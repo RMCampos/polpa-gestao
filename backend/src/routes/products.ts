@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
+import { Prisma } from '@prisma/client';
 
 export default async function productsRoutes(app: FastifyInstance) {
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -15,9 +16,21 @@ export default async function productsRoutes(app: FastifyInstance) {
 
   app.post('/', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { name, price, stock, cost } = request.body as any;
-    return prisma.product.create({
-      data: { name, price, cost, stock }
-    });
+    try {
+      return await prisma.product.create({
+        data: { name, price, cost, stock }
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientValidationError) {
+        // Argument type/validation mismatch (like your case)
+        const completeErrorMessage = e.message.split('\n').join(' ');
+        console.error('Validation error when creating product:', completeErrorMessage);
+        const rootCause = e.message.split('\n').filter(Boolean).at(-1);
+        return reply.code(400).send({ error: rootCause });
+      }
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      return reply.code(400).send({ error: `Failed to create product: ${errorMessage}` });
+    }
   });
 
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -29,7 +42,15 @@ export default async function productsRoutes(app: FastifyInstance) {
         data: { name, price, cost, stock }
       });
     } catch (e) {
-      return reply.code(404).send({ error: 'Product not found' });
+      if (e instanceof Prisma.PrismaClientValidationError) {
+        // Argument type/validation mismatch (like your case)
+        const completeErrorMessage = e.message.split('\n').join(' ');
+        console.error('Validation error when updating product:', completeErrorMessage);
+        const rootCause = e.message.split('\n').filter(Boolean).at(-1);
+        return reply.code(400).send({ error: rootCause });
+      }
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      return reply.code(404).send({ error: `Product not found: ${errorMessage}` });
     }
   });
 

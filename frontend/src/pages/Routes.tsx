@@ -169,6 +169,10 @@ export default function RoutesPage() {
                       <div>
                         <strong>{idx + 1}. {cp.customerPos?.customer?.name || 'Unknown'}</strong>
                         <div className="text-secondary small">{cp.customerPos?.address}</div>
+                        {/* Add url to search on google maps with the address */}
+                        {cp.customerPos?.address && (
+                          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cp.customerPos.address)}`} target="_blank" rel="noopener noreferrer" className="text-secondary small">View on Google Maps</a>
+                        )}
                       </div>
                     </li>
                   ))}
