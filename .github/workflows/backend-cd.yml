@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-cd.yml'
 
 jobs:
   build:
@@ -19,14 +22,18 @@ jobs:
           TAG="v${DATE}.${{ github.run_number }}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "Generated tag: ${TAG}"
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
           cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+  
       - run: cd backend && npm i
       - run: cd backend && npx tsc
         env:
