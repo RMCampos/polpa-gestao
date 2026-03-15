@@ -77,8 +77,8 @@ jobs:
           push: true
           target: prisma
           tags: |
-            ghcr.io/${{ github.repository }}/backend:${{ steps.version.outputs.tag }}-prisma
-            ghcr.io/${{ github.repository }}/backend:latest-prisma
+            ghcr.io/rmcampos/polpa-gestao/backend:${{ steps.version.outputs.tag }}-prisma
+            ghcr.io/rmcampos/polpa-gestao/backend:latest-prisma
           provenance: false
           sbom: false
 
