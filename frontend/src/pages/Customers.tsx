@@ -1,34 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import type { Customer, CustomerPOS } from '../types';
 
 export default function Customers() {
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({ name: '', document: '', phone: '' });
+  const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '' });
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [newPos, setNewPos] = useState({ address: '', phone: '' });
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [newPos, setNewPos] = useState<CustomerPOS>({ address: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [docValidation, setDocValidation] = useState<{valid: boolean | null, loading: boolean}>({ valid: null, loading: false });
   const [selectedPhone, setSelectedPhone] = useState<{ number: string, name: string } | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const token = localStorage.getItem('token');
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const cpfCnpjApiToken = import.meta.env.VITE_CPF_CNPJ_API_TOKEN || '';
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:3000/api/customers', config);
+      const res = await axios.get(`${apiBase}/api/customers`, config);
       setCustomers(res.data);
     } catch (err) {
       console.error('Failed to load customers', err);
     }
-  };
+  }, [token, apiBase]);
 
   useEffect(() => {
     fetchCustomers();
-  }, [token]);
+  }, [fetchCustomers]);
 
   const handleSaveCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,16 +39,16 @@ export default function Customers() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingCustomer) {
-        await axios.put(`http://localhost:3000/api/customers/${editingCustomer}`, newCustomer, config);
+        await axios.put(`${apiBase}/api/customers/${editingCustomer}`, newCustomer, config);
       } else {
-        await axios.post('http://localhost:3000/api/customers', newCustomer, config);
+        await axios.post(`${apiBase}/api/customers`, newCustomer, config);
       }
       setShowModal(false);
       setNewCustomer({ name: '', document: '', phone: '' });
       setEditingCustomer(null);
       fetchCustomers();
     } catch (err) {
-      alert('Failed to save customer. Document (CNPJ/CPF) may already exist.');
+      alert('Failed to save customer. Document (CNPJ/CPF) may already exist: ' + err);
     } finally {
       setLoading(false);
     }
@@ -58,11 +61,12 @@ export default function Customers() {
     }
     setDocValidation({ valid: null, loading: true });
     try {
-      const res = await axios.get(`https://api.invertexto.com/v1/validator?token=25058|f1okwGPRg82oH3LVabZ79Uimt8OhQtlp&value=${doc}`);
+      const res = await axios.get(`https://api.invertexto.com/v1/validator?token=${cpfCnpjApiToken}&value=${doc}`);
       setNewCustomer(prev => ({ ...prev, document: res.data.formatted }));
       setDocValidation({ valid: res.data.valid, loading: false });
     } catch (err) {
-      setDocValidation({ valid: null, loading: false });
+      setDocValidation({ valid: false, loading: false });
+      console.error('Document validation failed', err);
     }
   };
 
@@ -107,14 +111,18 @@ export default function Customers() {
     setShowPhoneModal(true);
   };
 
-  const openEditModal = (c: any) => {
+  const openEditModal = (c: Customer) => {
+    if (!c.id) {
+      alert('Customer ID is missing. Cannot edit this customer.');
+      return;
+    }
     setEditingCustomer(c.id);
     setNewCustomer({ name: c.name, document: c.document, phone: c.phone || '' });
     setDocValidation({ valid: null, loading: false });
     setShowModal(true);
   };
 
-  const openPosModal = (c: any) => {
+  const openPosModal = (c: Customer) => {
     setSelectedCustomer(c);
     setNewPos({ address: '', phone: '' });
     setShowPosModal(true);
@@ -126,32 +134,35 @@ export default function Customers() {
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`http://localhost:3000/api/customers/${selectedCustomer.id}/pos`, newPos, config);
+      await axios.post(`${apiBase}/api/customers/${selectedCustomer.id}/pos`, newPos, config);
       setNewPos({ address: '', phone: '' });
       fetchCustomers();
       
       // Update local state to show immediately
-      const res = await axios.get(`http://localhost:3000/api/customers/${selectedCustomer.id}`, config);
+      const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
       setSelectedCustomer(res.data);
     } catch (err) {
-      alert('Failed to add POS');
+      alert('Failed to add POS: ' + err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeletePos = async (posId: string) => {
+  const handleDeletePos = async (posId: string | undefined) => {
+    if (!posId) return;
     if (!confirm('Are you sure you want to delete this POS?')) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`http://localhost:3000/api/customers/pos/${posId}`, config);
+      await axios.delete(`${apiBase}/api/customers/pos/${posId}`, config);
       fetchCustomers();
       
       // Update local state to show immediately
-      const res = await axios.get(`http://localhost:3000/api/customers/${selectedCustomer.id}`, config);
-      setSelectedCustomer(res.data);
+      if (selectedCustomer && selectedCustomer.id) {
+        const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
+        setSelectedCustomer(res.data);
+      }
     } catch (err) {
-      alert('Failed to delete POS');
+      alert('Failed to delete POS: ' + err);
     }
   };
 
@@ -175,7 +186,7 @@ export default function Customers() {
               </tr>
             </thead>
             <tbody>
-              {customers.map((c: any) => (
+              {customers.map((c: Customer) => (
                 <tr key={c.id} style={{ borderColor: 'var(--glass-border)' }}>
                   <td>{c.name}</td>
                   <td>{c.document}</td>
@@ -259,7 +270,7 @@ export default function Customers() {
                   {/* List Existing POS */}
                   <h6 className="text-secondary mb-3">Existing Points of Sale</h6>
                   <ul className="list-group mb-4" style={{ borderRadius: '8px' }}>
-                    {selectedCustomer.pos?.map((p: any) => (
+                    {selectedCustomer.pos?.map((p: CustomerPOS) => (
                       <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
                         <div>
                           <strong>{p.address}</strong>

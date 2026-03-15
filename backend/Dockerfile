@@ -7,6 +7,8 @@ COPY prisma ./prisma
 
 RUN npm ci && npx prisma generate
 
+FROM deps AS prisma
+
 FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app

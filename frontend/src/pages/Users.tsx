@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import type { User } from '../types';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -9,42 +10,49 @@ export default function Users() {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('token');
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback( async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:3000/api/users', config);
+      const res = await axios.get(`${apiBase}/api/users`, config);
       setUsers(res.data);
     } catch (err) {
       console.error('Failed to load users', err);
     }
-  };
+  }, [token, apiBase]);
 
   useEffect(() => {
     fetchUsers();
-  }, [token]);
+  }, [fetchUsers]);
 
   const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const payload: any = { ...newUser };
+      const payload: User = { ...newUser };
       if (editingUser && !payload.password) {
         delete payload.password;
       }
       
       if (editingUser) {
-        await axios.put(`http://localhost:3000/api/users/${editingUser}`, payload, config);
+        await axios.put(`${apiBase}/api/users/${editingUser}`, payload, config);
       } else {
-        await axios.post('http://localhost:3000/api/users', payload, config);
+        await axios.post(`${apiBase}/api/users`, payload, config);
       }
       setShowModal(false);
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       setEditingUser(null);
       fetchUsers(); // Refresh the list
     } catch (err) {
-      alert('Failed to save user. Email may already exist.');
+      if (axios.isAxiosError(err)) {
+        console.error('Error response:', err.response);
+        alert(err.response?.data?.error || 'Failed to save user. Email may already exist.');
+      } else {
+        console.error('Unexpected error:', err);
+        alert('An unexpected error occurred while saving the user.');
+      }
     } finally {
       setLoading(false);
     }
@@ -56,7 +64,11 @@ export default function Users() {
     setShowModal(true);
   };
 
-  const openEditModal = (user: any) => {
+  const openEditModal = (user: User) => {
+    if (!user.id) {
+      alert('User ID is missing. Cannot edit this user.');
+      return;
+    }
     setEditingUser(user.id);
     setNewUser({ name: user.name, email: user.email, password: '', role: user.role });
     setShowModal(true);
@@ -81,7 +93,7 @@ export default function Users() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user: any) => (
+              {users.map((user: User) => (
                 <tr key={user.id} style={{ borderColor: 'var(--glass-border)' }}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>

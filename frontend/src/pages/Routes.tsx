@@ -1,43 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import type { Customer, CustomerPOS, Route } from '../types';
 
 export default function RoutesPage() {
   const [routesData, setRoutesData] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showStopsModal, setShowStopsModal] = useState(false);
-  const [selectedRoute, setSelectedRoute] = useState<any>(null);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [selectedPosIdToAdd, setSelectedPosIdToAdd] = useState('');
-  const [newRoute, setNewRoute] = useState({ name: '', completed: false, dayOfWeek: 0, customerPosIds: [] as string[] });
+  const [newRoute, setNewRoute] = useState<Route>({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
   const [editingRoute, setEditingRoute] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('token');
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
-  const fetchRoutes = async () => {
+  const fetchRoutes = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:3000/api/routes', config);
+      const res = await axios.get(`${apiBase}/api/routes`, config);
       setRoutesData(res.data);
     } catch (err) {
       console.error('Failed to load routes', err);
     }
-  };
+  }, [token, apiBase]);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:3000/api/customers', config);
+      const res = await axios.get(`${apiBase}/api/customers`, config);
       setCustomers(res.data);
     } catch (err) {
       console.error('Failed to load customers', err);
     }
-  };
+  }, [token, apiBase]);
 
   useEffect(() => {
     fetchRoutes();
     fetchCustomers();
-  }, [token]);
+  }, [fetchRoutes, fetchCustomers]);
 
   const handleSaveRoute = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,44 +47,56 @@ export default function RoutesPage() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingRoute) {
-        await axios.put(`http://localhost:3000/api/routes/${editingRoute}`, newRoute, config);
+        await axios.put(`${apiBase}/api/routes/${editingRoute}`, newRoute, config);
       } else {
-        await axios.post('http://localhost:3000/api/routes', newRoute, config);
+        await axios.post(`${apiBase}/api/routes`, newRoute, config);
       }
       setShowModal(false);
-      setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPosIds: [] });
+      setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
       setEditingRoute(null);
       fetchRoutes();
     } catch (err) {
-      alert('Failed to save route.');
+      if (axios.isAxiosError(err) && err.response) {
+        alert(`Failed to save route: ${err.response.data.message || 'Unknown error'}`);
+      } else {
+        alert('Failed to save route due to network error.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleRouteCompleted = async (route: any) => {
+  const toggleRouteCompleted = async (route: Route) => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put(`http://localhost:3000/api/routes/${route.id}`, { completed: !route.completed }, config);
+      await axios.put(`${apiBase}/api/routes/${route.id}`, { completed: !route.completed }, config);
       fetchRoutes();
     } catch (err) {
-      alert('Failed to toggle route status.');
+      if (axios.isAxiosError(err) && err.response) {
+        alert(`Failed to toggle route status: ${err.response.data.message || 'Unknown error'}`);
+      } else {
+        alert('Failed to toggle route status due to network error.');
+      }
     }
   };
 
   const openNewModal = () => {
     setEditingRoute(null);
-    setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPosIds: [] });
+    setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
     setShowModal(true);
   };
 
-  const openEditModal = (route: any) => {
+  const openEditModal = (route: Route) => {
+    if (!route.id) {
+      alert('Invalid route data.');
+      return;
+    }
     setEditingRoute(route.id);
-    setNewRoute({ name: route.name, completed: route.completed, dayOfWeek: route.dayOfWeek, customerPosIds: route.customerPos?.map((cp: any) => cp.customerPosId) || [] });
+    setNewRoute({ name: route.name, completed: route.completed, dayOfWeek: route.dayOfWeek, customerPos: route.customerPos || [] });
     setShowModal(true);
   };
 
-  const openStopsModal = (route: any) => {
+  const openStopsModal = (route: Route) => {
     setSelectedRoute(route);
     setSelectedPosIdToAdd('');
     fetchCustomers();
@@ -95,7 +109,7 @@ export default function RoutesPage() {
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const existingPosIds = selectedRoute.customerPos?.map((cp: any) => cp.customerPosId) || [];
+      const existingPosIds = selectedRoute.customerPos?.map((cp: CustomerPOS) => cp.id) || [];
       if (existingPosIds.includes(selectedPosIdToAdd)) {
         alert('This POS is already a stop on this route.');
         setLoading(false);
@@ -103,36 +117,57 @@ export default function RoutesPage() {
       }
       
       const newPosIds = [...existingPosIds, selectedPosIdToAdd];
-      await axios.put(`http://localhost:3000/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
+      await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
       
       setSelectedPosIdToAdd('');
       fetchRoutes();
-      const res = await axios.get(`http://localhost:3000/api/routes/${selectedRoute.id}`, config);
+      const res = await axios.get(`${apiBase}/api/routes/${selectedRoute.id}`, config);
       setSelectedRoute(res.data);
     } catch (err) {
-      alert('Failed to add stop.');
+      if (axios.isAxiosError(err) && err.response) {
+        alert(`Failed to add stop: ${err.response.data.message || 'Unknown error'}`);
+      } else {
+        alert('Failed to add stop due to network error.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRemoveStop = async (posIdToRemove: string) => {
-    if (!selectedRoute) return;
+  const handleRemoveStop = async (posIdToRemove: string | undefined) => {
+    if (!selectedRoute || !posIdToRemove) return;
     if (!confirm('Are you sure you want to remove this stop from the route?')) return;
     
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const existingPosIds = selectedRoute.customerPos?.map((cp: any) => cp.customerPosId) || [];
-      const newPosIds = existingPosIds.filter((id: string) => id !== posIdToRemove);
+      if (!selectedRoute.customerPos || selectedRoute.customerPos.length === 0) {
+        alert('No stops to remove.');
+        setLoading(false);
+        return;
+      }
+      const existingPosIds: string[] = [];
+      for (const cp of selectedRoute.customerPos) {
+        if (cp.id) existingPosIds.push(cp.id);
+      }
+      if (!existingPosIds.includes(posIdToRemove)) {
+        alert('This POS is not currently a stop on this route.');
+        setLoading(false);
+        return;
+      }
+      const newPosIds: string[] = existingPosIds.filter((id: string) => id !== posIdToRemove);
       
-      await axios.put(`http://localhost:3000/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
+      await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
       
       fetchRoutes();
-      const res = await axios.get(`http://localhost:3000/api/routes/${selectedRoute.id}`, config);
+      const res = await axios.get(`${apiBase}/api/routes/${selectedRoute.id}`, config);
       setSelectedRoute(res.data);
     } catch (err) {
-      alert('Failed to remove stop.');
+      if (axios.isAxiosError(err) && err.response) {
+        alert(`Failed to remove stop: ${err.response.data.message || 'Unknown error'}`);
+      } else {
+        alert('Failed to remove stop due to network error.');
+      }
     } finally {
       setLoading(false);
     }
@@ -148,7 +183,7 @@ export default function RoutesPage() {
       </div>
 
       <div className="row g-4">
-        {routesData.map((route: any) => (
+        {routesData.map((route: Route) => (
           <div key={route.id} className="col-12 col-xl-6">
             <div className="glass-card p-4 h-100">
               <div className="d-flex justify-content-between align-items-center mb-3">
@@ -164,14 +199,14 @@ export default function RoutesPage() {
               <div className="mt-4">
                 <h6 className="text-secondary mb-2">Delivery Stops ({route.customerPos?.length || 0})</h6>
                 <ul className="list-group list-group-flush border border-secondary rounded overflow-hidden" style={{ background: 'transparent' }}>
-                  {route.customerPos?.map((cp: any, idx: number) => (
-                    <li key={`${route.id}-${cp.customerPosId}`} className="list-group-item d-flex justify-content-between align-items-center text-white" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'var(--glass-border)' }}>
+                  {route.customerPos?.map((cp: CustomerPOS, idx: number) => (
+                    <li key={`${route.id}-${cp.id}`} className="list-group-item d-flex justify-content-between align-items-center text-white" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'var(--glass-border)' }}>
                       <div>
-                        <strong>{idx + 1}. {cp.customerPos?.customer?.name || 'Unknown'}</strong>
-                        <div className="text-secondary small">{cp.customerPos?.address}</div>
+                        <strong>{idx + 1}. {cp.customer?.name || 'Unknown'}</strong>
+                        <div className="text-secondary small">{cp.address}</div>
                         {/* Add url to search on google maps with the address */}
-                        {cp.customerPos?.address && (
-                          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cp.customerPos.address)}`} target="_blank" rel="noopener noreferrer" className="text-secondary small">View on Google Maps</a>
+                        {cp.address && (
+                          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cp.address)}`} target="_blank" rel="noopener noreferrer" className="text-secondary small">View on Google Maps</a>
                         )}
                       </div>
                     </li>
@@ -255,13 +290,13 @@ export default function RoutesPage() {
                   
                   <h6 className="text-secondary mb-3">Current Stops in Route ({selectedRoute.customerPos?.length || 0})</h6>
                   <ul className="list-group mb-4" style={{ borderRadius: '8px' }}>
-                    {selectedRoute.customerPos?.map((cp: any, idx: number) => (
-                      <li key={`${selectedRoute.id}-${cp.customerPosId}`} className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
+                    {selectedRoute.customerPos?.map((cp: CustomerPOS, idx: number) => (
+                      <li key={`${selectedRoute.id}-${cp.id}`} className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
                         <div>
-                          <strong>{idx + 1}. {cp.customerPos?.customer?.name || 'Unknown'}</strong>
-                          <div className="text-secondary small">{cp.customerPos?.address}</div>
+                          <strong>{idx + 1}. {cp.customer?.name || 'Unknown'}</strong>
+                          <div className="text-secondary small">{cp.address}</div>
                         </div>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveStop(cp.customerPosId)} disabled={loading}>Remove</button>
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveStop(cp.id)} disabled={loading}>Remove</button>
                       </li>
                     ))}
                     {(!selectedRoute.customerPos || selectedRoute.customerPos.length === 0) && (
@@ -279,10 +314,10 @@ export default function RoutesPage() {
                           <div className="col-md-9">
                             <select className="form-select form-select-sm" value={selectedPosIdToAdd} onChange={e => setSelectedPosIdToAdd(e.target.value)} required>
                               <option value="" disabled>Select a Customer POS...</option>
-                              {customers.map((c: any) => (
-                                c.pos?.length > 0 && (
+                              {customers.map((c: Customer) => (
+                                c.pos && c.pos.length > 0 && (
                                   <optgroup key={c.id} label={c.name}>
-                                    {c.pos.map((p: any) => (
+                                    {c.pos.map((p: CustomerPOS) => (
                                       <option key={p.id} value={p.id}>{p.address} {p.phone ? `(${p.phone})` : ''}</option>
                                     ))}
                                   </optgroup>

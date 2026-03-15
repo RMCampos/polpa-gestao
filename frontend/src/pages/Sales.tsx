@@ -1,15 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import type { Customer, CustomerPOS, Product, Sale, SaleProduct } from '../types';
+
+type ProductCart = {
+  productId: string;
+  quantity: number;
+  price: number;
+}
 
 export default function Sales() {
-  const [sales, setSales] = useState([]);
-  const [customers, setCustomers] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(false);
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
   // Form State
   const [customerPosId, setCustomerPosId] = useState('');
@@ -17,17 +25,17 @@ export default function Sales() {
   const [paymentDueDate, setPaymentDueDate] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [comments, setComments] = useState('');
-  const [cart, setCart] = useState<{productId: string, quantity: number, price: number}[]>([]);
+  const [cart, setCart] = useState<ProductCart[]>([]);
 
   const token = localStorage.getItem('token');
 
-  const fetchData = async () => {
+  const fetchData = useCallback( async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const [salesRes, custRes, prodRes] = await Promise.all([
-        axios.get('http://localhost:3000/api/sales', config),
-        axios.get('http://localhost:3000/api/customers', config),
-        axios.get('http://localhost:3000/api/products', config)
+        axios.get(`${apiBase}/api/sales`, config),
+        axios.get(`${apiBase}/api/customers`, config),
+        axios.get(`${apiBase}/api/products`, config)
       ]);
       setSales(salesRes.data);
       setCustomers(custRes.data);
@@ -35,11 +43,11 @@ export default function Sales() {
     } catch (err) {
       console.error('Failed to load sales data', err);
     }
-  };
+  }, [token, apiBase]);
 
   useEffect(() => {
     fetchData();
-  }, [token]);
+  }, [fetchData]);
 
   const handleOpenModal = () => {
     setCustomerPosId('');
@@ -55,15 +63,15 @@ export default function Sales() {
     setCart([...cart, { productId: '', quantity: 1, price: 0 }]);
   };
 
-  const handleUpdateCartItem = (index: number, field: string, value: any) => {
+  const handleUpdateCartItem = (index: number, field: keyof ProductCart, value: string | number) => {
     const newCart = [...cart];
-    (newCart[index] as any)[field] = value;
+    newCart[index] = { ...newCart[index], [field]: value } as ProductCart;
     
     // Auto populate price based on product selection
     if (field === 'productId') {
-      const prod = products.find((p: any) => p.id === value);
+      const prod = products.find((p) => p.id === value);
       if (prod) {
-        newCart[index].price = (prod as any).price;
+        newCart[index].price = prod.price;
       }
     }
     
@@ -93,11 +101,17 @@ export default function Sales() {
         products: cart.map(item => ({ productId: item.productId, quantity: item.quantity }))
       };
 
-      await axios.post('http://localhost:3000/api/sales', payload, config);
+      await axios.post(`${apiBase}/api/sales`, payload, config);
       setShowModal(false);
       fetchData();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to record sale.');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error('Error response:', err.response);
+        alert(err.response?.data?.error || 'Failed to record sale.');
+      } else {
+        console.error('Unexpected error:', err);
+        alert('An unexpected error occurred while recording the sale.');
+      }
     } finally {
       setLoading(false);
     }
@@ -126,8 +140,8 @@ export default function Sales() {
               </tr>
             </thead>
             <tbody>
-              {sales.map((sale: any) => {
-                const total = sale.products?.reduce((acc: number, sp: any) => acc + (sp.quantity * sp.product.price), 0) || 0;
+              {sales.map((sale: Sale) => {
+                const total = sale.products?.reduce((acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price ?? 0)), 0) || 0;
                 
                 return (
                   <tr key={sale.id} style={{ borderColor: 'var(--glass-border)' }}>
@@ -175,10 +189,10 @@ export default function Sales() {
                           <label className="form-label text-secondary small">Customer Point of Sale</label>
                           <select className="form-select" value={customerPosId} onChange={e => setCustomerPosId(e.target.value)} required>
                             <option value="" disabled>Select POS...</option>
-                            {customers.map((c: any) => (
-                              c.pos?.length > 0 && (
+                            {customers.map((c: Customer) => (
+                              c.pos && c.pos.length > 0 && (
                                 <optgroup key={c.id} label={c.name}>
-                                  {c.pos.map((p: any) => (
+                                  {c.pos.map((p: CustomerPOS) => (
                                     <option key={p.id} value={p.id}>{p.address}</option>
                                   ))}
                                 </optgroup>
@@ -239,7 +253,7 @@ export default function Sales() {
                                     <td>
                                       <select className="form-select form-select-sm" value={item.productId} onChange={(e) => handleUpdateCartItem(idx, 'productId', e.target.value)} required>
                                         <option value="" disabled>Select...</option>
-                                        {products.map((p: any) => (
+                                        {products.map((p: Product) => (
                                           <option key={p.id} value={p.id} disabled={p.stock <= 0}>
                                             {p.name} {p.stock <= 0 ? '(Out of Stock)' : `(${p.stock} in stock)`}
                                           </option>
@@ -332,7 +346,7 @@ export default function Sales() {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedSale.products?.map((sp: any, idx: number) => (
+                        {selectedSale.products?.map((sp: SaleProduct, idx: number) => (
                           <tr key={idx}>
                             <td>{sp.product?.name || 'Unknown Product'}</td>
                             <td className="text-center">{sp.quantity}</td>
@@ -348,7 +362,7 @@ export default function Sales() {
                     <h5 className="mb-0 text-white">
                       <span className="text-secondary me-2 fs-6">Total:</span> 
                       <span className="text-success">
-                        R$ {(selectedSale.products?.reduce((acc: number, sp: any) => acc + (sp.quantity * (sp.product?.price || 0)), 0) || 0).toFixed(2)}
+                        R$ {(selectedSale.products?.reduce((acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price || 0)), 0) || 0).toFixed(2)}
                       </span>
                     </h5>
                   </div>

@@ -1,4 +1,4 @@
-version: '3.8'
+---
 
 services:
   postgres:
@@ -17,6 +17,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - polpa-network
+
+  prisma-push:
+    build:
+      context: ./backend
+      target: prisma
+    image: ghcr.io/rmcampos/polpa-gestao/backend-prisma:latest
+    container_name: polpa_gestao_prisma_push
+    environment:
+      DATABASE_URL: postgres://admin:adminpassword@postgres:5432/polpa_gestao
+    command: ["npx", "prisma", "db", "push"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - polpa-network
 
   backend:
     build: ./backend
@@ -29,11 +47,33 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      prisma-push:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "node", "healthcheck.js"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - polpa-network
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BACKEND_SERVER: http://localhost:3000
+        CPF_CNPJ_API_TOKEN: ${CPF_CNPJ_API_TOKEN}
+    image: ghcr.io/rmcampos/polpa-gestao/frontend:latest
+    container_name: polpa_gestao_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - polpa-network
 
 volumes:
   pgdata:
+networks:
+  polpa-network:
+    driver: bridge

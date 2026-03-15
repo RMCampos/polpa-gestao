@@ -6,20 +6,21 @@ import type { Product } from '../types';
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newProduct, setNewProduct] = useState<Product>({ id: '', name: '' });
+  const [newProduct, setNewProduct] = useState<Product>({ id: '', name: '', price: 0, stock: 0, cost: 0 });
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('token');
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
   const fetchProducts = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:3000/api/products', config);
+      const res = await axios.get(`${apiBase}/api/products`, config);
       setProducts(res.data);
     } catch (err) {
       console.error('Failed to load products', err);
     }
-  }, [token]);
+  }, [token, apiBase]);
 
   useEffect(() => {
     fetchProducts();
@@ -31,16 +32,22 @@ export default function Products() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingProduct) {
-        await axios.put(`http://localhost:3000/api/products/${editingProduct}`, newProduct, config);
+        await axios.put(`${apiBase}/api/products/${editingProduct}`, newProduct, config);
       } else {
-        await axios.post('http://localhost:3000/api/products', newProduct, config);
+        await axios.post(`${apiBase}/api/products`, newProduct, config);
       }
       setShowModal(false);
       setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
       setEditingProduct(null);
       fetchProducts();
     } catch (err) {
-      alert('Failed to save product: ' + (err.response?.data?.error || err.message));
+      if (axios.isAxiosError(err)) {
+        console.error('API error:', err.response?.data || err.message);
+        alert('Failed to save product: ' + (err.response?.data?.error || err.message));
+      } else {
+        console.error('Unexpected error:', err);
+        alert('Failed to save product: ' + (err || 'Unknown error'));
+      }
     } finally {
       setLoading(false);
     }

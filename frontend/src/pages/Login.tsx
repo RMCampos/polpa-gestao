@@ -12,6 +12,7 @@ export default function Login({ setToken }: LoginProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +20,7 @@ export default function Login({ setToken }: LoginProps) {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:3000/api/users/login', {
+      const response = await axios.post(`${apiBase}/api/users/login`, {
         email,
         password
       });
@@ -29,8 +30,14 @@ export default function Login({ setToken }: LoginProps) {
       localStorage.setItem('user', JSON.stringify(user));
       setToken(token);
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to login');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error('Login error:', err.response?.data || err.message);
+        setError(err.response?.data?.error || 'Failed to login');
+      } else {
+        console.error('Unexpected error:', err);
+        setError('Failed to login');
+      }
     } finally {
       setLoading(false);
     }

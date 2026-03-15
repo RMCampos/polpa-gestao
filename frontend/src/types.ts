@@ -1,3 +1,45 @@
+/* Dashboard page types */
+export type SalesByCustomer = {
+  customerId: string;
+  customerName: string;
+  totalSales: number;
+  totalAmount: number;
+}
+
+export type SalesByRoute = {
+  routeId: string;
+  routeName: string;
+  totalSales: number;
+  totalAmount: number;
+}
+
+/* Users page types */
+export type User = {
+  id?: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: string;
+};
+
+/* Customers page types */
+export type CustomerPOS = {
+  id?: string;
+  customerId?: string;
+  address: string;
+  phone: string;
+  customer?: Customer;
+}
+
+export type Customer = {
+  id?: string;
+  name: string;
+  document: string;
+  phone: string;
+  pos?: CustomerPOS[];
+};
+
+/* Product page types */
 export type Product = {
   id?: string;
   name: string;
@@ -6,8 +48,36 @@ export type Product = {
   cost: number;
 };
 
-export type User = {
-  id: string;
-  username: string;
-  password: string;
+/* Routes page types */
+export type CustomerPOSRoute = {
+  routeId: string;
+  customerPosId: string;
+  customerPos: CustomerPOS;
+}
+export type Route = {
+  id?: string;
+  name: string;
+  completed: boolean;
+  dayOfWeek: number;
+  customerPos?: CustomerPOS[];
 };
+
+/* Sales page types */
+export type SaleProduct = {
+  saleId: string;
+  productId: string;
+  quantity: number;
+  product?: Product;
+};
+
+export type Sale = {
+  id?: string;
+  customerPosId: string;
+  paymentMethod: string;
+  paymentDueDate: string | null;
+  paymentDate: string | null;
+  comments: string;
+  createdAt: string;
+  customerPos?: CustomerPOS;
+  products?: SaleProduct[];
+}
