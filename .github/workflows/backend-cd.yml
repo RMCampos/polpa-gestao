@@ -27,8 +27,8 @@ jobs:
         with:
           node-version: 22.x
           cache: 'npm'
-      - run: npm i
-      - run: npx tsc
+      - run: cd backend && npm i
+      - run: cd backend && npx tsc
         env:
           BUILD_VERSION: ${{ steps.version.outputs.tag }}
 
