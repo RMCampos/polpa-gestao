@@ -3,9 +3,52 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import type { Customer, CustomerPOS, Route } from '../types';
 
+type RouteStopApiItem = {
+  customerPosId?: string;
+  customerPos?: CustomerPOS;
+};
+
+type RouteApiResponse = Omit<Route, 'customerPos'> & {
+  customerPos?: Array<CustomerPOS | RouteStopApiItem>;
+};
+
+const toErrorMessage = (err: unknown, fallback: string): string => {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as { message?: string; error?: string } | undefined;
+    return data?.message || data?.error || fallback;
+  }
+  return fallback;
+};
+
+const isRouteStopWrapper = (item: CustomerPOS | RouteStopApiItem): item is RouteStopApiItem => {
+  return 'customerPos' in item;
+};
+
+const normalizeRoute = (route: RouteApiResponse | Route): Route => {
+  const normalizedStops = (route.customerPos || [])
+    .map((item) => {
+      if (isRouteStopWrapper(item)) {
+        if (!item.customerPos) {
+          return null;
+        }
+        return {
+          ...item.customerPos,
+          id: item.customerPos.id || item.customerPosId,
+        } satisfies CustomerPOS;
+      }
+      return item;
+    })
+    .filter((stop): stop is CustomerPOS => stop !== null);
+
+  return {
+    ...route,
+    customerPos: normalizedStops,
+  };
+};
+
 export default function RoutesPage() {
-  const [routesData, setRoutesData] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const [routesData, setRoutesData] = useState<Route[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showStopsModal, setShowStopsModal] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
@@ -19,8 +62,8 @@ export default function RoutesPage() {
   const fetchRoutes = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/routes`, config);
-      setRoutesData(res.data);
+      const res = await axios.get<RouteApiResponse[]>(`${apiBase}/api/routes`, config);
+      setRoutesData(res.data.map(normalizeRoute));
     } catch (err) {
       console.error('Failed to load routes', err);
     }
@@ -29,7 +72,7 @@ export default function RoutesPage() {
   const fetchCustomers = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/customers`, config);
+      const res = await axios.get<Customer[]>(`${apiBase}/api/customers`, config);
       setCustomers(res.data);
     } catch (err) {
       console.error('Failed to load customers', err);
@@ -47,20 +90,28 @@ export default function RoutesPage() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingRoute) {
-        await axios.put(`${apiBase}/api/routes/${editingRoute}`, newRoute, config);
+        const updatePayload = {
+          name: newRoute.name,
+          dayOfWeek: newRoute.dayOfWeek,
+          completed: newRoute.completed,
+        };
+        await axios.put(`${apiBase}/api/routes/${editingRoute}`, updatePayload, config);
       } else {
-        await axios.post(`${apiBase}/api/routes`, newRoute, config);
+        const createPayload = {
+          name: newRoute.name,
+          dayOfWeek: newRoute.dayOfWeek,
+          customerPosIds: (newRoute.customerPos || [])
+            .map((cp: CustomerPOS) => cp.id)
+            .filter((id): id is string => Boolean(id)),
+        };
+        await axios.post(`${apiBase}/api/routes`, createPayload, config);
       }
       setShowModal(false);
       setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
       setEditingRoute(null);
       fetchRoutes();
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        alert(`Failed to save route: ${err.response.data.message || 'Unknown error'}`);
-      } else {
-        alert('Failed to save route due to network error.');
-      }
+      alert(`Failed to save route: ${toErrorMessage(err, 'Unknown error')}`);
     } finally {
       setLoading(false);
     }
@@ -97,7 +148,7 @@ export default function RoutesPage() {
   };
 
   const openStopsModal = (route: Route) => {
-    setSelectedRoute(route);
+    setSelectedRoute(normalizeRoute(route));
     setSelectedPosIdToAdd('');
     fetchCustomers();
     setShowStopsModal(true);
@@ -109,7 +160,9 @@ export default function RoutesPage() {
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const existingPosIds = selectedRoute.customerPos?.map((cp: CustomerPOS) => cp.id) || [];
+      const existingPosIds = (selectedRoute.customerPos || [])
+        .map((cp: CustomerPOS) => cp.id)
+        .filter((id): id is string => Boolean(id));
       if (existingPosIds.includes(selectedPosIdToAdd)) {
         alert('This POS is already a stop on this route.');
         setLoading(false);
@@ -121,14 +174,10 @@ export default function RoutesPage() {
       
       setSelectedPosIdToAdd('');
       fetchRoutes();
-      const res = await axios.get(`${apiBase}/api/routes/${selectedRoute.id}`, config);
-      setSelectedRoute(res.data);
+      const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`, config);
+      setSelectedRoute(normalizeRoute(res.data));
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        alert(`Failed to add stop: ${err.response.data.message || 'Unknown error'}`);
-      } else {
-        alert('Failed to add stop due to network error.');
-      }
+      alert(`Failed to add stop: ${toErrorMessage(err, 'Unknown error')}`);
     } finally {
       setLoading(false);
     }
@@ -160,14 +209,10 @@ export default function RoutesPage() {
       await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
       
       fetchRoutes();
-      const res = await axios.get(`${apiBase}/api/routes/${selectedRoute.id}`, config);
-      setSelectedRoute(res.data);
+      const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`, config);
+      setSelectedRoute(normalizeRoute(res.data));
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        alert(`Failed to remove stop: ${err.response.data.message || 'Unknown error'}`);
-      } else {
-        alert('Failed to remove stop due to network error.');
-      }
+      alert(`Failed to remove stop: ${toErrorMessage(err, 'Unknown error')}`);
     } finally {
       setLoading(false);
     }
@@ -317,9 +362,11 @@ export default function RoutesPage() {
                               {customers.map((c: Customer) => (
                                 c.pos && c.pos.length > 0 && (
                                   <optgroup key={c.id} label={c.name}>
-                                    {c.pos.map((p: CustomerPOS) => (
-                                      <option key={p.id} value={p.id}>{p.address} {p.phone ? `(${p.phone})` : ''}</option>
-                                    ))}
+                                    {c.pos
+                                      .filter((p: CustomerPOS) => Boolean(p.id))
+                                      .map((p: CustomerPOS) => (
+                                        <option key={p.id} value={p.id}>{p.address} {p.phone ? `(${p.phone})` : ''}</option>
+                                      ))}
                                   </optgroup>
                                 )
                               ))}

@@ -173,44 +173,42 @@ export default function Customers() {
         <button className="btn btn-primary" onClick={openNewModal}>+ New Customer</button>
       </div>
 
-      <div className="glass-card p-4">
-        <div className="table-responsive">
-          <table className="table table-dark table-hover text-white m-0" style={{ background: 'transparent' }}>
-            <thead>
-              <tr style={{ borderColor: 'var(--glass-border)' }}>
-                <th>Name</th>
-                <th>Document (CNPJ/CPF)</th>
-                <th>Phone</th>
-                <th>Points of Sale</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((c: Customer) => (
-                <tr key={c.id} style={{ borderColor: 'var(--glass-border)' }}>
-                  <td>{c.name}</td>
-                  <td>{c.document}</td>
-                  <td>
-                    {c.phone ? (
-                      <button 
-                        className="btn btn-link text-decoration-none p-0 text-info fw-bold" 
-                        onClick={() => handlePhoneClick(c.phone, c.name)}
-                      >
-                        {formatPhone(c.phone)}
-                      </button>
-                    ) : 'N/A'}
-                  </td>
-                  <td>{c.pos?.length || 0} locations</td>
-                  <td>
-                    <button className="btn btn-sm btn-outline-light me-2" onClick={() => openEditModal(c)}>Edit</button>
-                    <button className="btn btn-sm btn-outline-primary me-2" onClick={() => openPosModal(c)}>Manage POS</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {customers.length === 0 && <p className="text-center text-secondary mt-4">No customers found.</p>}
-        </div>
+      <div className="row g-3">
+        {customers.map((c: Customer) => (
+          <div key={c.id} className="col-12 col-md-6 col-lg-4">
+            <div className="glass-card p-3 h-100 d-flex flex-column">
+              <div className="mb-2">
+                <h5 className="fw-bold text-white m-0">{c.name}</h5>
+                <div className="text-secondary small mt-1">
+                  <i className="bi bi-file-earmark-text me-1"></i>{c.document}
+                </div>
+              </div>
+              <div className="d-flex flex-column gap-1 text-secondary small mb-3">
+                <div>
+                  <i className="bi bi-telephone me-1"></i>
+                  {c.phone ? (
+                    <button className="btn btn-link p-0 text-info fw-bold text-decoration-none align-baseline small" onClick={() => handlePhoneClick(c.phone, c.name)}>
+                      {formatPhone(c.phone)}
+                    </button>
+                  ) : 'N/A'}
+                </div>
+                <div>
+                  <i className="bi bi-geo-alt me-1"></i>
+                  {c.pos?.length || 0} point{c.pos?.length !== 1 ? 's' : ''} of sale
+                </div>
+              </div>
+              <div className="mt-auto d-flex gap-2">
+                <button className="btn btn-sm btn-outline-light flex-grow-1" onClick={() => openEditModal(c)}>Edit</button>
+                <button className="btn btn-sm btn-outline-primary flex-grow-1" onClick={() => openPosModal(c)}>Manage POS</button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {customers.length === 0 && (
+          <div className="col-12 text-center text-secondary mt-4">
+            <p>No customers found.</p>
+          </div>
+        )}
       </div>
 
       {showModal && createPortal(

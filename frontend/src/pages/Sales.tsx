@@ -126,47 +126,43 @@ export default function Sales() {
         <button className="btn btn-primary" onClick={handleOpenModal}>+ Record Sale</button>
       </div>
 
-      <div className="glass-card p-4">
-        <div className="table-responsive">
-          <table className="table table-dark table-hover text-white m-0" style={{ background: 'transparent' }}>
-            <thead>
-              <tr style={{ borderColor: 'var(--glass-border)' }}>
-                <th>Date</th>
-                <th>Customer Name</th>
-                <th>Products</th>
-                <th>Total Value</th>
-                <th>Payment</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sales.map((sale: Sale) => {
-                const total = sale.products?.reduce((acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price ?? 0)), 0) || 0;
-                
-                return (
-                  <tr key={sale.id} style={{ borderColor: 'var(--glass-border)' }}>
-                    <td>{new Date(sale.createdAt).toLocaleDateString()}</td>
-                    <td>{sale.customerPos?.customer?.name || 'Unknown'}</td>
-                    <td>{sale.products?.length || 0} items</td>
-                    <td><strong className="text-success">R$ {total.toFixed(2)}</strong></td>
-                    <td>
-                      <span className={`badge ${sale.paymentDate ? 'bg-success' : 'bg-warning text-dark'}`}>
-                        {sale.paymentMethod} {sale.paymentDate ? '- Paid' : '- Pending'}
-                      </span>
-                      {!sale.paymentDate && sale.paymentDueDate && (
-                        <div className="small text-secondary mt-1">Due: {new Date(sale.paymentDueDate).toLocaleDateString()}</div>
-                      )}
-                    </td>
-                    <td>
-                      <button className="btn btn-sm btn-outline-light me-2" onClick={() => { setSelectedSale(sale); setShowDetailsModal(true); }}>Details</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {sales.length === 0 && <p className="text-center text-secondary mt-4">No sales recorded.</p>}
-        </div>
+      <div className="row g-3">
+        {sales.map((sale: Sale) => {
+          const total = sale.products?.reduce((acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price ?? 0)), 0) || 0;
+          return (
+            <div key={sale.id} className="col-12 col-md-6">
+              <div className="glass-card p-3 h-100 d-flex flex-column">
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h6 className="fw-bold text-white m-0">{sale.customerPos?.customer?.name || 'Unknown'}</h6>
+                    <div className="text-secondary small">{new Date(sale.createdAt).toLocaleDateString()}</div>
+                  </div>
+                  <span className={`badge ${sale.paymentDate ? 'bg-success' : 'bg-warning text-dark'}`}>
+                    {sale.paymentDate ? 'Paid' : 'Pending'}
+                  </span>
+                </div>
+                <div className="d-flex justify-content-between text-secondary small mb-2">
+                  <span><i className="bi bi-box-seam me-1"></i>{sale.products?.length || 0} items</span>
+                  <span>{sale.paymentMethod}</span>
+                </div>
+                {!sale.paymentDate && sale.paymentDueDate && (
+                  <div className="text-secondary small mb-2">
+                    <i className="bi bi-calendar-event me-1"></i>Due: {new Date(sale.paymentDueDate).toLocaleDateString()}
+                  </div>
+                )}
+                <div className="mt-auto d-flex justify-content-between align-items-center pt-2">
+                  <strong className="text-success fs-5">R$ {total.toFixed(2)}</strong>
+                  <button className="btn btn-sm btn-outline-light" onClick={() => { setSelectedSale(sale); setShowDetailsModal(true); }}>Details</button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {sales.length === 0 && (
+          <div className="col-12 text-center text-secondary mt-4">
+            <p>No sales recorded.</p>
+          </div>
+        )}
       </div>
 
       {showModal && createPortal(
@@ -232,50 +228,41 @@ export default function Sales() {
                         </div>
 
                         {cart.length === 0 ? (
-                          <div className="text-center p-4 border border-secondary rounded border-dashed text-secondary">
+                          <div className="text-center p-4 border border-secondary rounded text-secondary">
                             Your cart is empty. Click "+ Add Custom Product Line" to add items.
                           </div>
                         ) : (
-                          <div className="table-responsive">
-                            <table className="table table-dark table-sm align-middle mb-0" style={{ background: 'transparent' }}>
-                              <thead>
-                                <tr>
-                                  <th>Product</th>
-                                  <th style={{ width: '120px' }}>Quantity</th>
-                                  <th style={{ width: '120px' }}>Unit Price</th>
-                                  <th style={{ width: '120px' }}>Total</th>
-                                  <th style={{ width: '60px' }}></th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {cart.map((item, idx) => (
-                                  <tr key={idx}>
-                                    <td>
-                                      <select className="form-select form-select-sm" value={item.productId} onChange={(e) => handleUpdateCartItem(idx, 'productId', e.target.value)} required>
-                                        <option value="" disabled>Select...</option>
-                                        {products.map((p: Product) => (
-                                          <option key={p.id} value={p.id} disabled={p.stock <= 0}>
-                                            {p.name} {p.stock <= 0 ? '(Out of Stock)' : `(${p.stock} in stock)`}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </td>
-                                    <td>
-                                      <input type="number" className="form-control form-control-sm" min="1" value={item.quantity} onChange={(e) => handleUpdateCartItem(idx, 'quantity', parseInt(e.target.value) || 1)} required />
-                                    </td>
-                                    <td>
-                                      R$ {item.price.toFixed(2)}
-                                    </td>
-                                    <td>
-                                      <strong>R$ {(item.price * item.quantity).toFixed(2)}</strong>
-                                    </td>
-                                    <td>
-                                      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveCartItem(idx)}>X</button>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                          <div className="d-flex flex-column gap-2">
+                            {cart.map((item, idx) => (
+                              <div key={idx} className="glass-card p-3">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                  <span className="text-secondary small fw-bold">Item {idx + 1}</span>
+                                  <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveCartItem(idx)}>
+                                    <i className="bi bi-trash"></i>
+                                  </button>
+                                </div>
+                                <div className="mb-2">
+                                  <select className="form-select form-select-sm" value={item.productId} onChange={(e) => handleUpdateCartItem(idx, 'productId', e.target.value)} required>
+                                    <option value="" disabled>Select product...</option>
+                                    {products.map((p: Product) => (
+                                      <option key={p.id} value={p.id} disabled={p.stock <= 0}>
+                                        {p.name} {p.stock <= 0 ? '(Out of Stock)' : `(${p.stock} in stock)`}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="d-flex gap-2 align-items-end">
+                                  <div style={{ width: '90px' }}>
+                                    <label className="form-label text-secondary small mb-1">Qty</label>
+                                    <input type="number" className="form-control form-control-sm" min="1" value={item.quantity} onChange={(e) => handleUpdateCartItem(idx, 'quantity', parseInt(e.target.value) || 1)} required />
+                                  </div>
+                                  <div className="text-end ms-auto">
+                                    <div className="text-secondary small">Unit: R$ {item.price.toFixed(2)}</div>
+                                    <strong className="text-success">R$ {(item.price * item.quantity).toFixed(2)}</strong>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         )}
 
@@ -335,27 +322,18 @@ export default function Sales() {
                   </div>
 
                   <h6 className="text-secondary fw-bold mb-3">Products Purchased ({selectedSale.products?.length || 0})</h6>
-                  <div className="table-responsive bg-dark rounded border border-secondary p-2">
-                    <table className="table table-dark table-sm m-0" style={{ background: 'transparent' }}>
-                      <thead>
-                        <tr>
-                          <th>Product</th>
-                          <th className="text-center">Qty</th>
-                          <th className="text-end">Unit Price</th>
-                          <th className="text-end">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedSale.products?.map((sp: SaleProduct, idx: number) => (
-                          <tr key={idx}>
-                            <td>{sp.product?.name || 'Unknown Product'}</td>
-                            <td className="text-center">{sp.quantity}</td>
-                            <td className="text-end">R$ {sp.product?.price?.toFixed(2) || '0.00'}</td>
-                            <td className="text-end"><strong>R$ {((sp.product?.price || 0) * sp.quantity).toFixed(2)}</strong></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="d-flex flex-column gap-2">
+                    {selectedSale.products?.map((sp: SaleProduct, idx: number) => (
+                      <div key={idx} className="glass-card p-3 d-flex justify-content-between align-items-center">
+                        <div>
+                          <div className="fw-bold text-white">{sp.product?.name || 'Unknown Product'}</div>
+                          <div className="text-secondary small">
+                            {sp.quantity} × R$ {sp.product?.price?.toFixed(2) || '0.00'}
+                          </div>
+                        </div>
+                        <strong className="text-success">R$ {((sp.product?.price || 0) * sp.quantity).toFixed(2)}</strong>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="mt-4 text-end">

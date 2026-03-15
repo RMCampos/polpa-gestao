@@ -81,33 +81,29 @@ export default function Users() {
         <button className="btn btn-primary" onClick={openNewModal}>+ New User</button>
       </div>
 
-      <div className="glass-card p-4">
-        <div className="table-responsive">
-          <table className="table table-dark table-hover text-white m-0" style={{ background: 'transparent' }}>
-            <thead>
-              <tr style={{ borderColor: 'var(--glass-border)' }}>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user: User) => (
-                <tr key={user.id} style={{ borderColor: 'var(--glass-border)' }}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td><span className="badge bg-secondary">{user.role}</span></td>
-                  <td>
-                    <button className="btn btn-sm btn-outline-light me-2" onClick={() => openEditModal(user)}>Edit</button>
-                    <button className="btn btn-sm btn-outline-danger">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {users.length === 0 && <p className="text-center text-secondary mt-4">No users found.</p>}
-        </div>
+      <div className="row g-3">
+        {users.map((user: User) => (
+          <div key={user.id} className="col-12 col-md-6 col-lg-4">
+            <div className="glass-card p-3 h-100 d-flex flex-column">
+              <div className="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h5 className="fw-bold text-white m-0">{user.name}</h5>
+                  <div className="text-secondary small mt-1">{user.email}</div>
+                </div>
+                <span className="badge bg-secondary">{user.role}</span>
+              </div>
+              <div className="mt-auto d-flex gap-2 pt-3">
+                <button className="btn btn-sm btn-outline-light flex-grow-1" onClick={() => openEditModal(user)}>Edit</button>
+                <button className="btn btn-sm btn-outline-danger">Delete</button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {users.length === 0 && (
+          <div className="col-12 text-center text-secondary mt-4">
+            <p>No users found.</p>
+          </div>
+        )}
       </div>
 
       {showModal && createPortal(
