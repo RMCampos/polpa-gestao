@@ -70,6 +70,7 @@ jobs:
           sbom: false
           build-args: |
             VITE_BACKEND_SERVER=${{ vars.BACKEND_SERVER_URL }}
+            CPF_CNPJ_API_TOKEN=${{ secrets.CPF_CNPJ_API_TOKEN }}
 
       - name: Create and push Git tag
         run: |
