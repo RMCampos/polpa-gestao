@@ -4,9 +4,10 @@ import { prisma } from '../prisma';
 export default async function customersRoutes(app: FastifyInstance) {
   // Get all customers (with pos optionally)
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const showDisabled = (request.query as any).showDisabled as string === 'true';
     return prisma.customer.findMany({
-      where: { disabledAt: null },
-      include: { pos: { where: { disabledAt: null } } }
+      where: showDisabled ? {} : { disabledAt: null },
+      include: { pos: { where: showDisabled ? {} : { disabledAt: null } } }
     });
   });
 

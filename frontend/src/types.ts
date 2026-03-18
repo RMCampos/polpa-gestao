@@ -38,6 +38,7 @@ export type Customer = {
   document: string;
   phone: string;
   pos?: CustomerPOS[];
+  disabledAt?: string | null;
 };
 
 /* Product page types */

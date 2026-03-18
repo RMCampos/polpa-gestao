@@ -15,6 +15,7 @@ export default function Customers() {
   const [docValidation, setDocValidation] = useState<{valid: boolean | null, loading: boolean}>({ valid: null, loading: false });
   const [selectedPhone, setSelectedPhone] = useState<{ number: string, name: string } | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [showDisabled, setShowDisabled] = useState<boolean>(false);
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
   const cpfCnpjApiToken = import.meta.env.VITE_CPF_CNPJ_API_TOKEN || '';
@@ -22,12 +23,12 @@ export default function Customers() {
   const fetchCustomers = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/customers`, config);
+      const res = await axios.get(`${apiBase}/api/customers?showDisabled=${showDisabled}`, config);
       setCustomers(res.data);
     } catch (err) {
       console.error('Failed to load customers', err);
     }
-  }, [token, apiBase]);
+  }, [token, apiBase, showDisabled]);
 
   useEffect(() => {
     fetchCustomers();
@@ -166,11 +167,43 @@ export default function Customers() {
     }
   };
 
+  const handleDisableCustomer = async () => {
+    if (!editingCustomer) return;
+    if (!confirm('Are you sure you want to disable this customer?')) return;
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${apiBase}/api/customers/${editingCustomer}`, config);
+      setShowModal(false);
+      setNewCustomer({ name: '', document: '', phone: '' });
+      setEditingCustomer(null);
+      fetchCustomers();
+    } catch (err) {
+      alert('Failed to disable customer: ' + err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold m-0">Customers & Point of Sales</h2>
-        <button className="btn btn-primary" onClick={openNewModal}>+ New Customer</button>
+        <div className="d-flex align-items-center gap-3">
+          <div className="form-check form-switch m-0">
+            <input
+              id="show-disabled-customers"
+              className="form-check-input"
+              type="checkbox"
+              checked={showDisabled}
+              onChange={(e) => setShowDisabled(e.target.checked)}
+            />
+            <label className="form-check-label text-secondary" htmlFor="show-disabled-customers">
+              Disabled
+            </label>
+          </div>
+          <button className="btn btn-primary" onClick={openNewModal}>+ New Customer</button>
+        </div>
       </div>
 
       <div className="row g-3">
@@ -178,7 +211,7 @@ export default function Customers() {
           <div key={c.id} className="col-12 col-md-6 col-lg-4">
             <div className="glass-card p-3 h-100 d-flex flex-column">
               <div className="mb-2">
-                <h5 className="fw-bold text-white m-0">{c.name}</h5>
+                <h5 className={`fw-bold m-0 ${c.disabledAt ? 'text-secondary' : 'text-white'}`}>{c.name}</h5>
                 <div className="text-secondary small mt-1">
                   <i className="bi bi-file-earmark-text me-1"></i>{c.document}
                 </div>
@@ -243,6 +276,9 @@ export default function Customers() {
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    {editingCustomer && (
+                      <button type="button" className="btn btn-outline-danger" onClick={handleDisableCustomer}>Disable</button>
+                    )}
                     <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Customer'}</button>
                   </div>
                 </form>
