@@ -9,18 +9,19 @@ export default function Users() {
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showDisabled, setShowDisabled] = useState<boolean>(false);
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
   const fetchUsers = useCallback( async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/users`, config);
+      const res = await axios.get(`${apiBase}/api/users?showDisabled=${showDisabled}`, config);
       setUsers(res.data);
     } catch (err) {
       console.error('Failed to load users', err);
     }
-  }, [token, apiBase]);
+  }, [token, apiBase, showDisabled]);
 
   useEffect(() => {
     fetchUsers();
@@ -44,7 +45,7 @@ export default function Users() {
       setShowModal(false);
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       setEditingUser(null);
-      fetchUsers(); // Refresh the list
+      fetchUsers();
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('Error response:', err.response);
@@ -74,11 +75,49 @@ export default function Users() {
     setShowModal(true);
   };
 
+  const handleDisableUser = async () => {
+    if (!editingUser) return;
+    if (!confirm('Are you sure you want to disable this user?')) return;
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${apiBase}/api/users/${editingUser}`, { ...config });
+      setShowModal(false);
+      setNewUser({ name: '', email: '', password: '', role: 'user' });
+      setEditingUser(null);
+      fetchUsers();
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error('API error:', err.response?.data || err.message);
+        alert('Failed to disable user: ' + (err.response?.data?.error || err.message));
+      } else {
+        console.error('Unexpected error:', err);
+        alert('Failed to disable user: ' + (err || 'Unknown error'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold m-0">Users</h2>
-        <button className="btn btn-primary" onClick={openNewModal}>+ New User</button>
+        <div className="d-flex align-items-center gap-3">
+          <div className="form-check form-switch m-0">
+            <input
+              id="show-disabled-users"
+              className="form-check-input"
+              type="checkbox"
+              checked={showDisabled}
+              onChange={(e) => setShowDisabled(e.target.checked)}
+            />
+            <label className="form-check-label text-secondary" htmlFor="show-disabled-users">
+              Disabled
+            </label>
+          </div>
+          <button className="btn btn-primary" onClick={openNewModal}>+ New User</button>
+        </div>
       </div>
 
       <div className="row g-3">
@@ -87,14 +126,13 @@ export default function Users() {
             <div className="glass-card p-3 h-100 d-flex flex-column">
               <div className="d-flex justify-content-between align-items-start mb-2">
                 <div>
-                  <h5 className="fw-bold text-white m-0">{user.name}</h5>
+                  <h5 className={`fw-bold m-0 ${user.disabledAt ? 'text-secondary' : 'text-white'}`}>{user.name}</h5>
                   <div className="text-secondary small mt-1">{user.email}</div>
                 </div>
                 <span className="badge bg-secondary">{user.role}</span>
               </div>
               <div className="mt-auto d-flex gap-2 pt-3">
                 <button className="btn btn-sm btn-outline-light flex-grow-1" onClick={() => openEditModal(user)}>Edit</button>
-                <button className="btn btn-sm btn-outline-danger">Delete</button>
               </div>
             </div>
           </div>
@@ -140,6 +178,9 @@ export default function Users() {
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    {editingUser && (
+                      <button type="button" className="btn btn-outline-danger" onClick={handleDisableUser}>Disable</button>
+                    )}
                     <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save User'}</button>
                   </div>
                 </form>

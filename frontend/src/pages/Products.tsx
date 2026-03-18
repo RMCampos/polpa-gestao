@@ -121,7 +121,7 @@ export default function Products() {
         {products.map((p: Product) => (
           <div key={p.id} className="col-12 col-md-6 col-lg-4">
             <div className="glass-card p-4 h-100 d-flex flex-column">
-              <h4 className="fw-bold text-white mb-2">{p.name}</h4>
+              <h4 className={`fw-bold mb-2 ${p.disabledAt ? 'text-secondary' : 'text-white'}`}>{p.name}</h4>
               <div className="d-flex justify-content-between mb-3 text-secondary">
                 <span>Stock: <strong className={p.stock < 10 ? 'text-danger' : 'text-success'}>{p.stock}</strong> units</span>
                 <span>Price: <strong>R$ {p.price.toFixed(2)}</strong></span>
@@ -172,7 +172,7 @@ export default function Products() {
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
                     {editingProduct && (
-                      <button type="button" className="btn btn-danger" onClick={handleDisableProduct}>Disable</button>
+                      <button type="button" className="btn btn-outline-danger" onClick={handleDisableProduct}>Disable</button>
                     )}
                     <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Product'}</button>
                   </div>

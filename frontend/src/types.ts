@@ -20,6 +20,7 @@ export type User = {
   email: string;
   password?: string;
   role: string;
+  disabledAt?: string | null;
 };
 
 /* Customers page types */

@@ -21,9 +21,10 @@ export default async function usersRoutes(app: FastifyInstance) {
   });
 
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const showDisabled = (request.query as any).showDisabled as string === 'true';
     const users = await prisma.user.findMany({
-      where: { disabledAt: null },
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      where: showDisabled ? {} : { disabledAt: null },
+      select: { id: true, name: true, email: true, role: true, createdAt: true, disabledAt: true },
     });
     return users;
   });
