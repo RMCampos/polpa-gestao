@@ -10,6 +10,68 @@ type ProductCart = {
   price: number;
 };
 
+const formatCurrency = (value: number) => `R$ ${value.toFixed(2)}`;
+
+const formatDate = (value: string) => new Date(value).toLocaleDateString('pt-BR');
+
+const formatDateTime = (value: string) => new Date(value).toLocaleString('pt-BR');
+
+const buildSaleCopyText = (sale: Sale) => {
+  const customerName = sale.customerPos?.customer?.name || 'Unknown';
+  const customerDocument = sale.customerPos?.customer?.document || 'N/A';
+  const customerPhone = sale.customerPos?.customer?.phone || 'N/A';
+  const posAddress = sale.customerPos?.address || 'Unknown';
+  const posPhone = sale.customerPos?.phone || 'N/A';
+  const paymentStatus = sale.paymentDate ? 'Paid' : 'Pending';
+  const saleDate = formatDateTime(sale.createdAt);
+  const dueDate = !sale.paymentDate && sale.paymentDueDate ? formatDate(sale.paymentDueDate) : null;
+
+  const products = (sale.products || []).map((sp: SaleProduct) => {
+    const productName = sp.product?.name || 'Unknown Product';
+    const unitPrice = sp.product?.price || 0;
+    const lineTotal = unitPrice * sp.quantity;
+    return `- ${productName}: ${sp.quantity} x ${formatCurrency(unitPrice)} = ${formatCurrency(lineTotal)}`;
+  });
+
+  const total = (sale.products || []).reduce(
+    (acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price || 0)),
+    0,
+  );
+
+  const lines: string[] = [
+    'Novo pedido gerado com sucesso! 🚀',
+    `Data: ${saleDate}`,
+    '',
+    '*CLIENTE*',
+    `- Nome: ${customerName}`,
+    `- CPF/CNPJ: ${customerDocument}`,
+    `- Telefone: ${customerPhone}`,
+    '',
+    '*ENTREGA* 📦',
+    `- Endereço: ${posAddress}`,
+    `- Telefone do Ponto de Venda: ${posPhone}`,
+    '',
+    '*ITENS* 🛒',
+    ...(products.length > 0 ? products : ['- Nenhum item']),
+    '',
+    '---',
+    '',
+    `Total 💰: ${formatCurrency(total)}`,
+    `Pagamento: ${sale.paymentMethod}`,
+    `Status: ${paymentStatus}`,
+  ];
+
+  if (dueDate) {
+    lines.push(`Data de Vencimento: ${dueDate}`);
+  }
+
+  if (sale.comments) {
+    lines.push('', `Observações: ${sale.comments}`);
+  }
+
+  return lines.join('\n');
+};
+
 export default function Sales() {
   const toast = useToast();
   const [sales, setSales] = useState<Sale[]>([]);
@@ -120,6 +182,40 @@ export default function Sales() {
 
   const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
+  const copyTextToClipboard = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    // Fallback for browsers where Clipboard API is unavailable.
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    if (!successful) {
+      throw new Error('Copy command failed');
+    }
+  };
+
+  const handleCopySale = async (sale: Sale) => {
+    try {
+      const text = buildSaleCopyText(sale);
+      await copyTextToClipboard(text);
+      toast.showToast('Sale text copied to clipboard.', 'success');
+    } catch (err) {
+      console.error('Failed to copy sale text', err);
+      toast.showToast('Could not copy sale text. Please check clipboard permissions.', 'error');
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -152,8 +248,27 @@ export default function Sales() {
                   </div>
                 )}
                 <div className="mt-auto d-flex justify-content-between align-items-center pt-2">
-                  <strong className="text-success fs-5">R$ {total.toFixed(2)}</strong>
-                  <button className="btn btn-sm btn-outline-light" onClick={() => { setSelectedSale(sale); setShowDetailsModal(true); }}>Details</button>
+                  <strong className="text-success fs-5">{formatCurrency(total)}</strong>
+                  <div className="d-flex gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => handleCopySale(sale)}
+                    >
+                      <i className="bi bi-clipboard me-1"></i>
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-light"
+                      onClick={() => {
+                        setSelectedSale(sale);
+                        setShowDetailsModal(true);
+                      }}
+                    >
+                      Details
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
