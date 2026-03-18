@@ -28,7 +28,7 @@ services:
     container_name: polpa_gestao_prisma_push
     environment:
       DATABASE_URL: postgres://admin:adminpassword@postgres:5432/polpa_gestao
-    command: ["npx", "prisma", "db", "push"]
+    command: ["npx", "prisma", "migrate", "deploy"]
     depends_on:
       postgres:
         condition: service_healthy
