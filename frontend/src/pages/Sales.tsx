@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import { useToast } from '../context/toast';
 import type { Customer, CustomerPOS, Product, Sale, SaleProduct } from '../types';
 
 type ProductCart = {
   productId: string;
   quantity: number;
   price: number;
-}
+};
 
 export default function Sales() {
+  const toast = useToast();
   const [sales, setSales] = useState<Sale[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -19,7 +21,6 @@ export default function Sales() {
   const [loading, setLoading] = useState(false);
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
-  // Form State
   const [customerPosId, setCustomerPosId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [paymentDueDate, setPaymentDueDate] = useState('');
@@ -29,7 +30,7 @@ export default function Sales() {
 
   const token = localStorage.getItem('token');
 
-  const fetchData = useCallback( async () => {
+  const fetchData = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const [salesRes, custRes, prodRes] = await Promise.all([
@@ -66,15 +67,14 @@ export default function Sales() {
   const handleUpdateCartItem = (index: number, field: keyof ProductCart, value: string | number) => {
     const newCart = [...cart];
     newCart[index] = { ...newCart[index], [field]: value } as ProductCart;
-    
-    // Auto populate price based on product selection
+
     if (field === 'productId') {
       const prod = products.find((p) => p.id === value);
       if (prod) {
         newCart[index].price = prod.price;
       }
     }
-    
+
     setCart(newCart);
   };
 
@@ -85,7 +85,7 @@ export default function Sales() {
   const handleSaveSale = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerPosId || cart.length === 0 || cart.some(item => !item.productId || item.quantity <= 0)) {
-      alert('Please fill out all required fields and add at least one valid product.');
+      toast.showToast('Please fill out all required fields and add at least one valid product.', 'warning');
       return;
     }
 
@@ -104,13 +104,14 @@ export default function Sales() {
       await axios.post(`${apiBase}/api/sales`, payload, config);
       setShowModal(false);
       fetchData();
+      toast.showToast('Sale recorded successfully.', 'success');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('Error response:', err.response);
-        alert(err.response?.data?.error || 'Failed to record sale.');
+        toast.showToast(err.response?.data?.error || 'Failed to record sale.', 'error');
       } else {
         console.error('Unexpected error:', err);
-        alert('An unexpected error occurred while recording the sale.');
+        toast.showToast('An unexpected error occurred while recording the sale.', 'error');
       }
     } finally {
       setLoading(false);
@@ -178,7 +179,6 @@ export default function Sales() {
                 <form onSubmit={handleSaveSale}>
                   <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                     <div className="row g-4">
-                      {/* Left Column: Customer & Payment Info */}
                       <div className="col-lg-4 border-end border-secondary">
                         <h6 className="text-secondary fw-bold mb-3">Customer & Payment</h6>
                         <div className="mb-3">
@@ -220,7 +220,6 @@ export default function Sales() {
                         </div>
                       </div>
 
-                      {/* Right Column: Products Cart */}
                       <div className="col-lg-8">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                           <h6 className="text-secondary fw-bold m-0">Products Added</h6>
@@ -338,7 +337,7 @@ export default function Sales() {
 
                   <div className="mt-4 text-end">
                     <h5 className="mb-0 text-white">
-                      <span className="text-secondary me-2 fs-6">Total:</span> 
+                      <span className="text-secondary me-2 fs-6">Total:</span>
                       <span className="text-success">
                         R$ {(selectedSale.products?.reduce((acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price || 0)), 0) || 0).toFixed(2)}
                       </span>

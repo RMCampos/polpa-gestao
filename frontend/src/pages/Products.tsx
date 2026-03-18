@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import { useToast } from '../context/toast';
 import type { Product } from '../types';
 
 export default function Products() {
+  const toast = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newProduct, setNewProduct] = useState<Product>({ id: '', name: '', price: 0, stock: 0, cost: 0 });
@@ -41,13 +43,14 @@ export default function Products() {
       setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
       setEditingProduct(null);
       fetchProducts();
+      toast.showToast(editingProduct ? 'Product updated successfully.' : 'Product created successfully.', 'success');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('API error:', err.response?.data || err.message);
-        alert('Failed to save product: ' + (err.response?.data?.error || err.message));
+        toast.showToast('Failed to save product: ' + (err.response?.data?.error || err.message), 'error');
       } else {
         console.error('Unexpected error:', err);
-        alert('Failed to save product: ' + (err || 'Unknown error'));
+        toast.showToast('Failed to save product: ' + (err || 'Unknown error'), 'error');
       }
     } finally {
       setLoading(false);
@@ -62,7 +65,7 @@ export default function Products() {
 
   const openEditModal = (p: Product) => {
     if (!p.id) {
-      alert('Product ID is missing. Cannot edit this product.');
+      toast.showToast('Product ID is missing. Cannot edit this product.', 'error');
       return;
     }
     setEditingProduct(p.id);
@@ -72,7 +75,14 @@ export default function Products() {
 
   const handleDisableProduct = async () => {
     if (!editingProduct) return;
-    if (!confirm('Are you sure you want to disable this product?')) return;
+    const confirmed = await toast.confirm({
+      title: 'Disable Product',
+      message: 'Are you sure you want to disable this product?',
+      confirmText: 'Disable',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
 
     setLoading(true);
     try {
@@ -83,13 +93,14 @@ export default function Products() {
       setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
       setEditingProduct(null);
       fetchProducts();
+      toast.showToast('Product disabled successfully.', 'success');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('API error:', err.response?.data || err.message);
-        alert('Failed to disable product: ' + (err.response?.data?.error || err.message));
+        toast.showToast('Failed to disable product: ' + (err.response?.data?.error || err.message), 'error');
       } else {
         console.error('Unexpected error:', err);
-        alert('Failed to disable product: ' + (err || 'Unknown error'));
+        toast.showToast('Failed to disable product: ' + (err || 'Unknown error'), 'error');
       }
     } finally {
       setLoading(false);
@@ -126,7 +137,7 @@ export default function Products() {
                 <span>Stock: <strong className={p.stock < 10 ? 'text-danger' : 'text-success'}>{p.stock}</strong> units</span>
                 <span>Price: <strong>R$ {p.price.toFixed(2)}</strong></span>
               </div>
-              
+
               <div className="mt-auto d-flex gap-2">
                 <button className="btn btn-outline-light flex-grow-1" onClick={() => openEditModal(p)}>Edit</button>
               </div>
@@ -154,19 +165,19 @@ export default function Products() {
                   <div className="modal-body">
                     <div className="mb-3">
                       <label className="form-label text-secondary">Name</label>
-                      <input type="text" className="form-control" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required />
+                      <input type="text" className="form-control" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Price (R$)</label>
-                      <input type="number" step="0.01" className="form-control" value={newProduct.price > 0 ? newProduct.price : ''} onChange={e => setNewProduct({...newProduct, price: parseFloat(e.target.value)})} placeholder="0.00" required />
+                      <input type="number" step="0.01" className="form-control" value={newProduct.price > 0 ? newProduct.price : ''} onChange={e => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} placeholder="0.00" required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Cost (R$)</label>
-                      <input type="number" step="0.01" className="form-control" value={newProduct.cost > 0 ? newProduct.cost : ''} onChange={e => setNewProduct({...newProduct, cost: parseFloat(e.target.value)})} placeholder="0.00" required />
+                      <input type="number" step="0.01" className="form-control" value={newProduct.cost > 0 ? newProduct.cost : ''} onChange={e => setNewProduct({ ...newProduct, cost: parseFloat(e.target.value) })} placeholder="0.00" required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">In Stock</label>
-                      <input type="number" className="form-control" value={newProduct.stock > 0 ? newProduct.stock : ''} onChange={e => setNewProduct({...newProduct, stock: parseInt(e.target.value)})} placeholder="0" required />
+                      <input type="number" className="form-control" value={newProduct.stock > 0 ? newProduct.stock : ''} onChange={e => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} placeholder="0" required />
                     </div>
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import { useToast } from '../context/toast';
 import type { User } from '../types';
 
 export default function Users() {
+  const toast = useToast();
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
@@ -13,7 +15,7 @@ export default function Users() {
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
-  const fetchUsers = useCallback( async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const res = await axios.get(`${apiBase}/api/users?showDisabled=${showDisabled}`, config);
@@ -36,7 +38,7 @@ export default function Users() {
       if (editingUser && !payload.password) {
         delete payload.password;
       }
-      
+
       if (editingUser) {
         await axios.put(`${apiBase}/api/users/${editingUser}`, payload, config);
       } else {
@@ -46,13 +48,14 @@ export default function Users() {
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       setEditingUser(null);
       fetchUsers();
+      toast.showToast(editingUser ? 'User updated successfully.' : 'User created successfully.', 'success');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('Error response:', err.response);
-        alert(err.response?.data?.error || 'Failed to save user. Email may already exist.');
+        toast.showToast(err.response?.data?.error || 'Failed to save user. Email may already exist.', 'error');
       } else {
         console.error('Unexpected error:', err);
-        alert('An unexpected error occurred while saving the user.');
+        toast.showToast('An unexpected error occurred while saving the user.', 'error');
       }
     } finally {
       setLoading(false);
@@ -67,7 +70,7 @@ export default function Users() {
 
   const openEditModal = (user: User) => {
     if (!user.id) {
-      alert('User ID is missing. Cannot edit this user.');
+      toast.showToast('User ID is missing. Cannot edit this user.', 'error');
       return;
     }
     setEditingUser(user.id);
@@ -77,7 +80,15 @@ export default function Users() {
 
   const handleDisableUser = async () => {
     if (!editingUser) return;
-    if (!confirm('Are you sure you want to disable this user?')) return;
+    const confirmed = await toast.confirm({
+      title: 'Disable User',
+      message: 'Are you sure you want to disable this user?',
+      confirmText: 'Disable',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
+
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -86,13 +97,14 @@ export default function Users() {
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       setEditingUser(null);
       fetchUsers();
+      toast.showToast('User disabled successfully.', 'success');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('API error:', err.response?.data || err.message);
-        alert('Failed to disable user: ' + (err.response?.data?.error || err.message));
+        toast.showToast('Failed to disable user: ' + (err.response?.data?.error || err.message), 'error');
       } else {
         console.error('Unexpected error:', err);
-        alert('Failed to disable user: ' + (err || 'Unknown error'));
+        toast.showToast('Failed to disable user: ' + (err || 'Unknown error'), 'error');
       }
     } finally {
       setLoading(false);
@@ -158,19 +170,19 @@ export default function Users() {
                   <div className="modal-body">
                     <div className="mb-3">
                       <label className="form-label text-secondary">Name</label>
-                      <input type="text" className="form-control" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} required />
+                      <input type="text" className="form-control" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Email</label>
-                      <input type="email" className="form-control" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} required />
+                      <input type="email" className="form-control" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Password {editingUser && '(Leave blank to keep)'}</label>
-                      <input type="password" className="form-control" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} required={!editingUser} />
+                      <input type="password" className="form-control" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} required={!editingUser} />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Role</label>
-                      <select className="form-select" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})}>
+                      <select className="form-select" value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })}>
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                       </select>

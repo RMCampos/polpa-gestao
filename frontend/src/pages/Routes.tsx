@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import { useToast } from '../context/toast';
 import type { Customer, CustomerPOS, Route } from '../types';
 
 type RouteStopApiItem = {
@@ -47,6 +48,7 @@ const normalizeRoute = (route: RouteApiResponse | Route): Route => {
 };
 
 export default function RoutesPage() {
+  const toast = useToast();
   const [routesData, setRoutesData] = useState<Route[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -110,8 +112,9 @@ export default function RoutesPage() {
       setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
       setEditingRoute(null);
       fetchRoutes();
+      toast.showToast(editingRoute ? 'Route updated successfully' : 'Route created successfully', 'success');
     } catch (err) {
-      alert(`Failed to save route: ${toErrorMessage(err, 'Unknown error')}`);
+      toast.showToast(`Failed to save route: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -124,9 +127,9 @@ export default function RoutesPage() {
       fetchRoutes();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
-        alert(`Failed to toggle route status: ${err.response.data.message || 'Unknown error'}`);
+        toast.showToast(`Failed to toggle route status: ${err.response.data.message || 'Unknown error'}`, 'error');
       } else {
-        alert('Failed to toggle route status due to network error.');
+        toast.showToast('Failed to toggle route status due to network error.', 'error');
       }
     }
   };
@@ -139,7 +142,7 @@ export default function RoutesPage() {
 
   const openEditModal = (route: Route) => {
     if (!route.id) {
-      alert('Invalid route data.');
+      toast.showToast('Invalid route data.', 'error');
       return;
     }
     setEditingRoute(route.id);
@@ -164,7 +167,7 @@ export default function RoutesPage() {
         .map((cp: CustomerPOS) => cp.id)
         .filter((id): id is string => Boolean(id));
       if (existingPosIds.includes(selectedPosIdToAdd)) {
-        alert('This POS is already a stop on this route.');
+        toast.showToast('This POS is already a stop on this route.', 'warning');
         setLoading(false);
         return;
       }
@@ -176,8 +179,9 @@ export default function RoutesPage() {
       fetchRoutes();
       const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`, config);
       setSelectedRoute(normalizeRoute(res.data));
+      toast.showToast('Stop added successfully', 'success');
     } catch (err) {
-      alert(`Failed to add stop: ${toErrorMessage(err, 'Unknown error')}`);
+      toast.showToast(`Failed to add stop: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -185,13 +189,20 @@ export default function RoutesPage() {
 
   const handleRemoveStop = async (posIdToRemove: string | undefined) => {
     if (!selectedRoute || !posIdToRemove) return;
-    if (!confirm('Are you sure you want to remove this stop from the route?')) return;
+    const confirmed = await toast.confirm({
+      title: 'Remove Stop',
+      message: 'Are you sure you want to remove this stop from the route?',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
     
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (!selectedRoute.customerPos || selectedRoute.customerPos.length === 0) {
-        alert('No stops to remove.');
+        toast.showToast('No stops to remove.', 'warning');
         setLoading(false);
         return;
       }
@@ -200,7 +211,7 @@ export default function RoutesPage() {
         if (cp.id) existingPosIds.push(cp.id);
       }
       if (!existingPosIds.includes(posIdToRemove)) {
-        alert('This POS is not currently a stop on this route.');
+        toast.showToast('This POS is not currently a stop on this route.', 'warning');
         setLoading(false);
         return;
       }
@@ -211,8 +222,36 @@ export default function RoutesPage() {
       fetchRoutes();
       const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`, config);
       setSelectedRoute(normalizeRoute(res.data));
+      toast.showToast('Stop removed successfully', 'success');
     } catch (err) {
-      alert(`Failed to remove stop: ${toErrorMessage(err, 'Unknown error')}`);
+      toast.showToast(`Failed to remove stop: ${toErrorMessage(err, 'Unknown error')}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteRoute = async () => {
+    if (!editingRoute) return;
+    const confirmed = await toast.confirm({
+      title: 'Delete Route',
+      message: 'Are you sure you want to delete this route? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${apiBase}/api/routes/${editingRoute}`, config);
+      setShowModal(false);
+      setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
+      setEditingRoute(null);
+      fetchRoutes();
+      toast.showToast('Route deleted successfully', 'success');
+    } catch (err) {
+      toast.showToast(`Failed to delete route: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -311,6 +350,9 @@ export default function RoutesPage() {
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    {editingRoute && (
+                      <button type="button" className="btn btn-outline-danger" onClick={handleDeleteRoute}>Delete</button>
+                    )}
                     <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Route'}</button>
                   </div>
                 </form>

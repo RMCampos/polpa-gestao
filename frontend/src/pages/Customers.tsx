@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
+import { useToast } from '../context/toast';
 import type { Customer, CustomerPOS } from '../types';
 
+const toErrorMessage = (err: unknown, fallback: string): string => {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as { message?: string; error?: string } | undefined;
+    return data?.message || data?.error || fallback;
+  }
+  return fallback;
+};
+
 export default function Customers() {
+  const toast = useToast();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '' });
@@ -12,7 +22,7 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [newPos, setNewPos] = useState<CustomerPOS>({ address: '', phone: '' });
   const [loading, setLoading] = useState(false);
-  const [docValidation, setDocValidation] = useState<{valid: boolean | null, loading: boolean}>({ valid: null, loading: false });
+  const [docValidation, setDocValidation] = useState<{ valid: boolean | null, loading: boolean }>({ valid: null, loading: false });
   const [selectedPhone, setSelectedPhone] = useState<{ number: string, name: string } | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
@@ -48,8 +58,9 @@ export default function Customers() {
       setNewCustomer({ name: '', document: '', phone: '' });
       setEditingCustomer(null);
       fetchCustomers();
+      toast.showToast(editingCustomer ? 'Customer updated successfully.' : 'Customer created successfully.', 'success');
     } catch (err) {
-      alert('Failed to save customer. Document (CNPJ/CPF) may already exist: ' + err);
+      toast.showToast(`Failed to save customer. Document (CNPJ/CPF) may already exist: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -72,7 +83,7 @@ export default function Customers() {
   };
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawVal = e.target.value.replace(/\D/g, ''); // keep only numbers for typing ease
+    const rawVal = e.target.value.replace(/\D/g, '');
     setNewCustomer({ ...newCustomer, document: rawVal });
     if (rawVal.length >= 11) {
       validateDocument(rawVal);
@@ -82,19 +93,16 @@ export default function Customers() {
   };
 
   const formatPhone = (val: string) => {
-    let r = val.replace(/\D/g,"");
-    r = r.replace(/^0/,"");
+    let r = val.replace(/\D/g, '');
+    r = r.replace(/^0/, '');
     if (r.length > 10) {
-      // 11 digits: (XX) XXXXX-XXXX
-      r = r.replace(/^(\d\d)(\d{5})(\d{4}).*/,"($1) $2-$3");
+      r = r.replace(/^(\d\d)(\d{5})(\d{4}).*/, '($1) $2-$3');
     } else if (r.length > 5) {
-      // 10 digits: (XX) XXXX-XXXX
-      r = r.replace(/^(\d\d)(\d{4})(\d{0,4}).*/,"($1) $2-$3");
+      r = r.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, '($1) $2-$3');
     } else if (r.length > 2) {
-      // (XX) XXX
-      r = r.replace(/^(\d\d)(\d{0,5})/,"($1) $2");
+      r = r.replace(/^(\d\d)(\d{0,5})/, '($1) $2');
     } else {
-      r = r.replace(/^(\d*)/, "($1");
+      r = r.replace(/^(\d*)/, '($1');
     }
     return r;
   };
@@ -107,14 +115,13 @@ export default function Customers() {
   };
 
   const handlePhoneClick = (phone: string, name: string) => {
-    // Only strip non-digits for the actual href action links inside the modal
     setSelectedPhone({ number: phone, name });
     setShowPhoneModal(true);
   };
 
   const openEditModal = (c: Customer) => {
     if (!c.id) {
-      alert('Customer ID is missing. Cannot edit this customer.');
+      toast.showToast('Customer ID is missing. Cannot edit this customer.', 'error');
       return;
     }
     setEditingCustomer(c.id);
@@ -138,12 +145,12 @@ export default function Customers() {
       await axios.post(`${apiBase}/api/customers/${selectedCustomer.id}/pos`, newPos, config);
       setNewPos({ address: '', phone: '' });
       fetchCustomers();
-      
-      // Update local state to show immediately
+
       const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
       setSelectedCustomer(res.data);
+      toast.showToast('Point of sale added successfully.', 'success');
     } catch (err) {
-      alert('Failed to add POS: ' + err);
+      toast.showToast(`Failed to add POS: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -151,25 +158,41 @@ export default function Customers() {
 
   const handleDeletePos = async (posId: string | undefined) => {
     if (!posId) return;
-    if (!confirm('Are you sure you want to delete this POS?')) return;
+    const confirmed = await toast.confirm({
+      title: 'Delete POS',
+      message: 'Are you sure you want to delete this POS?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
+
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`${apiBase}/api/customers/pos/${posId}`, config);
       fetchCustomers();
-      
-      // Update local state to show immediately
+
       if (selectedCustomer && selectedCustomer.id) {
         const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
         setSelectedCustomer(res.data);
       }
+      toast.showToast('Point of sale deleted successfully.', 'success');
     } catch (err) {
-      alert('Failed to delete POS: ' + err);
+      toast.showToast(`Failed to delete POS: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     }
   };
 
   const handleDisableCustomer = async () => {
     if (!editingCustomer) return;
-    if (!confirm('Are you sure you want to disable this customer?')) return;
+    const confirmed = await toast.confirm({
+      title: 'Disable Customer',
+      message: 'Are you sure you want to disable this customer?',
+      confirmText: 'Disable',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
+
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -178,8 +201,9 @@ export default function Customers() {
       setNewCustomer({ name: '', document: '', phone: '' });
       setEditingCustomer(null);
       fetchCustomers();
+      toast.showToast('Customer disabled successfully.', 'success');
     } catch (err) {
-      alert('Failed to disable customer: ' + err);
+      toast.showToast(`Failed to disable customer: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -258,7 +282,7 @@ export default function Customers() {
                   <div className="modal-body">
                     <div className="mb-3">
                       <label className="form-label text-secondary">Name</label>
-                      <input type="text" className="form-control" value={newCustomer.name} onChange={e => setNewCustomer({...newCustomer, name: e.target.value})} required />
+                      <input type="text" className="form-control" value={newCustomer.name} onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })} required />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Document (CNPJ/CPF)</label>
@@ -271,7 +295,7 @@ export default function Customers() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Phone (Optional)</label>
-                      <input type="text" className="form-control" value={newCustomer.phone} onChange={e => setNewCustomer({...newCustomer, phone: formatPhone(e.target.value)})} placeholder="(11) 99999-9999" maxLength={15} />
+                      <input type="text" className="form-control" value={newCustomer.phone} onChange={e => setNewCustomer({ ...newCustomer, phone: formatPhone(e.target.value) })} placeholder="(11) 99999-9999" maxLength={15} />
                     </div>
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
@@ -300,8 +324,7 @@ export default function Customers() {
                   <button type="button" className="btn-close btn-close-white" onClick={() => setShowPosModal(false)}></button>
                 </div>
                 <div className="modal-body">
-                  
-                  {/* List Existing POS */}
+
                   <h6 className="text-secondary mb-3">Existing Points of Sale</h6>
                   <ul className="list-group mb-4" style={{ borderRadius: '8px' }}>
                     {selectedCustomer.pos?.map((p: CustomerPOS) => (
@@ -310,8 +333,8 @@ export default function Customers() {
                           <strong>{p.address}</strong>
                           <div className="text-secondary small">
                             Phone: {p.phone ? (
-                              <button 
-                                className="btn btn-link text-decoration-none p-0 text-info align-baseline" 
+                              <button
+                                className="btn btn-link text-decoration-none p-0 text-info align-baseline"
                                 onClick={() => handlePhoneClick(p.phone, `${selectedCustomer.name} (POS)`)}
                               >
                                 {formatPhone(p.phone)}
@@ -327,7 +350,6 @@ export default function Customers() {
                     )}
                   </ul>
 
-                  {/* Add New POS Form */}
                   <div className="card bg-transparent border-secondary">
                     <div className="card-header border-secondary text-white fw-bold bg-dark bg-opacity-50">
                       Add New POS
@@ -337,12 +359,12 @@ export default function Customers() {
                         <div className="row g-3">
                           <div className="col-md-7">
                             <label className="form-label text-secondary small">Address</label>
-                            <input type="text" className="form-control form-control-sm" value={newPos.address} onChange={e => setNewPos({...newPos, address: e.target.value})} required placeholder="123 Main St..." />
+                            <input type="text" className="form-control form-control-sm" value={newPos.address} onChange={e => setNewPos({ ...newPos, address: e.target.value })} required placeholder="123 Main St..." />
                           </div>
                           <div className="col-md-5">
                             <label className="form-label text-secondary small">Phone (Optional)</label>
                             <div className="d-flex gap-2">
-                              <input type="text" className="form-control form-control-sm" value={newPos.phone} onChange={e => setNewPos({...newPos, phone: formatPhone(e.target.value)})} placeholder="(11) 99999-9999" maxLength={15} />
+                              <input type="text" className="form-control form-control-sm" value={newPos.phone} onChange={e => setNewPos({ ...newPos, phone: formatPhone(e.target.value) })} placeholder="(11) 99999-9999" maxLength={15} />
                               <button type="submit" className="btn btn-sm btn-success" disabled={loading}>{loading ? '...' : 'Add'}</button>
                             </div>
                           </div>
@@ -375,17 +397,17 @@ export default function Customers() {
                 <div className="modal-body text-center pb-4">
                   <p className="fs-5 mb-4">{formatPhone(selectedPhone.number)}</p>
                   <div className="d-flex flex-column gap-3">
-                    <a 
-                      href={`https://wa.me/55${selectedPhone.number.replace(/\D/g, '')}`} 
-                      target="_blank" 
+                    <a
+                      href={`https://wa.me/55${selectedPhone.number.replace(/\D/g, '')}`}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-success fw-bold d-flex justify-content-center align-items-center"
                     >
                       <i className="bi bi-whatsapp me-2 fs-5"></i>
                       WhatsApp
                     </a>
-                    <a 
-                      href={`tel:+55${selectedPhone.number.replace(/\D/g, '')}`} 
+                    <a
+                      href={`tel:+55${selectedPhone.number.replace(/\D/g, '')}`}
                       className="btn btn-outline-light fw-bold d-flex justify-content-center align-items-center"
                     >
                       <i className="bi bi-telephone-outbound me-2 fs-5"></i>
