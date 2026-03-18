@@ -9,18 +9,19 @@ export default function Products() {
   const [newProduct, setNewProduct] = useState<Product>({ id: '', name: '', price: 0, stock: 0, cost: 0 });
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showDisabled, setShowDisabled] = useState<boolean>(false);
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
   const fetchProducts = useCallback(async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/products`, config);
+      const res = await axios.get(`${apiBase}/api/products?showDisabled=${showDisabled}`, config);
       setProducts(res.data);
     } catch (err) {
       console.error('Failed to load products', err);
     }
-  }, [token, apiBase]);
+  }, [token, apiBase, showDisabled]);
 
   useEffect(() => {
     fetchProducts();
@@ -65,15 +66,55 @@ export default function Products() {
       return;
     }
     setEditingProduct(p.id);
-    setNewProduct({ id: p.id, name: p.name, price: p.price, stock: p.stock, cost: p.cost });
+    setNewProduct({ id: p.id, name: p.name, price: p.price, stock: p.stock, cost: p.cost, disabledAt: p.disabledAt });
     setShowModal(true);
+  };
+
+  const handleDisableProduct = async () => {
+    if (!editingProduct) return;
+    if (!confirm('Are you sure you want to disable this product?')) return;
+
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const disabledProduct: Product = { ...newProduct, disabledAt: new Date().toISOString() };
+      await axios.put(`${apiBase}/api/products/${editingProduct}`, disabledProduct, config);
+      setShowModal(false);
+      setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
+      setEditingProduct(null);
+      fetchProducts();
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.error('API error:', err.response?.data || err.message);
+        alert('Failed to disable product: ' + (err.response?.data?.error || err.message));
+      } else {
+        console.error('Unexpected error:', err);
+        alert('Failed to disable product: ' + (err || 'Unknown error'));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="animate-fade-in">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold m-0">Products Inventory</h2>
-        <button className="btn btn-primary" onClick={openNewModal}>+ New Product</button>
+        <div className="d-flex align-items-center gap-3">
+          <div className="form-check form-switch m-0">
+            <input
+              id="show-disabled-products"
+              className="form-check-input"
+              type="checkbox"
+              checked={showDisabled}
+              onChange={(e) => setShowDisabled(e.target.checked)}
+            />
+            <label className="form-check-label text-secondary" htmlFor="show-disabled-products">
+              Disabled
+            </label>
+          </div>
+          <button className="btn btn-primary" onClick={openNewModal}>+ New Product</button>
+        </div>
       </div>
 
       <div className="row g-4">
@@ -130,6 +171,9 @@ export default function Products() {
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    {editingProduct && (
+                      <button type="button" className="btn btn-danger" onClick={handleDisableProduct}>Disable</button>
+                    )}
                     <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Product'}</button>
                   </div>
                 </form>

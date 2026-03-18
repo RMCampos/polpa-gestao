@@ -4,7 +4,11 @@ import { Prisma } from '@prisma/client';
 
 export default async function productsRoutes(app: FastifyInstance) {
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
-    return prisma.product.findMany({ where: { disabledAt: null } });
+    const showDisabled = (request.query as any).showDisabled as string === 'true';
+    if (showDisabled) {
+      return prisma.product.findMany({ orderBy: { name: 'asc' } });
+    }
+    return prisma.product.findMany({ where: { disabledAt: null }, orderBy: { name: 'asc' } });
   });
 
   app.get('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -35,11 +39,11 @@ export default async function productsRoutes(app: FastifyInstance) {
 
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { name, price, stock, cost } = request.body as any;
+    const { name, price, stock, cost, disabledAt } = request.body as any;
     try {
       return await prisma.product.update({
         where: { id },
-        data: { name, price, cost, stock }
+        data: { name, price, cost, stock, disabledAt: disabledAt ? new Date(disabledAt) : null }
       });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientValidationError) {

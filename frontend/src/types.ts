@@ -46,6 +46,7 @@ export type Product = {
   price: number;
   stock: number;
   cost: number;
+  disabledAt?: string | null;
 };
 
 /* Routes page types */
