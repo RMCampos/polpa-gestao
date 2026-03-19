@@ -22,7 +22,7 @@ const buildSaleCopyText = (sale: Sale) => {
   const customerPhone = sale.customerPos?.customer?.phone || 'N/A';
   const posAddress = sale.customerPos?.address || 'Unknown';
   const posPhone = sale.customerPos?.phone || 'N/A';
-  const paymentStatus = sale.paymentDate ? 'Paid' : 'Pending';
+  const paymentStatus = sale.paymentDate ? 'Pago' : 'Pendente';
   const saleDate = formatDateTime(sale.createdAt);
   const dueDate = !sale.paymentDate && sale.paymentDueDate ? formatDate(sale.paymentDueDate) : null;
 
@@ -37,6 +37,19 @@ const buildSaleCopyText = (sale: Sale) => {
     (acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price || 0)),
     0,
   );
+
+  const translatePaymentMethod = (method: string) => {
+    switch (method) {
+      case 'Cash': return 'Dinheiro';
+      case 'Credit Card': return 'Cartão de Crédito';
+      case 'Debit Card': return 'Cartão de Débito';
+      case 'Pix': return 'Pix';
+      case 'Boleto': return 'Boleto (Fatura)';
+      case 'At the Delivery': return 'Na Entrega';
+      case 'Next Visit': return 'Na Próxima Visita';
+      default: return method;
+    }
+  };
 
   const lines: string[] = [
     'Novo pedido gerado com sucesso! 🚀',
@@ -57,7 +70,7 @@ const buildSaleCopyText = (sale: Sale) => {
     '---',
     '',
     `Total 💰: ${formatCurrency(total)}`,
-    `Pagamento: ${sale.paymentMethod}`,
+    `Pagamento: ${translatePaymentMethod(sale.paymentMethod)}`,
     `Status: ${paymentStatus}`,
   ];
 
@@ -319,6 +332,8 @@ export default function Sales() {
                             <option value="Debit Card">Debit Card</option>
                             <option value="Pix">Pix</option>
                             <option value="Boleto">Boleto (Invoice)</option>
+                            <option value="At the Delivery">At the Delivery</option>
+                            <option value="Next Visit">Next Visit</option>
                           </select>
                         </div>
                         <div className="mb-3">
