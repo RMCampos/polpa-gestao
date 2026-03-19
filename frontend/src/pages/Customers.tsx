@@ -209,6 +209,16 @@ export default function Customers() {
     }
   };
 
+  const formatDocument = (doc: string) => {
+    const cleaned = doc.replace(/\D/g, '');
+    if (cleaned.length === 11) {
+      return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    } else if (cleaned.length === 14) {
+      return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    }
+    return doc;
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -237,7 +247,7 @@ export default function Customers() {
               <div className="mb-2">
                 <h5 className={`fw-bold m-0 ${c.disabledAt ? 'text-secondary' : 'text-white'}`}>{c.name}</h5>
                 <div className="text-secondary small mt-1">
-                  <i className="bi bi-file-earmark-text me-1"></i>{c.document}
+                  <i className="bi bi-file-earmark-text me-1"></i>{formatDocument(c.document)}
                 </div>
               </div>
               <div className="d-flex flex-column gap-1 text-secondary small mb-3">

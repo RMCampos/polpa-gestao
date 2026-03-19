@@ -5,11 +5,11 @@ WORKDIR /app
 
 # Accept build arguments
 ARG VITE_BACKEND_SERVER
-ARG CPF_CNPJ_API_TOKEN
+ARG VITE_CPF_CNPJ_API_TOKEN
 
 # Set as environment variables for the build
 ENV VITE_BACKEND_SERVER=$VITE_BACKEND_SERVER
-ENV CPF_CNPJ_API_TOKEN=$CPF_CNPJ_API_TOKEN
+ENV VITE_CPF_CNPJ_API_TOKEN=$VITE_CPF_CNPJ_API_TOKEN
 
 # Copy package files
 COPY package.json package-lock.json ./

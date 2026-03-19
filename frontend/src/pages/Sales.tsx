@@ -255,8 +255,8 @@ export default function Sales() {
                       className="btn btn-sm btn-outline-primary"
                       onClick={() => handleCopySale(sale)}
                     >
-                      <i className="bi bi-clipboard me-1"></i>
-                      Copy
+                      <i className="bi bi-share me-1"></i>
+                      Share
                     </button>
                     <button
                       type="button"

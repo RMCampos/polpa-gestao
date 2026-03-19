@@ -62,7 +62,7 @@ services:
       context: ./frontend
       args:
         VITE_BACKEND_SERVER: http://localhost:3000
-        CPF_CNPJ_API_TOKEN: ${CPF_CNPJ_API_TOKEN}
+        VITE_CPF_CNPJ_API_TOKEN: ${VITE_CPF_CNPJ_API_TOKEN}
     image: ghcr.io/rmcampos/polpa-gestao/frontend:latest
     container_name: polpa_gestao_frontend
     ports:
