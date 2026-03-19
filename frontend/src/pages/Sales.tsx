@@ -95,6 +95,7 @@ export default function Sales() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(false);
   const [togglingSaleId, setTogglingSaleId] = useState<string | null>(null);
+  const [togglingDeliverySaleId, setTogglingDeliverySaleId] = useState<string | null>(null);
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
   const [customerPosId, setCustomerPosId] = useState('');
@@ -269,6 +270,44 @@ export default function Sales() {
     }
   };
 
+  const handleToggleDeliveredStatus = async (sale: Sale) => {
+    if (!sale.id) {
+      toast.showToast('Invalid sale data.', 'error');
+      return;
+    }
+
+    if (togglingDeliverySaleId === sale.id) {
+      return;
+    }
+
+    setTogglingDeliverySaleId(sale.id);
+
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { delievered: !sale.delievered }, config);
+      const updatedSale = response.data as Sale;
+
+      setSales((currentSales) => currentSales.map((currentSale) => (
+        currentSale.id === updatedSale.id ? updatedSale : currentSale
+      )));
+
+      if (selectedSale?.id === updatedSale.id) {
+        setSelectedSale(updatedSale);
+      }
+
+      toast.showToast(updatedSale.delievered ? 'Sale marked as delievered.' : 'Sale marked as undelievered.', 'success');
+      await fetchData();
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        toast.showToast(err.response?.data?.error || 'Failed to update sale delivery status.', 'error');
+      } else {
+        toast.showToast('An unexpected error occurred while updating the sale delivery status.', 'error');
+      }
+    } finally {
+      setTogglingDeliverySaleId(null);
+    }
+  };
+
   const renderPaymentStatusBadge = (sale: Sale) => {
     const isUpdating = sale.id !== undefined && togglingSaleId === sale.id;
     const isPaid = Boolean(sale.paymentDate);
@@ -283,6 +322,24 @@ export default function Sales() {
         title={isPaid ? 'Click to mark as pending' : 'Click to mark as paid'}
       >
         {isUpdating ? 'Updating...' : isPaid ? 'Paid' : 'Pending'}
+      </button>
+    );
+  };
+
+  const renderDeliveredStatusBadge = (sale: Sale) => {
+    const isUpdating = sale.id !== undefined && togglingDeliverySaleId === sale.id;
+    const isDelivered = Boolean(sale.delievered);
+
+    return (
+      <button
+        type="button"
+        className={`badge border-0 ${isDelivered ? 'bg-info text-dark' : 'bg-secondary'}`}
+        style={{ cursor: isUpdating ? 'wait' : 'pointer' }}
+        onClick={() => handleToggleDeliveredStatus(sale)}
+        disabled={isUpdating}
+        title={isDelivered ? 'Click to mark as undelievered' : 'Click to mark as delievered'}
+      >
+        {isUpdating ? 'Updating...' : isDelivered ? 'Delievered' : 'Undelievered'}
       </button>
     );
   };
@@ -303,9 +360,12 @@ export default function Sales() {
                 <div className="d-flex justify-content-between align-items-start mb-2">
                   <div>
                     <h6 className="fw-bold text-white m-0">{sale.customerPos?.customer?.name || 'Unknown'}</h6>
-                    <div className="text-secondary small">{new Date(sale.createdAt).toLocaleDateString()}</div>
+                    <div className="text-secondary small">{new Date(sale.createdAt).toLocaleString()}</div>
                   </div>
-                  {renderPaymentStatusBadge(sale)}
+                  <div className="d-flex gap-2 flex-wrap justify-content-end">
+                    {renderPaymentStatusBadge(sale)}
+                    {renderDeliveredStatusBadge(sale)}
+                  </div>
                 </div>
                 <div className="d-flex justify-content-between text-secondary small mb-2">
                   <span><i className="bi bi-box-seam me-1"></i>{sale.products?.length || 0} items</span>
@@ -494,7 +554,10 @@ export default function Sales() {
                       <p className="mb-1"><strong>Method:</strong> {selectedSale.paymentMethod}</p>
                       <p className="mb-1">
                         <strong>Status:</strong>{' '}
-                        {renderPaymentStatusBadge(selectedSale)}
+                        <span className="d-inline-flex gap-2 flex-wrap align-items-center">
+                          {renderPaymentStatusBadge(selectedSale)}
+                          {renderDeliveredStatusBadge(selectedSale)}
+                        </span>
                       </p>
                       <p className="mb-1"><strong>Date:</strong> {new Date(selectedSale.createdAt).toLocaleString()}</p>
                       {!selectedSale.paymentDate && selectedSale.paymentDueDate && (

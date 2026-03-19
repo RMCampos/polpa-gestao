@@ -1,0 +1,2 @@
+ALTER TABLE "Sale"
+ADD COLUMN "delievered" BOOLEAN NOT NULL DEFAULT false;

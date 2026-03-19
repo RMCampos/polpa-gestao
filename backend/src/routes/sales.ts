@@ -92,6 +92,7 @@ export default async function salesRoutes(app: FastifyInstance) {
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
     const {
+      delievered,
       paymentMethod,
       paymentDueDate,
       paymentDate,
@@ -103,6 +104,7 @@ export default async function salesRoutes(app: FastifyInstance) {
       if (!existing) return reply.code(404).send({ error: 'Sale not found' });
 
       let data: any = {};
+  if (delievered !== undefined) data.delievered = Boolean(delievered);
       if (paymentMethod !== undefined) data.paymentMethod = paymentMethod;
       if (paymentDueDate !== undefined) data.paymentDueDate = paymentDueDate ? new Date(paymentDueDate) : null;
       if (paymentDate !== undefined) data.paymentDate = paymentDate ? new Date(paymentDate) : null;
