@@ -94,6 +94,7 @@ export default function Sales() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(false);
+  const [togglingSaleId, setTogglingSaleId] = useState<string | null>(null);
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
 
   const [customerPosId, setCustomerPosId] = useState('');
@@ -229,6 +230,63 @@ export default function Sales() {
     }
   };
 
+  const handleTogglePaymentStatus = async (sale: Sale) => {
+    if (!sale.id) {
+      toast.showToast('Invalid sale data.', 'error');
+      return;
+    }
+
+    if (togglingSaleId === sale.id) {
+      return;
+    }
+
+    setTogglingSaleId(sale.id);
+
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const nextPaymentDate = sale.paymentDate ? null : new Date().toISOString();
+      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { paymentDate: nextPaymentDate }, config);
+      const updatedSale = response.data as Sale;
+
+      setSales((currentSales) => currentSales.map((currentSale) => (
+        currentSale.id === updatedSale.id ? updatedSale : currentSale
+      )));
+
+      if (selectedSale?.id === updatedSale.id) {
+        setSelectedSale(updatedSale);
+      }
+
+      toast.showToast(nextPaymentDate ? 'Sale marked as paid.' : 'Sale marked as pending.', 'success');
+      await fetchData();
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        toast.showToast(err.response?.data?.error || 'Failed to update sale status.', 'error');
+      } else {
+        toast.showToast('An unexpected error occurred while updating the sale status.', 'error');
+      }
+    } finally {
+      setTogglingSaleId(null);
+    }
+  };
+
+  const renderPaymentStatusBadge = (sale: Sale) => {
+    const isUpdating = sale.id !== undefined && togglingSaleId === sale.id;
+    const isPaid = Boolean(sale.paymentDate);
+
+    return (
+      <button
+        type="button"
+        className={`badge border-0 ${isPaid ? 'bg-success' : 'bg-warning text-dark'}`}
+        style={{ cursor: isUpdating ? 'wait' : 'pointer' }}
+        onClick={() => handleTogglePaymentStatus(sale)}
+        disabled={isUpdating}
+        title={isPaid ? 'Click to mark as pending' : 'Click to mark as paid'}
+      >
+        {isUpdating ? 'Updating...' : isPaid ? 'Paid' : 'Pending'}
+      </button>
+    );
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -247,9 +305,7 @@ export default function Sales() {
                     <h6 className="fw-bold text-white m-0">{sale.customerPos?.customer?.name || 'Unknown'}</h6>
                     <div className="text-secondary small">{new Date(sale.createdAt).toLocaleDateString()}</div>
                   </div>
-                  <span className={`badge ${sale.paymentDate ? 'bg-success' : 'bg-warning text-dark'}`}>
-                    {sale.paymentDate ? 'Paid' : 'Pending'}
-                  </span>
+                  {renderPaymentStatusBadge(sale)}
                 </div>
                 <div className="d-flex justify-content-between text-secondary small mb-2">
                   <span><i className="bi bi-box-seam me-1"></i>{sale.products?.length || 0} items</span>
@@ -438,9 +494,7 @@ export default function Sales() {
                       <p className="mb-1"><strong>Method:</strong> {selectedSale.paymentMethod}</p>
                       <p className="mb-1">
                         <strong>Status:</strong>{' '}
-                        <span className={`badge ${selectedSale.paymentDate ? 'bg-success' : 'bg-warning text-dark'}`}>
-                          {selectedSale.paymentDate ? 'Paid' : 'Pending'}
-                        </span>
+                        {renderPaymentStatusBadge(selectedSale)}
                       </p>
                       <p className="mb-1"><strong>Date:</strong> {new Date(selectedSale.createdAt).toLocaleString()}</p>
                       {!selectedSale.paymentDate && selectedSale.paymentDueDate && (
