@@ -19,7 +19,7 @@ jobs:
         id: version
         run: |
           DATE=$(date +'%Y.%m.%d')
-          TAG="v${DATE}.${{ github.run_number }}"
+          TAG="api-v${DATE}.${{ github.run_number }}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "Generated tag: ${TAG}"
 
