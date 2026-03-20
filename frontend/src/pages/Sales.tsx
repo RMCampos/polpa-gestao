@@ -104,6 +104,7 @@ export default function Sales() {
   const [paymentDate, setPaymentDate] = useState('');
   const [comments, setComments] = useState('');
   const [cart, setCart] = useState<ProductCart[]>([]);
+  const [showDelivered, setShowDelivered] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -111,7 +112,7 @@ export default function Sales() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const [salesRes, custRes, prodRes] = await Promise.all([
-        axios.get(`${apiBase}/api/sales`, config),
+        axios.get(`${apiBase}/api/sales?showDelivered=${showDelivered}`, config),
         axios.get(`${apiBase}/api/customers`, config),
         axios.get(`${apiBase}/api/products`, config)
       ]);
@@ -121,7 +122,7 @@ export default function Sales() {
     } catch (err) {
       console.error('Failed to load sales data', err);
     }
-  }, [token, apiBase]);
+  }, [token, apiBase, showDelivered]);
 
   useEffect(() => {
     fetchData();
@@ -284,7 +285,7 @@ export default function Sales() {
 
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { delievered: !sale.delievered }, config);
+      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { delivered: !sale.delivered }, config);
       const updatedSale = response.data as Sale;
 
       setSales((currentSales) => currentSales.map((currentSale) => (
@@ -295,7 +296,7 @@ export default function Sales() {
         setSelectedSale(updatedSale);
       }
 
-      toast.showToast(updatedSale.delievered ? 'Sale marked as delievered.' : 'Sale marked as undelievered.', 'success');
+      toast.showToast(updatedSale.delivered ? 'Sale marked as delivered.' : 'Sale marked as undelivered.', 'success');
       await fetchData();
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -328,7 +329,7 @@ export default function Sales() {
 
   const renderDeliveredStatusBadge = (sale: Sale) => {
     const isUpdating = sale.id !== undefined && togglingDeliverySaleId === sale.id;
-    const isDelivered = Boolean(sale.delievered);
+    const isDelivered = Boolean(sale.delivered);
 
     return (
       <button
@@ -337,9 +338,9 @@ export default function Sales() {
         style={{ cursor: isUpdating ? 'wait' : 'pointer' }}
         onClick={() => handleToggleDeliveredStatus(sale)}
         disabled={isUpdating}
-        title={isDelivered ? 'Click to mark as undelievered' : 'Click to mark as delievered'}
+        title={isDelivered ? 'Click to mark as undelivered' : 'Click to mark as delivered'}
       >
-        {isUpdating ? 'Updating...' : isDelivered ? 'Delievered' : 'Undelievered'}
+        {isUpdating ? 'Updating...' : isDelivered ? 'Delivered' : 'Undelivered'}
       </button>
     );
   };
@@ -348,7 +349,21 @@ export default function Sales() {
     <div className="animate-fade-in">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold m-0">Sales Register</h2>
-        <button className="btn btn-primary" onClick={handleOpenModal}>+ Record Sale</button>
+        <div className="d-flex align-items-center gap-3">
+          <div className="form-check form-switch m-0">
+            <input
+              id="show-disabled-products"
+              className="form-check-input"
+              type="checkbox"
+              checked={showDelivered}
+              onChange={(e) => setShowDelivered(e.target.checked)}
+            />
+            <label className="form-check-label text-secondary" htmlFor="show-disabled-products">
+              Delivered
+            </label>
+          </div>
+          <button className="btn btn-primary" onClick={handleOpenModal}>+ Record Sale</button>
+        </div>
       </div>
 
       <div className="row g-3">

@@ -58,7 +58,7 @@ model Sale {
   id             String         @id @default(uuid()) @db.Uuid
   customerPosId  String         @db.Uuid
   customerPos    CustomerPos    @relation(fields: [customerPosId], references: [id])
-  delievered     Boolean        @default(false)
+  delivered      Boolean        @default(false)
   paymentMethod  String
   paymentDueDate DateTime?
   paymentDate    DateTime?

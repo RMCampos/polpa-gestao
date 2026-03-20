@@ -1,10 +1,24 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
 
+function parseBoolean(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true') return true;
+    if (normalized === 'false') return false;
+  }
+  return undefined;
+}
+
 export default async function salesRoutes(app: FastifyInstance) {
   // Get all sales
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { showDelivered } = request.query as any;
+    const parsedShowDelivered = parseBoolean(showDelivered);
+
     return prisma.sale.findMany({
+      where: parsedShowDelivered !== undefined ? { delivered: parsedShowDelivered } : undefined,
       include: {
         customerPos: { include: { customer: true } },
         products: { include: { product: true } }
@@ -92,7 +106,7 @@ export default async function salesRoutes(app: FastifyInstance) {
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
     const {
-      delievered,
+      delivered,
       paymentMethod,
       paymentDueDate,
       paymentDate,
@@ -104,7 +118,8 @@ export default async function salesRoutes(app: FastifyInstance) {
       if (!existing) return reply.code(404).send({ error: 'Sale not found' });
 
       let data: any = {};
-  if (delievered !== undefined) data.delievered = Boolean(delievered);
+      const parsedDelivered = parseBoolean(delivered);
+      if (parsedDelivered !== undefined) data.delivered = parsedDelivered;
       if (paymentMethod !== undefined) data.paymentMethod = paymentMethod;
       if (paymentDueDate !== undefined) data.paymentDueDate = paymentDueDate ? new Date(paymentDueDate) : null;
       if (paymentDate !== undefined) data.paymentDate = paymentDate ? new Date(paymentDate) : null;

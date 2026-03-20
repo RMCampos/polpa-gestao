@@ -76,7 +76,7 @@ export type SaleProduct = {
 export type Sale = {
   id?: string;
   customerPosId: string;
-  delievered: boolean;
+  delivered: boolean;
   paymentMethod: string;
   paymentDueDate: string | null;
   paymentDate: string | null;
