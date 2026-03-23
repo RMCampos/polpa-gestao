@@ -39,7 +39,7 @@ The entire application stack (database, backend API, and frontend) can be starte
 **Start all services:**
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 This command will:
@@ -61,16 +61,16 @@ This command will:
 To enable CPF/CNPJ document validation, set the `VITE_CPF_CNPJ_API_TOKEN` variable before starting:
 
 ```bash
-VITE_CPF_CNPJ_API_TOKEN=your_token_here docker-compose up
+VITE_CPF_CNPJ_API_TOKEN=your_token_here docker compose up
 ```
 
 **Stop all services:**
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
-Database data is persisted in a Docker volume (`pgdata`) and will survive container restarts. To also remove the volume when stopping, run `docker-compose down -v`.
+Database data is persisted in a Docker volume (`pgdata`) and will survive container restarts. To also remove the volume when stopping, run `docker compose down -v`.
 
 ## Deployment
 
