@@ -29,6 +29,7 @@ export type CustomerPOS = {
   customerId?: string;
   address: string;
   phone: string;
+  personName?: string;
   customer?: Customer;
 }
 
@@ -37,6 +38,7 @@ export type Customer = {
   name: string;
   document: string;
   phone: string;
+  personName?: string;
   pos?: CustomerPOS[];
   disabledAt?: string | null;
 };

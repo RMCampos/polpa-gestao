@@ -24,9 +24,9 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   // Create customer
   app.post('/', { preValidation: [app.authenticate] }, async (request, reply) => {
-    const { name, document, phone } = request.body as any;
+    const { name, document, phone, personName } = request.body as any;
     try {
-      return await prisma.customer.create({ data: { name, document, phone } });
+      return await prisma.customer.create({ data: { name, document, phone, personName } });
     } catch (e: any) {
       if (e.code === 'P2002') return reply.code(400).send({ error: 'Document already exists' });
       throw e;
@@ -36,7 +36,7 @@ export default async function customersRoutes(app: FastifyInstance) {
   // Update customer
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { name, document, phone } = request.body as any;
+    const { name, document, phone, personName } = request.body as any;
     try {
       if (document) {
         const existing = await prisma.customer.findFirst({
@@ -46,7 +46,7 @@ export default async function customersRoutes(app: FastifyInstance) {
           return reply.code(400).send({ error: 'Document already exists for another customer' });
         }
       }
-      return await prisma.customer.update({ where: { id }, data: { name, document, phone } });
+      return await prisma.customer.update({ where: { id }, data: { name, document, phone, personName } });
     } catch (e) {
       return reply.code(404).send({ error: 'Customer not found' });
     }
@@ -63,18 +63,18 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   app.post('/:customerId/pos', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { customerId } = request.params as any;
-    const { address, phone } = request.body as any;
+    const { address, phone, personName } = request.body as any;
     return prisma.customerPos.create({
-      data: { customerId, address, phone }
+      data: { customerId, address, phone, personName }
     });
   });
 
   app.put('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { address, phone } = request.body as any;
+    const { address, phone, personName } = request.body as any;
     return prisma.customerPos.update({
       where: { id },
-      data: { address, phone }
+      data: { address, phone, personName }
     });
   });
 
