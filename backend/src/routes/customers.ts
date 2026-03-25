@@ -47,8 +47,11 @@ export default async function customersRoutes(app: FastifyInstance) {
         }
       }
       return await prisma.customer.update({ where: { id }, data: { name, document, phone, personName } });
-    } catch (e) {
-      return reply.code(404).send({ error: 'Customer not found' });
+    } catch (e: any) {
+      if (e && e.code === 'P2025') {
+        return reply.code(404).send({ error: 'Customer not found' });
+      }
+      return reply.code(400).send({ error: 'Invalid customer data' });
     }
   });
 
