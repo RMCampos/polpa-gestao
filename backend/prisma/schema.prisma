@@ -23,8 +23,7 @@ model Customer {
   name       String
   document   String         @unique
   phone      String?
-  personName String?
-  pos        CustomerPos[]
+  personName String?  @db.VarChar(30)
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
   disabledAt DateTime?
@@ -36,7 +35,7 @@ model CustomerPos {
   customer   Customer @relation(fields: [customerId], references: [id])
   address    String
   phone      String
-  personName String?
+  personName String?  @db.VarChar(30)
   sales      Sale[]
   routes     RouteCustomerPos[]
   createdAt  DateTime @default(now())
