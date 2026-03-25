@@ -393,7 +393,19 @@ export default function Customers() {
                           </div>
                           <div className="col-md-7">
                             <label className="form-label text-secondary small">Person Name (Optional)</label>
-                            <input type="text" className="form-control form-control-sm" value={newPos.personName || ''} onChange={e => setNewPos({ ...newPos, personName: e.target.value })} placeholder="Contact person name..." />
+                            <input
+                              type="text"
+                              className="form-control form-control-sm"
+                              value={newPos.personName || ''}
+                              onChange={e =>
+                                setNewPos({
+                                  ...newPos,
+                                  personName: e.target.value.slice(0, 30),
+                                })
+                              }
+                              placeholder="Contact person name..."
+                              maxLength={30}
+                            />
                           </div>
                           <div className="col-md-5 d-flex align-items-end">
                             <button type="submit" className="btn btn-sm btn-success w-100" disabled={loading}>{loading ? '...' : 'Add'}</button>
