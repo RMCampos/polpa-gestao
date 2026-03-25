@@ -102,28 +102,130 @@ export default async function salesRoutes(app: FastifyInstance) {
     }
   });
 
-  // Update sale (e.g. mark as paid)
+  // Update sale (e.g. mark as paid, edit fields, replace products)
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
     const {
+      customerPosId,
       delivered,
       paymentMethod,
       paymentDueDate,
       paymentDate,
-      comments
+      comments,
+      products
     } = request.body as any;
 
     try {
-      const existing = await prisma.sale.findUnique({ where: { id } });
+      const existing = await prisma.sale.findUnique({
+        where: { id },
+        include: { products: true }
+      });
       if (!existing) return reply.code(404).send({ error: 'Sale not found' });
+
+      if (customerPosId !== undefined) {
+        const pos = await prisma.customerPos.findUnique({ where: { id: customerPosId } });
+        if (!pos || pos.disabledAt) return reply.code(400).send({ error: 'Point of sale not found or disabled' });
+      }
 
       let data: any = {};
       const parsedDelivered = parseBoolean(delivered);
       if (parsedDelivered !== undefined) data.delivered = parsedDelivered;
+      if (customerPosId !== undefined) data.customerPosId = customerPosId;
       if (paymentMethod !== undefined) data.paymentMethod = paymentMethod;
       if (paymentDueDate !== undefined) data.paymentDueDate = paymentDueDate ? new Date(paymentDueDate) : null;
       if (paymentDate !== undefined) data.paymentDate = paymentDate ? new Date(paymentDate) : null;
       if (comments !== undefined) data.comments = comments;
+
+      // If products are provided, replace the entire product list with stock management
+      if (products !== undefined && !Array.isArray(products)) {
+        return reply.code(400).send({ error: 'products must be an array' });
+      }
+      if (Array.isArray(products)) {
+        // Aggregate quantities by productId to handle duplicates correctly
+        const aggregatedMap = new Map<string, number>();
+        for (const p of products) {
+          if (!p.productId || typeof p.quantity !== 'number' || p.quantity <= 0) {
+            return reply.code(400).send({ error: 'Invalid product entry' });
+          }
+          aggregatedMap.set(p.productId, (aggregatedMap.get(p.productId) || 0) + p.quantity);
+        }
+        const aggregatedProducts = Array.from(aggregatedMap.entries()).map(([productId, quantity]) => ({ productId, quantity }));
+
+        // Validate new products exist and are enabled in a single query
+        const productIds = aggregatedProducts.map(p => p.productId);
+        const foundProducts = await prisma.product.findMany({ where: { id: { in: productIds } } });
+        for (const p of aggregatedProducts) {
+          const prod = foundProducts.find(fp => fp.id === p.productId);
+          if (!prod || prod.disabledAt) return reply.code(400).send({ error: `Product ${p.productId} not found or disabled` });
+        }
+
+        const sale = await prisma.$transaction(async (tx) => {
+          const lockProductIds = Array.from(
+            new Set([
+              ...existing.products.map((sp) => sp.productId),
+              ...productIds
+            ])
+          ).sort();
+
+          if (lockProductIds.length > 0) {
+            // Lock all affected product rows in a deterministic order.
+            await tx.$queryRaw`
+              SELECT id
+              FROM "Product"
+              WHERE id = ANY(${lockProductIds}::uuid[])
+              FOR UPDATE
+            `;
+          }
+
+          // Restore stock for all existing products
+          for (const sp of existing.products) {
+            await tx.product.update({
+              where: { id: sp.productId },
+              data: { stock: { increment: sp.quantity } }
+            });
+          }
+
+          // Validate stock after restoring by fetching all updated products in one query
+          const updatedProds = await tx.product.findMany({ where: { id: { in: productIds } } });
+          for (const p of aggregatedProducts) {
+            const prod = updatedProds.find(up => up.id === p.productId);
+            if (!prod || prod.stock < p.quantity) {
+              throw new Error(`Not enough stock for product ${p.productId}`);
+            }
+          }
+
+          // Delete old sale products and create new ones
+          await tx.saleProduct.deleteMany({ where: { saleId: id } });
+          if (aggregatedProducts.length > 0) {
+            await tx.saleProduct.createMany({
+              data: aggregatedProducts.map((p) => ({
+                saleId: id,
+                productId: p.productId,
+                quantity: p.quantity
+              }))
+            });
+
+            // Deduct stock for new products
+            for (const p of aggregatedProducts) {
+              await tx.product.update({
+                where: { id: p.productId },
+                data: { stock: { decrement: p.quantity } }
+              });
+            }
+          }
+
+          return tx.sale.update({
+            where: { id },
+            data,
+            include: {
+              customerPos: { include: { customer: true } },
+              products: { include: { product: true } }
+            }
+          });
+        });
+
+        return sale;
+      }
 
       const sale = await prisma.sale.update({
         where: { id },
@@ -134,8 +236,41 @@ export default async function salesRoutes(app: FastifyInstance) {
         }
       });
       return sale;
-    } catch (e) {
+    } catch (e: any) {
+      if (e?.message?.startsWith('Not enough stock')) {
+        return reply.code(400).send({ error: e.message });
+      }
       return reply.code(500).send({ error: 'Failed to update sale' });
+    }
+  });
+
+  // Delete sale (hard delete)
+  app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { id } = request.params as any;
+    try {
+      const existing = await prisma.sale.findUnique({
+        where: { id },
+        include: { products: true }
+      });
+      if (!existing) return reply.code(404).send({ error: 'Sale not found' });
+
+      await prisma.$transaction(async (tx) => {
+        // Restore stock for all products in the sale
+        for (const sp of existing.products) {
+          await tx.product.update({
+            where: { id: sp.productId },
+            data: { stock: { increment: sp.quantity } }
+          });
+        }
+
+        // Delete sale products then the sale itself
+        await tx.saleProduct.deleteMany({ where: { saleId: id } });
+        await tx.sale.delete({ where: { id } });
+      });
+
+      return { success: true };
+    } catch (e) {
+      return reply.code(500).send({ error: 'Failed to delete sale' });
     }
   });
 }
