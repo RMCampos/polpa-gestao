@@ -23,7 +23,8 @@ model Customer {
   name       String
   document   String         @unique
   phone      String?
-  personName String?  @db.VarChar(30)
+  personName String?        @db.VarChar(30)
+  pos        CustomerPos[]
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
   disabledAt DateTime?
