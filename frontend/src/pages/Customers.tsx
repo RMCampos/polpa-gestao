@@ -16,11 +16,11 @@ export default function Customers() {
   const toast = useToast();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '' });
+  const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [newPos, setNewPos] = useState<CustomerPOS>({ address: '', phone: '' });
+  const [newPos, setNewPos] = useState<CustomerPOS>({ address: '', phone: '', personName: '' });
   const [loading, setLoading] = useState(false);
   const [docValidation, setDocValidation] = useState<{ valid: boolean | null, loading: boolean }>({ valid: null, loading: false });
   const [selectedPhone, setSelectedPhone] = useState<{ number: string, name: string } | null>(null);
@@ -55,7 +55,7 @@ export default function Customers() {
         await axios.post(`${apiBase}/api/customers`, newCustomer, config);
       }
       setShowModal(false);
-      setNewCustomer({ name: '', document: '', phone: '' });
+      setNewCustomer({ name: '', document: '', phone: '', personName: '' });
       setEditingCustomer(null);
       fetchCustomers();
       toast.showToast(editingCustomer ? 'Customer updated successfully.' : 'Customer created successfully.', 'success');
@@ -109,7 +109,7 @@ export default function Customers() {
 
   const openNewModal = () => {
     setEditingCustomer(null);
-    setNewCustomer({ name: '', document: '', phone: '' });
+    setNewCustomer({ name: '', document: '', phone: '', personName: '' });
     setDocValidation({ valid: null, loading: false });
     setShowModal(true);
   };
@@ -125,14 +125,14 @@ export default function Customers() {
       return;
     }
     setEditingCustomer(c.id);
-    setNewCustomer({ name: c.name, document: c.document, phone: c.phone || '' });
+    setNewCustomer({ name: c.name, document: c.document, phone: c.phone || '', personName: c.personName || '' });
     setDocValidation({ valid: null, loading: false });
     setShowModal(true);
   };
 
   const openPosModal = (c: Customer) => {
     setSelectedCustomer(c);
-    setNewPos({ address: '', phone: '' });
+    setNewPos({ address: '', phone: '', personName: '' });
     setShowPosModal(true);
   };
 
@@ -143,7 +143,7 @@ export default function Customers() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.post(`${apiBase}/api/customers/${selectedCustomer.id}/pos`, newPos, config);
-      setNewPos({ address: '', phone: '' });
+      setNewPos({ address: '', phone: '', personName: '' });
       fetchCustomers();
 
       const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
@@ -198,7 +198,7 @@ export default function Customers() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`${apiBase}/api/customers/${editingCustomer}`, config);
       setShowModal(false);
-      setNewCustomer({ name: '', document: '', phone: '' });
+      setNewCustomer({ name: '', document: '', phone: '', personName: '' });
       setEditingCustomer(null);
       fetchCustomers();
       toast.showToast('Customer disabled successfully.', 'success');
@@ -295,6 +295,17 @@ export default function Customers() {
                       <input type="text" className="form-control" value={newCustomer.name} onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })} required />
                     </div>
                     <div className="mb-3">
+                      <label className="form-label text-secondary">Person Name (Optional)</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newCustomer.personName || ''}
+                        onChange={e => setNewCustomer({ ...newCustomer, personName: e.target.value })}
+                        placeholder="Responsible person name..."
+                        maxLength={30}
+                      />
+                    </div>
+                    <div className="mb-3">
                       <label className="form-label text-secondary">Document (CNPJ/CPF)</label>
                       <div className="input-group">
                         <input type="text" className="form-control" value={newCustomer.document} onChange={handleDocumentChange} placeholder="Type numbers only..." required />
@@ -341,6 +352,11 @@ export default function Customers() {
                       <li key={p.id} className="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
                         <div>
                           <strong>{p.address}</strong>
+                          {p.personName && (
+                            <div className="text-secondary small">
+                              Contact: {p.personName}
+                            </div>
+                          )}
                           <div className="text-secondary small">
                             Phone: {p.phone ? (
                               <button
@@ -373,10 +389,26 @@ export default function Customers() {
                           </div>
                           <div className="col-md-5">
                             <label className="form-label text-secondary small">Phone (Optional)</label>
-                            <div className="d-flex gap-2">
-                              <input type="text" className="form-control form-control-sm" value={newPos.phone} onChange={e => setNewPos({ ...newPos, phone: formatPhone(e.target.value) })} placeholder="(11) 99999-9999" maxLength={15} />
-                              <button type="submit" className="btn btn-sm btn-success" disabled={loading}>{loading ? '...' : 'Add'}</button>
-                            </div>
+                            <input type="text" className="form-control form-control-sm" value={newPos.phone} onChange={e => setNewPos({ ...newPos, phone: formatPhone(e.target.value) })} placeholder="(11) 99999-9999" maxLength={15} />
+                          </div>
+                          <div className="col-md-7">
+                            <label className="form-label text-secondary small">Person Name (Optional)</label>
+                            <input
+                              type="text"
+                              className="form-control form-control-sm"
+                              value={newPos.personName || ''}
+                              onChange={e =>
+                                setNewPos({
+                                  ...newPos,
+                                  personName: e.target.value.slice(0, 30),
+                                })
+                              }
+                              placeholder="Contact person name..."
+                              maxLength={30}
+                            />
+                          </div>
+                          <div className="col-md-5 d-flex align-items-end">
+                            <button type="submit" className="btn btn-sm btn-success w-100" disabled={loading}>{loading ? '...' : 'Add'}</button>
                           </div>
                         </div>
                       </form>
