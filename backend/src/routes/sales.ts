@@ -137,7 +137,10 @@ export default async function salesRoutes(app: FastifyInstance) {
       if (comments !== undefined) data.comments = comments;
 
       // If products are provided, replace the entire product list with stock management
-      if (products !== undefined && Array.isArray(products)) {
+      if (products !== undefined && !Array.isArray(products)) {
+        return reply.code(400).send({ error: 'products must be an array' });
+      }
+      if (Array.isArray(products)) {
         // Aggregate quantities by productId to handle duplicates correctly
         const aggregatedMap = new Map<string, number>();
         for (const p of products) {
