@@ -296,7 +296,14 @@ export default function Customers() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Person Name (Optional)</label>
-                      <input type="text" className="form-control" value={newCustomer.personName || ''} onChange={e => setNewCustomer({ ...newCustomer, personName: e.target.value })} placeholder="Responsible person name..." />
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newCustomer.personName || ''}
+                        onChange={e => setNewCustomer({ ...newCustomer, personName: e.target.value })}
+                        placeholder="Responsible person name..."
+                        maxLength={30}
+                      />
                     </div>
                     <div className="mb-3">
                       <label className="form-label text-secondary">Document (CNPJ/CPF)</label>
