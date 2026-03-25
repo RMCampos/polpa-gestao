@@ -17,10 +17,12 @@ export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
+  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '' };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [newPos, setNewPos] = useState<CustomerPOS>({ address: '', phone: '', personName: '' });
+  const [newPos, setNewPos] = useState<CustomerPOS>(emptyPos);
+  const [editingPos, setEditingPos] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [docValidation, setDocValidation] = useState<{ valid: boolean | null, loading: boolean }>({ valid: null, loading: false });
   const [selectedPhone, setSelectedPhone] = useState<{ number: string, name: string } | null>(null);
@@ -132,25 +134,52 @@ export default function Customers() {
 
   const openPosModal = (c: Customer) => {
     setSelectedCustomer(c);
-    setNewPos({ address: '', phone: '', personName: '' });
+    setNewPos(emptyPos);
+    setEditingPos(null);
     setShowPosModal(true);
   };
 
-  const handleAddPos = async (e: React.FormEvent) => {
+  const closePosModal = () => {
+    setShowPosModal(false);
+    setEditingPos(null);
+    setNewPos(emptyPos);
+  };
+
+  const openEditPos = (p: CustomerPOS) => {
+    if (!p.id) {
+      toast.showToast('POS ID is missing. Cannot edit this point of sale.', 'error');
+      return;
+    }
+    setEditingPos(p.id);
+    setNewPos({ address: p.address, phone: p.phone, personName: p.personName || '' });
+  };
+
+  const cancelEditPos = () => {
+    setEditingPos(null);
+    setNewPos(emptyPos);
+  };
+
+  const handleSavePos = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCustomer) return;
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`${apiBase}/api/customers/${selectedCustomer.id}/pos`, newPos, config);
-      setNewPos({ address: '', phone: '', personName: '' });
+      if (editingPos) {
+        await axios.put(`${apiBase}/api/customers/pos/${editingPos}`, newPos, config);
+        toast.showToast('Point of sale updated successfully.', 'success');
+      } else {
+        await axios.post(`${apiBase}/api/customers/${selectedCustomer.id}/pos`, newPos, config);
+        toast.showToast('Point of sale added successfully.', 'success');
+      }
+      setNewPos(emptyPos);
+      setEditingPos(null);
       fetchCustomers();
 
       const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
       setSelectedCustomer(res.data);
-      toast.showToast('Point of sale added successfully.', 'success');
     } catch (err) {
-      toast.showToast(`Failed to add POS: ${toErrorMessage(err, 'Unknown error')}`, 'error');
+      toast.showToast(`Failed to save POS: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -342,7 +371,7 @@ export default function Customers() {
               <div className="modal-content glass-card">
                 <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
                   <h5 className="modal-title text-white">Manage POS - {selectedCustomer.name}</h5>
-                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowPosModal(false)}></button>
+                  <button type="button" className="btn-close btn-close-white" onClick={closePosModal}></button>
                 </div>
                 <div className="modal-body">
 
@@ -368,7 +397,10 @@ export default function Customers() {
                             ) : 'N/A'}
                           </div>
                         </div>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeletePos(p.id)}>Remove</button>
+                        <div className="d-flex gap-2">
+                          <button className="btn btn-sm btn-outline-primary" onClick={() => openEditPos(p)}>Edit</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeletePos(p.id)}>Remove</button>
+                        </div>
                       </li>
                     ))}
                     {(!selectedCustomer.pos || selectedCustomer.pos.length === 0) && (
@@ -378,10 +410,10 @@ export default function Customers() {
 
                   <div className="card bg-transparent border-secondary">
                     <div className="card-header border-secondary text-white fw-bold bg-dark bg-opacity-50">
-                      Add New POS
+                      {editingPos ? 'Edit POS' : 'Add New POS'}
                     </div>
                     <div className="card-body">
-                      <form onSubmit={handleAddPos}>
+                      <form onSubmit={handleSavePos}>
                         <div className="row g-3">
                           <div className="col-md-7">
                             <label className="form-label text-secondary small">Address</label>
@@ -407,8 +439,11 @@ export default function Customers() {
                               maxLength={30}
                             />
                           </div>
-                          <div className="col-md-5 d-flex align-items-end">
-                            <button type="submit" className="btn btn-sm btn-success w-100" disabled={loading}>{loading ? '...' : 'Add'}</button>
+                          <div className="col-md-5 d-flex align-items-end gap-2">
+                            {editingPos && (
+                              <button type="button" className="btn btn-sm btn-outline-secondary w-100" onClick={cancelEditPos}>Cancel</button>
+                            )}
+                            <button type="submit" className="btn btn-sm btn-success w-100" disabled={loading}>{loading ? '...' : editingPos ? 'Save' : 'Add'}</button>
                           </div>
                         </div>
                       </form>
@@ -417,7 +452,7 @@ export default function Customers() {
 
                 </div>
                 <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
-                  <button type="button" className="btn btn-outline-light" onClick={() => setShowPosModal(false)}>Close</button>
+                  <button type="button" className="btn btn-outline-light" onClick={closePosModal}>Close</button>
                 </div>
               </div>
             </div>
