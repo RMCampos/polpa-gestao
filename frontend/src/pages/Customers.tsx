@@ -127,7 +127,7 @@ export default function Customers() {
       return;
     }
     setEditingCustomer(c.id);
-    setNewCustomer({ name: c.name, document: c.document, phone: c.phone || '', personName: c.personName || '' });
+    setNewCustomer({ name: c.name, document: c.document || '', phone: c.phone || '', personName: c.personName || '' });
     setDocValidation({ valid: null, loading: false });
     setShowModal(true);
   };
@@ -276,7 +276,7 @@ export default function Customers() {
               <div className="mb-2">
                 <h5 className={`fw-bold m-0 ${c.disabledAt ? 'text-secondary' : 'text-white'}`}>{c.name}</h5>
                 <div className="text-secondary small mt-1">
-                  <i className="bi bi-file-earmark-text me-1"></i>{formatDocument(c.document)}
+                  <i className="bi bi-file-earmark-text me-1"></i>{c.document ? formatDocument(c.document) : 'N/A'}
                 </div>
               </div>
               <div className="d-flex flex-column gap-1 text-secondary small mb-3">
@@ -335,9 +335,9 @@ export default function Customers() {
                       />
                     </div>
                     <div className="mb-3">
-                      <label className="form-label text-secondary">Document (CNPJ/CPF)</label>
+                      <label className="form-label text-secondary">Document (CNPJ/CPF) (Optional)</label>
                       <div className="input-group">
-                        <input type="text" className="form-control" value={newCustomer.document} onChange={handleDocumentChange} placeholder="Type numbers only..." required />
+                        <input type="text" className="form-control" value={newCustomer.document || ''} onChange={handleDocumentChange} placeholder="Type numbers only..." />
                         {docValidation.loading && <span className="input-group-text bg-secondary text-white border-secondary">...</span>}
                         {!docValidation.loading && docValidation.valid === true && <span className="input-group-text bg-success text-white border-success">Valid</span>}
                         {!docValidation.loading && docValidation.valid === false && <span className="input-group-text bg-danger text-white border-danger">Invalid</span>}

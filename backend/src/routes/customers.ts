@@ -25,8 +25,9 @@ export default async function customersRoutes(app: FastifyInstance) {
   // Create customer
   app.post('/', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { name, document, phone, personName } = request.body as any;
+    const docValue = document || null;
     try {
-      return await prisma.customer.create({ data: { name, document, phone, personName } });
+      return await prisma.customer.create({ data: { name, document: docValue, phone, personName } });
     } catch (e: any) {
       if (e.code === 'P2002') return reply.code(400).send({ error: 'Document already exists' });
       throw e;
@@ -37,16 +38,17 @@ export default async function customersRoutes(app: FastifyInstance) {
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
     const { name, document, phone, personName } = request.body as any;
+    const docValue = document || null;
     try {
-      if (document) {
+      if (docValue) {
         const existing = await prisma.customer.findFirst({
-          where: { document, id: { not: id } }
+          where: { document: docValue, id: { not: id } }
         });
         if (existing) {
           return reply.code(400).send({ error: 'Document already exists for another customer' });
         }
       }
-      return await prisma.customer.update({ where: { id }, data: { name, document, phone, personName } });
+      return await prisma.customer.update({ where: { id }, data: { name, document: docValue, phone, personName } });
     } catch (e: any) {
       if (e && e.code === 'P2025') {
         return reply.code(404).send({ error: 'Customer not found' });
