@@ -36,7 +36,7 @@ export type CustomerPOS = {
 export type Customer = {
   id?: string;
   name: string;
-  document: string;
+  document?: string;
   phone: string;
   personName?: string;
   pos?: CustomerPOS[];
