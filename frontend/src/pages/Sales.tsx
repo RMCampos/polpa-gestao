@@ -143,12 +143,26 @@ export default function Sales() {
   };
 
   const handleOpenEditModal = (sale: Sale) => {
+    if (!sale.id) {
+      toast.showToast('Invalid sale data.', 'error');
+      return;
+    }
     setEditingMode(true);
     setEditingSaleId(sale.id || null);
     setCustomerPosId(sale.customerPosId);
     setPaymentMethod(sale.paymentMethod);
-    setPaymentDueDate(sale.paymentDueDate ? new Date(sale.paymentDueDate).toISOString().split('T')[0] : '');
-    setPaymentDate(sale.paymentDate ? new Date(sale.paymentDate).toISOString().split('T')[0] : '');
+    let paymentDueDateValue = '';
+    if (sale.paymentDueDate) {
+      const dueDate = new Date(sale.paymentDueDate);
+      paymentDueDateValue = dueDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD for input value
+    }
+    setPaymentDueDate(paymentDueDateValue);
+    let paymentDateValue = '';
+    if (sale.paymentDate) {
+      const payDate = new Date(sale.paymentDate);
+      paymentDateValue = payDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD for input value
+    }
+    setPaymentDate(paymentDateValue);
     setComments(sale.comments || '');
     setCart((sale.products || []).map((sp: SaleProduct) => ({
       productId: sp.productId,
@@ -290,6 +304,10 @@ export default function Sales() {
   };
 
   const handleDeleteSale = async (sale: Sale) => {
+    if (!sale.id) {
+      toast.showToast('Invalid sale data.', 'error');
+      return;
+    }
     const confirmed = await toast.confirm({
       title: 'Delete Sale',
       message: 'Are you sure you want to delete this sale? This action cannot be undone.',
@@ -607,7 +625,7 @@ export default function Sales() {
                                   <select className="form-select form-select-sm" value={item.productId} onChange={(e) => handleUpdateCartItem(idx, 'productId', e.target.value)} required>
                                     <option value="" disabled>Select product...</option>
                                     {products.map((p: Product) => (
-                                      <option key={p.id} value={p.id} disabled={p.stock <= 0}>
+                                      <option key={p.id} value={p.id} disabled={!editingMode && p.stock <= 0}>
                                         {p.name} {p.stock <= 0 ? '(Out of Stock)' : `(${p.stock} in stock)`}
                                       </option>
                                     ))}

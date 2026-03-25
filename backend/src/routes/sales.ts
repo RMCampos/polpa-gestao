@@ -137,10 +137,13 @@ export default async function salesRoutes(app: FastifyInstance) {
       if (comments !== undefined) data.comments = comments;
 
       // If products are provided, replace the entire product list with stock management
-      if (products !== undefined) {
+      if (products !== undefined && Array.isArray(products)) {
         // Aggregate quantities by productId to handle duplicates correctly
         const aggregatedMap = new Map<string, number>();
         for (const p of products) {
+          if (!p.productId || typeof p.quantity !== 'number' || p.quantity <= 0) {
+            return reply.code(400).send({ error: 'Invalid product entry' });
+          }
           aggregatedMap.set(p.productId, (aggregatedMap.get(p.productId) || 0) + p.quantity);
         }
         const aggregatedProducts = Array.from(aggregatedMap.entries()).map(([productId, quantity]) => ({ productId, quantity }));
@@ -154,6 +157,23 @@ export default async function salesRoutes(app: FastifyInstance) {
         }
 
         const sale = await prisma.$transaction(async (tx) => {
+          const lockProductIds = Array.from(
+            new Set([
+              ...existing.products.map((sp) => sp.productId),
+              ...productIds
+            ])
+          ).sort();
+
+          if (lockProductIds.length > 0) {
+            // Lock all affected product rows in a deterministic order.
+            await tx.$queryRaw`
+              SELECT id
+              FROM "Product"
+              WHERE id = ANY(${lockProductIds}::uuid[])
+              FOR UPDATE
+            `;
+          }
+
           // Restore stock for all existing products
           for (const sp of existing.products) {
             await tx.product.update({
@@ -173,20 +193,22 @@ export default async function salesRoutes(app: FastifyInstance) {
 
           // Delete old sale products and create new ones
           await tx.saleProduct.deleteMany({ where: { saleId: id } });
-          await tx.saleProduct.createMany({
-            data: aggregatedProducts.map((p) => ({
-              saleId: id,
-              productId: p.productId,
-              quantity: p.quantity
-            }))
-          });
-
-          // Deduct stock for new products
-          for (const p of aggregatedProducts) {
-            await tx.product.update({
-              where: { id: p.productId },
-              data: { stock: { decrement: p.quantity } }
+          if (aggregatedProducts.length > 0) {
+            await tx.saleProduct.createMany({
+              data: aggregatedProducts.map((p) => ({
+                saleId: id,
+                productId: p.productId,
+                quantity: p.quantity
+              }))
             });
+
+            // Deduct stock for new products
+            for (const p of aggregatedProducts) {
+              await tx.product.update({
+                where: { id: p.productId },
+                data: { stock: { decrement: p.quantity } }
+              });
+            }
           }
 
           return tx.sale.update({
