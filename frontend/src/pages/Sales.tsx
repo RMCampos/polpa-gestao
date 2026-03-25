@@ -154,13 +154,13 @@ export default function Sales() {
     let paymentDueDateValue = '';
     if (sale.paymentDueDate) {
       const dueDate = new Date(sale.paymentDueDate);
-      paymentDueDateValue = dueDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD for input value
+      paymentDueDateValue = dueDate.toISOString().slice(0, 10); // Format as YYYY-MM-DD for input value (UTC, timezone-stable)
     }
     setPaymentDueDate(paymentDueDateValue);
     let paymentDateValue = '';
     if (sale.paymentDate) {
       const payDate = new Date(sale.paymentDate);
-      paymentDateValue = payDate.toLocaleDateString('en-CA'); // Format as YYYY-MM-DD for input value
+      paymentDateValue = payDate.toISOString().slice(0, 10); // Format as YYYY-MM-DD for input value (UTC, timezone-stable)
     }
     setPaymentDate(paymentDateValue);
     setComments(sale.comments || '');
