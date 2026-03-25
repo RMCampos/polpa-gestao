@@ -105,6 +105,8 @@ export default function Sales() {
   const [comments, setComments] = useState('');
   const [cart, setCart] = useState<ProductCart[]>([]);
   const [showDelivered, setShowDelivered] = useState(false);
+  const [editingMode, setEditingMode] = useState(false);
+  const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
 
   const token = localStorage.getItem('token');
 
@@ -129,12 +131,31 @@ export default function Sales() {
   }, [fetchData]);
 
   const handleOpenModal = () => {
+    setEditingMode(false);
+    setEditingSaleId(null);
     setCustomerPosId('');
     setPaymentMethod('Cash');
     setPaymentDueDate('');
     setPaymentDate('');
     setComments('');
     setCart([]);
+    setShowModal(true);
+  };
+
+  const handleOpenEditModal = (sale: Sale) => {
+    setEditingMode(true);
+    setEditingSaleId(sale.id || null);
+    setCustomerPosId(sale.customerPosId);
+    setPaymentMethod(sale.paymentMethod);
+    setPaymentDueDate(sale.paymentDueDate ? new Date(sale.paymentDueDate).toISOString().split('T')[0] : '');
+    setPaymentDate(sale.paymentDate ? new Date(sale.paymentDate).toISOString().split('T')[0] : '');
+    setComments(sale.comments || '');
+    setCart((sale.products || []).map((sp: SaleProduct) => ({
+      productId: sp.productId,
+      quantity: sp.quantity,
+      price: sp.product?.price || 0,
+    })));
+    setShowDetailsModal(false);
     setShowModal(true);
   };
 
@@ -179,17 +200,24 @@ export default function Sales() {
         products: cart.map(item => ({ productId: item.productId, quantity: item.quantity }))
       };
 
-      await axios.post(`${apiBase}/api/sales`, payload, config);
-      setShowModal(false);
-      fetchData();
-      toast.showToast('Sale recorded successfully.', 'success');
+      if (editingMode && editingSaleId) {
+        await axios.put(`${apiBase}/api/sales/${editingSaleId}`, payload, config);
+        setShowModal(false);
+        fetchData();
+        toast.showToast('Sale updated successfully.', 'success');
+      } else {
+        await axios.post(`${apiBase}/api/sales`, payload, config);
+        setShowModal(false);
+        fetchData();
+        toast.showToast('Sale recorded successfully.', 'success');
+      }
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('Error response:', err.response);
-        toast.showToast(err.response?.data?.error || 'Failed to record sale.', 'error');
+        toast.showToast(err.response?.data?.error || (editingMode ? 'Failed to update sale.' : 'Failed to record sale.'), 'error');
       } else {
         console.error('Unexpected error:', err);
-        toast.showToast('An unexpected error occurred while recording the sale.', 'error');
+        toast.showToast('An unexpected error occurred.', 'error');
       }
     } finally {
       setLoading(false);
@@ -229,6 +257,63 @@ export default function Sales() {
     } catch (err) {
       console.error('Failed to copy sale text', err);
       toast.showToast('Could not copy sale text. Please check clipboard permissions.', 'error');
+    }
+  };
+
+  const handleCloneSale = async (sale: Sale) => {
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const payload = {
+        customerPosId: sale.customerPosId,
+        paymentMethod: sale.paymentMethod,
+        paymentDueDate: sale.paymentDueDate || null,
+        paymentDate: sale.paymentDate || null,
+        comments: sale.comments || '',
+        products: (sale.products || []).map((sp: SaleProduct) => ({
+          productId: sp.productId,
+          quantity: sp.quantity,
+        })),
+      };
+      await axios.post(`${apiBase}/api/sales`, payload, config);
+      fetchData();
+      toast.showToast('Sale cloned successfully.', 'success');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        toast.showToast(err.response?.data?.error || 'Failed to clone sale.', 'error');
+      } else {
+        toast.showToast('Failed to clone sale.', 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSale = async (sale: Sale) => {
+    const confirmed = await toast.confirm({
+      title: 'Delete Sale',
+      message: 'Are you sure you want to delete this sale? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      isDangerous: true,
+    });
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${apiBase}/api/sales/${sale.id}`, config);
+      setShowDetailsModal(false);
+      fetchData();
+      toast.showToast('Sale deleted successfully.', 'success');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        toast.showToast(err.response?.data?.error || 'Failed to delete sale.', 'error');
+      } else {
+        toast.showToast('Failed to delete sale.', 'error');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -391,29 +476,46 @@ export default function Sales() {
                     <i className="bi bi-calendar-event me-1"></i>Due: {new Date(sale.paymentDueDate).toLocaleDateString()}
                   </div>
                 )}
-                <div className="mt-auto d-flex justify-content-between align-items-center pt-2">
-                  <strong className="text-success fs-5">{formatCurrency(total)}</strong>
-                  <div className="d-flex gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={() => handleCopySale(sale)}
-                    >
-                      <i className="bi bi-share me-1"></i>
-                      Share
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-light"
-                      onClick={() => {
-                        setSelectedSale(sale);
-                        setShowDetailsModal(true);
-                      }}
-                    >
-                      Details
-                    </button>
+                  <div className="mt-auto d-flex justify-content-between align-items-center pt-2">
+                    <strong className="text-success fs-5">{formatCurrency(total)}</strong>
+                    <div className="d-flex gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => handleCopySale(sale)}
+                      >
+                        <i className="bi bi-share me-1"></i>
+                        Share
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => handleCloneSale(sale)}
+                        disabled={loading}
+                      >
+                        <i className="bi bi-copy me-1"></i>
+                        Copy
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-warning"
+                        onClick={() => handleOpenEditModal(sale)}
+                      >
+                        <i className="bi bi-pencil me-1"></i>
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-light"
+                        onClick={() => {
+                          setSelectedSale(sale);
+                          setShowDetailsModal(true);
+                        }}
+                      >
+                        Details
+                      </button>
+                    </div>
                   </div>
-                </div>
               </div>
             </div>
           );
@@ -432,7 +534,7 @@ export default function Sales() {
             <div className="modal-dialog modal-dialog-centered modal-xl scrollable-modal">
               <div className="modal-content glass-card">
                 <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
-                  <h5 className="modal-title text-white">Record New Sale</h5>
+                  <h5 className="modal-title text-white">{editingMode ? 'Edit Sale' : 'Record New Sale'}</h5>
                   <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
                 </div>
                 <form onSubmit={handleSaveSale}>
@@ -535,7 +637,7 @@ export default function Sales() {
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
-                    <button type="submit" className="btn btn-primary btn-lg px-4" disabled={loading || cart.length === 0}>{loading ? 'Processing...' : 'Complete Sale'}</button>
+                    <button type="submit" className="btn btn-primary btn-lg px-4" disabled={loading || cart.length === 0}>{loading ? 'Processing...' : editingMode ? 'Save Changes' : 'Complete Sale'}</button>
                   </div>
                 </form>
               </div>
@@ -608,6 +710,32 @@ export default function Sales() {
 
                 </div>
                 <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger me-auto"
+                    onClick={() => handleDeleteSale(selectedSale)}
+                    disabled={loading}
+                  >
+                    <i className="bi bi-trash me-1"></i>
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => handleCloneSale(selectedSale)}
+                    disabled={loading}
+                  >
+                    <i className="bi bi-copy me-1"></i>
+                    Copy
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-warning"
+                    onClick={() => handleOpenEditModal(selectedSale)}
+                  >
+                    <i className="bi bi-pencil me-1"></i>
+                    Edit
+                  </button>
                   <button type="button" className="btn btn-outline-light" onClick={() => setShowDetailsModal(false)}>Close</button>
                 </div>
               </div>
