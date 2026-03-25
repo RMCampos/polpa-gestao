@@ -625,7 +625,7 @@ export default function Sales() {
                                   <select className="form-select form-select-sm" value={item.productId} onChange={(e) => handleUpdateCartItem(idx, 'productId', e.target.value)} required>
                                     <option value="" disabled>Select product...</option>
                                     {products.map((p: Product) => (
-                                      <option key={p.id} value={p.id} disabled={!editingMode && p.stock <= 0}>
+                                      <option key={p.id} value={p.id} disabled={p.stock <= 0 && p.id !== item.productId}>
                                         {p.name} {p.stock <= 0 ? '(Out of Stock)' : `(${p.stock} in stock)`}
                                       </option>
                                     ))}
