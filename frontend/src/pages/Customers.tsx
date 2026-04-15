@@ -275,6 +275,11 @@ export default function Customers() {
             <div className="glass-card p-3 h-100 d-flex flex-column">
               <div className="mb-2">
                 <h5 className={`fw-bold m-0 ${c.disabledAt ? 'text-secondary' : 'text-white'}`}>{c.name}</h5>
+                {c.personName?.trim() && (
+                  <div className="text-secondary small mt-1">
+                    <i className="bi bi-person me-1"></i>{c.personName.trim()}
+                  </div>
+                )}
                 <div className="text-secondary small mt-1">
                   <i className="bi bi-file-earmark-text me-1"></i>{c.document ? formatDocument(c.document) : 'N/A'}
                 </div>
