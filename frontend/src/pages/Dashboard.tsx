@@ -45,6 +45,7 @@ export default function Dashboard() {
         <div style={{ width: '200px' }}>
           <select 
             className="form-select bg-dark text-white border-secondary"
+            aria-label="Date range"
             value={range}
             onChange={(e) => setRange(e.target.value)}
           >
