@@ -6,10 +6,10 @@ export type SalesByCustomer = {
   totalAmount: number;
 }
 
-export type SalesByRoute = {
-  routeId: string;
-  routeName: string;
-  totalSales: number;
+export type SalesByProduct = {
+  productId: string;
+  productName: string;
+  totalQuantity: number;
   totalAmount: number;
 }
 
