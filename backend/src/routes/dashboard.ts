@@ -89,32 +89,28 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     const { range } = request.query as { range: string };
     const startDate = getStartDate(range);
 
-    const products = await prisma.product.findMany();
+    const [grouped, products] = await Promise.all([
+      prisma.saleProduct.groupBy({
+        by: ['productId'],
+        _sum: { quantity: true },
+        where: { sale: { createdAt: { gte: startDate } } }
+      }),
+      prisma.product.findMany({ select: { id: true, name: true, price: true } })
+    ]);
 
-    const result = await Promise.all(products.map(async (p) => {
-      const saleProducts = await prisma.saleProduct.findMany({
-        where: {
-          productId: p.id,
-          sale: {
-            createdAt: { gte: startDate }
-          }
-        }
-      });
+    const productMap = new Map(products.map(p => [p.id, p]));
 
-      let totalQuantity = 0;
-      saleProducts.forEach(sp => {
-        totalQuantity += sp.quantity;
-      });
-
-      return {
-        productId: p.id,
-        productName: p.name,
-        totalQuantity,
-        totalAmount: totalQuantity * p.price
-      };
-    }));
-
-    return result
+    return grouped
+      .map(g => {
+        const p = productMap.get(g.productId);
+        const totalQuantity = g._sum.quantity ?? 0;
+        return {
+          productId: g.productId,
+          productName: p?.name ?? '',
+          totalQuantity,
+          totalAmount: totalQuantity * (p?.price ?? 0)
+        };
+      })
       .filter(item => item.totalQuantity > 0)
       .sort((a, b) => b.totalAmount - a.totalAmount);
   });
