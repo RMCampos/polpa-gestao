@@ -42,37 +42,46 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     const { range } = request.query as { range: string };
     const startDate = getStartDate(range);
 
-    const customers = await prisma.customer.findMany({
-      include: { pos: true }
+    const sales = await prisma.sale.findMany({
+      where: { createdAt: { gte: startDate } },
+      select: {
+        id: true,
+        customerPos: {
+          select: {
+            customerId: true,
+            customer: { select: { id: true, name: true } }
+          }
+        },
+        products: {
+          select: {
+            quantity: true,
+            product: { select: { price: true } }
+          }
+        }
+      }
     });
 
-    const result = await Promise.all(customers.map(async (c) => {
-      const posIds = c.pos.map(p => p.id);
-      const sales = await prisma.sale.findMany({
-        where: { 
-          customerPosId: { in: posIds },
-          createdAt: { gte: startDate }
-        },
-        include: { products: { include: { product: true } } }
-      });
-      
-      let totalAmount = 0;
-      sales.forEach(sale => {
-        sale.products.forEach(sp => {
-          totalAmount += sp.quantity * sp.product.price;
-        });
-      });
+    const customerMap = new Map<string, { customerId: string; customerName: string; totalSales: number; totalAmount: number }>();
 
-      return {
-        customerId: c.id,
-        customerName: c.name,
-        totalSales: sales.length,
-        totalAmount
-      };
-    }));
+    for (const sale of sales) {
+      const customerId = sale.customerPos.customerId;
+      const customerName = sale.customerPos.customer.name;
 
-    return result
-      .filter(item => item.totalSales > 0)
+      let saleAmount = 0;
+      for (const sp of sale.products) {
+        saleAmount += sp.quantity * sp.product.price;
+      }
+
+      if (!customerMap.has(customerId)) {
+        customerMap.set(customerId, { customerId, customerName, totalSales: 0, totalAmount: 0 });
+      }
+
+      const entry = customerMap.get(customerId)!;
+      entry.totalSales += 1;
+      entry.totalAmount += saleAmount;
+    }
+
+    return Array.from(customerMap.values())
       .sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
