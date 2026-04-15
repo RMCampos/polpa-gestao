@@ -95,7 +95,9 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       const saleProducts = await prisma.saleProduct.findMany({
         where: {
           productId: p.id,
-          createdAt: { gte: startDate }
+          sale: {
+            createdAt: { gte: startDate }
+          }
         }
       });
 
