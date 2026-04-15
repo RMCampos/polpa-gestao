@@ -1,71 +1,117 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
 
+function getStartDate(range: string) {
+  const now = new Date();
+  const startDate = new Date();
+  startDate.setHours(0, 0, 0, 0);
+
+  switch (range) {
+    case 'this-week': {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      startDate.setDate(diff);
+      break;
+    }
+    case 'this-month':
+      startDate.setDate(1);
+      break;
+    case 'this-year':
+      startDate.setMonth(0, 1);
+      break;
+    case 'last-7-days':
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'last-14-days':
+      startDate.setDate(now.getDate() - 14);
+      break;
+    case 'last-30-days':
+      startDate.setDate(now.getDate() - 30);
+      break;
+    case 'last-90-days':
+      startDate.setDate(now.getDate() - 90);
+      break;
+    default:
+      startDate.setDate(now.getDate() - 30);
+  }
+  return startDate;
+}
+
 export default async function dashboardRoutes(app: FastifyInstance) {
-  app.get('/sales-by-route', { preValidation: [app.authenticate] }, async (request, reply) => {
-    // Basic aggregation: total sales per route
-    const routes = await prisma.route.findMany({
-      include: {
+  app.get('/sales-by-customer', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { range } = request.query as { range: string };
+    const startDate = getStartDate(range);
+
+    const sales = await prisma.sale.findMany({
+      where: { createdAt: { gte: startDate } },
+      select: {
+        id: true,
         customerPos: {
-          include: { customerPos: true }
+          select: {
+            customerId: true,
+            customer: { select: { id: true, name: true } }
+          }
+        },
+        products: {
+          select: {
+            quantity: true,
+            product: { select: { price: true } }
+          }
         }
       }
     });
 
-    // To get sales by route, we need to find sales matching the POS included in each route
-    // Note: a sale is tied to a POS, not directly a Route.
-    const result = await Promise.all(routes.map(async (r) => {
-      const posIds = r.customerPos.map(cp => cp.customerPosId);
-      const sales = await prisma.sale.findMany({
-        where: { customerPosId: { in: posIds } },
-        include: { products: { include: { product: true } } }
-      });
-      
-      let totalAmount = 0;
-      sales.forEach(sale => {
-        sale.products.forEach(sp => {
-          totalAmount += sp.quantity * sp.product.price;
-        });
-      });
+    const customerMap = new Map<string, { customerId: string; customerName: string; totalSales: number; totalAmount: number }>();
 
-      return {
-        routeId: r.id,
-        routeName: r.name,
-        totalSales: sales.length,
-        totalAmount
-      };
-    }));
+    for (const sale of sales) {
+      const customerId = sale.customerPos.customerId;
+      const customerName = sale.customerPos.customer.name;
 
-    return result.sort((a, b) => b.totalAmount - a.totalAmount);
+      let saleAmount = 0;
+      for (const sp of sale.products) {
+        saleAmount += sp.quantity * sp.product.price;
+      }
+
+      if (!customerMap.has(customerId)) {
+        customerMap.set(customerId, { customerId, customerName, totalSales: 0, totalAmount: 0 });
+      }
+
+      const entry = customerMap.get(customerId)!;
+      entry.totalSales += 1;
+      entry.totalAmount += saleAmount;
+    }
+
+    return Array.from(customerMap.values())
+      .sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
-  app.get('/sales-by-customer', { preValidation: [app.authenticate] }, async (request, reply) => {
-    const customers = await prisma.customer.findMany({
-      include: { pos: true }
-    });
+  app.get('/sales-by-product', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { range } = request.query as { range: string };
+    const startDate = getStartDate(range);
 
-    const result = await Promise.all(customers.map(async (c) => {
-      const posIds = c.pos.map(p => p.id);
-      const sales = await prisma.sale.findMany({
-        where: { customerPosId: { in: posIds } },
-        include: { products: { include: { product: true } } }
-      });
-      
-      let totalAmount = 0;
-      sales.forEach(sale => {
-        sale.products.forEach(sp => {
-          totalAmount += sp.quantity * sp.product.price;
-        });
-      });
+    const [grouped, products] = await Promise.all([
+      prisma.saleProduct.groupBy({
+        by: ['productId'],
+        _sum: { quantity: true },
+        where: { sale: { createdAt: { gte: startDate } } }
+      }),
+      prisma.product.findMany({ select: { id: true, name: true, price: true } })
+    ]);
 
-      return {
-        customerId: c.id,
-        customerName: c.name,
-        totalSales: sales.length,
-        totalAmount
-      };
-    }));
+    const productMap = new Map(products.map(p => [p.id, p]));
 
-    return result.sort((a, b) => b.totalAmount - a.totalAmount);
+    return grouped
+      .map(g => {
+        const p = productMap.get(g.productId);
+        const totalQuantity = g._sum.quantity ?? 0;
+        return {
+          productId: g.productId,
+          productName: p?.name ?? '',
+          totalQuantity,
+          totalAmount: totalQuantity * (p?.price ?? 0)
+        };
+      })
+      .filter(item => item.totalQuantity > 0)
+      .sort((a, b) => b.totalAmount - a.totalAmount);
   });
 }
