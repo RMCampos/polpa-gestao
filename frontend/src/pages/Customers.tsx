@@ -30,7 +30,7 @@ export default function Customers() {
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
   const [filterText, setFilterText] = useState<string>('');
   const token = localStorage.getItem('token');
-  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
   const cpfCnpjApiToken = import.meta.env.VITE_CPF_CNPJ_API_TOKEN || '';
 
   const fetchCustomers = useCallback(async () => {

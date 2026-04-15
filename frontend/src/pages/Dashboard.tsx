@@ -7,7 +7,7 @@ export default function Dashboard() {
   const [salesByProduct, setSalesByProduct] = useState<SalesByProduct[]>([]);
   const [salesByCustomer, setSalesByCustomer] = useState<SalesByCustomer[]>([]);
   const token = localStorage.getItem('token');
-  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const ranges = [
     { label: 'This Week', value: 'this-week' },

@@ -13,7 +13,7 @@ export default function Users() {
   const [loading, setLoading] = useState(false);
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
   const token = localStorage.getItem('token');
-  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const fetchUsers = useCallback(async () => {
     try {
