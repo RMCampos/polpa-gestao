@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import type { SalesByCustomer, SalesByProduct } from '../types';
+import type { SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
 
 export default function Dashboard() {
   const [range, setRange] = useState('last-30-days');
   const [salesByProduct, setSalesByProduct] = useState<SalesByProduct[]>([]);
   const [salesByCustomer, setSalesByCustomer] = useState<SalesByCustomer[]>([]);
+  const [salesSummary, setSalesSummary] = useState<SalesSummary | null>(null);
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
@@ -28,15 +29,25 @@ export default function Dashboard() {
         };
         const resProducts = await axios.get(`${apiBase}/api/dashboard/sales-by-product`, config);
         const resCustomers = await axios.get(`${apiBase}/api/dashboard/sales-by-customer`, config);
+        const resSummary = await axios.get(`${apiBase}/api/dashboard/sales-summary`, config);
         
         setSalesByProduct(resProducts.data);
         setSalesByCustomer(resCustomers.data);
+        setSalesSummary(resSummary.data);
       } catch (err) {
         console.error('Failed to load dashboard', err);
       }
     };
     fetchDashboard();
   }, [token, apiBase, range]);
+
+  const top3Products = [...salesByProduct]
+    .sort((a, b) => b.totalQuantity - a.totalQuantity)
+    .slice(0, 3);
+
+  const top3Customers = [...salesByCustomer]
+    .sort((a, b) => b.totalAmount - a.totalAmount)
+    .slice(0, 3);
 
   return (
     <div>
@@ -53,6 +64,73 @@ export default function Dashboard() {
               <option key={r.value} value={r.value}>{r.label}</option>
             ))}
           </select>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="row g-4 mb-4">
+        {/* Total Sales Value */}
+        <div className="col-12 col-sm-6 col-lg-3">
+          <div className="glass-card p-4 h-100">
+            <h6 className="text-secondary mb-2">Total Sales Value</h6>
+            <h3 className="fw-bold text-success mb-0">
+              R$ {salesSummary ? salesSummary.totalAmount.toFixed(2) : '—'}
+            </h3>
+            <small className="text-secondary">
+              {salesSummary ? `${salesSummary.totalSales} sale(s)` : ''}
+            </small>
+          </div>
+        </div>
+
+        {/* Average Sale Value */}
+        <div className="col-12 col-sm-6 col-lg-3">
+          <div className="glass-card p-4 h-100">
+            <h6 className="text-secondary mb-2">Average Sale Value</h6>
+            <h3 className="fw-bold text-primary mb-0">
+              R$ {salesSummary ? salesSummary.averageAmount.toFixed(2) : '—'}
+            </h3>
+            <small className="text-secondary">per sale</small>
+          </div>
+        </div>
+
+        {/* Top 3 Products */}
+        <div className="col-12 col-sm-6 col-lg-3">
+          <div className="glass-card p-4 h-100">
+            <h6 className="text-secondary mb-2">Top 3 Products</h6>
+            {top3Products.length === 0 ? (
+              <p className="text-secondary mb-0 small">No data available.</p>
+            ) : (
+              <ol className="mb-0 ps-3">
+                {top3Products.map((item) => (
+                  <li key={item.productId} className="text-white mb-1">
+                    <span>{item.productName}</span>
+                    <br />
+                    <small className="text-secondary">{item.totalQuantity} items sold</small>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </div>
+
+        {/* Top 3 Customers */}
+        <div className="col-12 col-sm-6 col-lg-3">
+          <div className="glass-card p-4 h-100">
+            <h6 className="text-secondary mb-2">Top 3 Customers</h6>
+            {top3Customers.length === 0 ? (
+              <p className="text-secondary mb-0 small">No data available.</p>
+            ) : (
+              <ol className="mb-0 ps-3">
+                {top3Customers.map((item) => (
+                  <li key={item.customerId} className="text-white mb-1">
+                    <span>{item.customerName}</span>
+                    <br />
+                    <small className="text-secondary">R$ {item.totalAmount.toFixed(2)}</small>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
         </div>
       </div>
       
