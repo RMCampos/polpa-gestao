@@ -6,8 +6,8 @@ on:
       backend_image:
         description: "Backend image tag (full image reference)"
         required: false
-      migrations_image:
-        description: "Migrations image tag (full image reference)"
+      frontend_image:
+        description: "Frontend image tag (full image reference)"
         required: false
       apply:
         description: "Apply changes after plan"
@@ -52,26 +52,26 @@ jobs:
         id: deploy-vars
         run: |
           backend_image="${{ github.event.inputs.backend_image }}"
-          migrations_image="${{ github.event.inputs.migrations_image }}"
+          frontend_image="${{ github.event.inputs.frontend_image }}"
 
-          latest_tag_tmp="$(git tag --list | sort -V | tail -n1)"
-          echo "latest tag=$latest_tag_tmp"
-          
-          latest_backend_tag="$latest_tag_tmp"
-          latest_migrations_tag="$latest_tag_tmp"-migrations
+          latest_backend_tag="$(git tag --list 'api-v*' | sort -V | tail -n1)"
+          echo "latest backend tag=$latest_backend_tag"
+
+          latest_frontend_tag="$(git tag --list 'app-v*' | sort -V | tail -n1)"
+          echo "latest frontend tag=$latest_frontend_tag"
 
           if [ -z "$backend_image" ]; then
-            backend_image="ghcr.io/rmcampos/event.me:$latest_backend_tag"
+            backend_image="ghcr.io/rmcampos/polpa-gestao/backend:$latest_backend_tag"
           fi
-          if [ -z "$migrations_image" ]; then
-            migrations_image="ghcr.io/rmcampos/event.me:$latest_migrations_tag"
+          if [ -z "$frontend_image" ]; then
+            frontend_image="ghcr.io/rmcampos/polpa-gestao/frontend:$latest_frontend_tag"
           fi
 
           echo "Resolved backend_image=$backend_image"
-          echo "Resolved migrations_image=$migrations_image"
+          echo "Resolved frontend_image=$frontend_image"
 
           echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
-          echo "migrations_image=$migrations_image" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=$frontend_image" >> "$GITHUB_OUTPUT"
 
       - name: Terraform Fmt -check -diff
         working-directory: terraform
@@ -99,12 +99,9 @@ jobs:
             -var="db_user=${{ secrets.DB_USER }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
             -var="db_name=${{ secrets.DB_NAME }}" \
-            -var="nextauth_secret=${{ secrets.NEXTAUTH_SECRET }}" \
-            -var="google_client_id=${{ secrets.GOOGLE_CLIENT_ID }}" \
-            -var="google_client_secret=${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-            -var="resend_apikey=${{ secrets.RESEND_APIKEY }}" \
+            -var="cpf_cnpj_api_token=${{ secrets.CPF_CNPJ_API_TOKEN }}" \
             -var="backend_image=${{ steps.deploy-vars.outputs.backend_image }}" \
-            -var="migrations_image=${{ steps.deploy-vars.outputs.migrations_image }}"
+            -var="frontend_image=${{ steps.deploy-vars.outputs.frontend_image }}"
           terraform show -json tfplan > tfplan.json
           if jq -e '.resource_changes | length == 0' tfplan.json >/dev/null; then
             echo "no_changes=true" >> "$GITHUB_OUTPUT"
@@ -129,7 +126,7 @@ jobs:
       && needs.terraform-plan.outputs.no_changes == 'false'
     environment:
       name: production
-      url: https://eventme.darkroasted.vps-kinghost.net
+      url: https://polpa-gestao.darkroasted.vps-kinghost.net
     permissions:
       contents: read
     steps:
