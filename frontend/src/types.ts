@@ -13,6 +13,12 @@ export type SalesByProduct = {
   totalAmount: number;
 }
 
+export type SalesSummary = {
+  totalSales: number;
+  totalAmount: number;
+  averageAmount: number;
+}
+
 /* Users page types */
 export type User = {
   id?: string;

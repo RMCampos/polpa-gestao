@@ -114,4 +114,36 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       .filter(item => item.totalQuantity > 0)
       .sort((a, b) => b.totalAmount - a.totalAmount);
   });
+
+  app.get('/sales-summary', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { range } = request.query as { range: string };
+    const startDate = getStartDate(range);
+
+    const sales = await prisma.sale.findMany({
+      where: { createdAt: { gte: startDate } },
+      select: {
+        products: {
+          select: {
+            quantity: true,
+            product: { select: { price: true } }
+          }
+        }
+      }
+    });
+
+    const totalSales = sales.length;
+    let totalAmount = 0;
+
+    for (const sale of sales) {
+      let saleAmount = 0;
+      for (const sp of sale.products) {
+        saleAmount += sp.quantity * sp.product.price;
+      }
+      totalAmount += saleAmount;
+    }
+
+    const averageAmount = totalSales > 0 ? totalAmount / totalSales : 0;
+
+    return { totalSales, totalAmount, averageAmount };
+  });
 }
