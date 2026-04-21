@@ -48,9 +48,9 @@ variable "backend_image" {
   default = "ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.03.25.11"
 }
 
-variable "migrations_image" {
+variable "frontend_image" {
   type    = string
-  default = "ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.03.25.11-prisma"
+  default = "ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.03.25.11"
 }
 
 resource "kubernetes_namespace_v1" "polpa_gestao" {
@@ -171,7 +171,7 @@ resource "kubernetes_deployment_v1" "polpa_gestao_backend" {
       spec {
         init_container {
           name    = "prisma-migrate"
-          image   = var.migrations_image
+          image   = "${var.backend_image}-prisma"
           command = ["npx", "prisma", "db", "push"]
           env {
             name  = "DATABASE_URL"
@@ -245,7 +245,7 @@ resource "kubernetes_deployment_v1" "polpa_gestao_frontend" {
       metadata { labels = { app = "polpa-gestao-frontend" } }
       spec {
         container {
-          image = "ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.03.25.13"
+          image = var.frontend_image
           name  = "frontend"
           port { container_port = 80 }
           resources {
