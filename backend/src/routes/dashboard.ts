@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
 
-function getStartDate(range: string) {
+function getDateRange(range: string): { startDate: Date; endDate: Date | null } {
   const now = new Date();
   const startDate = new Date();
   startDate.setHours(0, 0, 0, 0);
+  let endDate: Date | null = null;
 
   switch (range) {
     case 'this-week': {
@@ -31,19 +32,47 @@ function getStartDate(range: string) {
     case 'last-90-days':
       startDate.setDate(now.getDate() - 90);
       break;
+    case 'past-week': {
+      const day = now.getDay();
+      const daysSinceMonday = day === 0 ? 6 : day - 1;
+      const lastMonday = new Date(now);
+      lastMonday.setDate(now.getDate() - daysSinceMonday - 7);
+      lastMonday.setHours(0, 0, 0, 0);
+      startDate.setTime(lastMonday.getTime());
+      endDate = new Date(lastMonday);
+      endDate.setDate(lastMonday.getDate() + 6);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+    case 'past-month': {
+      const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      firstDay.setHours(0, 0, 0, 0);
+      startDate.setTime(firstDay.getTime());
+      endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+    case 'past-year': {
+      const firstDay = new Date(now.getFullYear() - 1, 0, 1);
+      firstDay.setHours(0, 0, 0, 0);
+      startDate.setTime(firstDay.getTime());
+      endDate = new Date(now.getFullYear() - 1, 11, 31);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
     default:
       startDate.setDate(now.getDate() - 30);
   }
-  return startDate;
+  return { startDate, endDate };
 }
 
 export default async function dashboardRoutes(app: FastifyInstance) {
   app.get('/sales-by-customer', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { range } = request.query as { range: string };
-    const startDate = getStartDate(range);
+    const { startDate, endDate } = getDateRange(range);
 
     const sales = await prisma.sale.findMany({
-      where: { createdAt: { gte: startDate } },
+      where: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } },
       select: {
         id: true,
         customerPos: {
@@ -87,13 +116,13 @@ export default async function dashboardRoutes(app: FastifyInstance) {
 
   app.get('/sales-by-product', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { range } = request.query as { range: string };
-    const startDate = getStartDate(range);
+    const { startDate, endDate } = getDateRange(range);
 
     const [grouped, products] = await Promise.all([
       prisma.saleProduct.groupBy({
         by: ['productId'],
         _sum: { quantity: true },
-        where: { sale: { createdAt: { gte: startDate } } }
+        where: { sale: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } } }
       }),
       prisma.product.findMany({ select: { id: true, name: true, price: true } })
     ]);
@@ -117,10 +146,10 @@ export default async function dashboardRoutes(app: FastifyInstance) {
 
   app.get('/sales-summary', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { range } = request.query as { range: string };
-    const startDate = getStartDate(range);
+    const { startDate, endDate } = getDateRange(range);
 
     const sales = await prisma.sale.findMany({
-      where: { createdAt: { gte: startDate } },
+      where: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } },
       select: {
         products: {
           select: {
