@@ -6,11 +6,17 @@ export type SalesByCustomer = {
   totalAmount: number;
 }
 
-export type SalesByRoute = {
-  routeId: string;
-  routeName: string;
+export type SalesByProduct = {
+  productId: string;
+  productName: string;
+  totalQuantity: number;
+  totalAmount: number;
+}
+
+export type SalesSummary = {
   totalSales: number;
   totalAmount: number;
+  averageAmount: number;
 }
 
 /* Users page types */

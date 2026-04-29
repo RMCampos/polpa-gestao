@@ -1,71 +1,178 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
 
+function getDateRange(range: string): { startDate: Date; endDate: Date | null } {
+  const now = new Date();
+  const startDate = new Date();
+  startDate.setHours(0, 0, 0, 0);
+  let endDate: Date | null = null;
+
+  switch (range) {
+    case 'this-week': {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      startDate.setDate(diff);
+      break;
+    }
+    case 'this-month':
+      startDate.setDate(1);
+      break;
+    case 'this-year':
+      startDate.setMonth(0, 1);
+      break;
+    case 'last-7-days':
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'last-14-days':
+      startDate.setDate(now.getDate() - 14);
+      break;
+    case 'last-30-days':
+      startDate.setDate(now.getDate() - 30);
+      break;
+    case 'last-90-days':
+      startDate.setDate(now.getDate() - 90);
+      break;
+    case 'past-week': {
+      const day = now.getDay();
+      const daysSinceMonday = day === 0 ? 6 : day - 1;
+      const lastMonday = new Date(now);
+      lastMonday.setDate(now.getDate() - daysSinceMonday - 7);
+      lastMonday.setHours(0, 0, 0, 0);
+      startDate.setTime(lastMonday.getTime());
+      endDate = new Date(lastMonday);
+      endDate.setDate(lastMonday.getDate() + 6);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+    case 'past-month': {
+      const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      firstDay.setHours(0, 0, 0, 0);
+      startDate.setTime(firstDay.getTime());
+      endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+    case 'past-year': {
+      const firstDay = new Date(now.getFullYear() - 1, 0, 1);
+      firstDay.setHours(0, 0, 0, 0);
+      startDate.setTime(firstDay.getTime());
+      endDate = new Date(now.getFullYear() - 1, 11, 31);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+    default:
+      startDate.setDate(now.getDate() - 30);
+  }
+  return { startDate, endDate };
+}
+
 export default async function dashboardRoutes(app: FastifyInstance) {
-  app.get('/sales-by-route', { preValidation: [app.authenticate] }, async (request, reply) => {
-    // Basic aggregation: total sales per route
-    const routes = await prisma.route.findMany({
-      include: {
+  app.get('/sales-by-customer', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { range } = request.query as { range: string };
+    const { startDate, endDate } = getDateRange(range);
+
+    const sales = await prisma.sale.findMany({
+      where: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } },
+      select: {
+        id: true,
         customerPos: {
-          include: { customerPos: true }
+          select: {
+            customerId: true,
+            customer: { select: { id: true, name: true } }
+          }
+        },
+        products: {
+          select: {
+            quantity: true,
+            product: { select: { price: true } }
+          }
         }
       }
     });
 
-    // To get sales by route, we need to find sales matching the POS included in each route
-    // Note: a sale is tied to a POS, not directly a Route.
-    const result = await Promise.all(routes.map(async (r) => {
-      const posIds = r.customerPos.map(cp => cp.customerPosId);
-      const sales = await prisma.sale.findMany({
-        where: { customerPosId: { in: posIds } },
-        include: { products: { include: { product: true } } }
-      });
-      
-      let totalAmount = 0;
-      sales.forEach(sale => {
-        sale.products.forEach(sp => {
-          totalAmount += sp.quantity * sp.product.price;
-        });
-      });
+    const customerMap = new Map<string, { customerId: string; customerName: string; totalSales: number; totalAmount: number }>();
 
-      return {
-        routeId: r.id,
-        routeName: r.name,
-        totalSales: sales.length,
-        totalAmount
-      };
-    }));
+    for (const sale of sales) {
+      const customerId = sale.customerPos.customerId;
+      const customerName = sale.customerPos.customer.name;
 
-    return result.sort((a, b) => b.totalAmount - a.totalAmount);
+      let saleAmount = 0;
+      for (const sp of sale.products) {
+        saleAmount += sp.quantity * sp.product.price;
+      }
+
+      if (!customerMap.has(customerId)) {
+        customerMap.set(customerId, { customerId, customerName, totalSales: 0, totalAmount: 0 });
+      }
+
+      const entry = customerMap.get(customerId)!;
+      entry.totalSales += 1;
+      entry.totalAmount += saleAmount;
+    }
+
+    return Array.from(customerMap.values())
+      .sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
-  app.get('/sales-by-customer', { preValidation: [app.authenticate] }, async (request, reply) => {
-    const customers = await prisma.customer.findMany({
-      include: { pos: true }
+  app.get('/sales-by-product', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { range } = request.query as { range: string };
+    const { startDate, endDate } = getDateRange(range);
+
+    const [grouped, products] = await Promise.all([
+      prisma.saleProduct.groupBy({
+        by: ['productId'],
+        _sum: { quantity: true },
+        where: { sale: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } } }
+      }),
+      prisma.product.findMany({ select: { id: true, name: true, price: true } })
+    ]);
+
+    const productMap = new Map(products.map(p => [p.id, p]));
+
+    return grouped
+      .map(g => {
+        const p = productMap.get(g.productId);
+        const totalQuantity = g._sum.quantity ?? 0;
+        return {
+          productId: g.productId,
+          productName: p?.name ?? '',
+          totalQuantity,
+          totalAmount: totalQuantity * (p?.price ?? 0)
+        };
+      })
+      .filter(item => item.totalQuantity > 0)
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+  });
+
+  app.get('/sales-summary', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { range } = request.query as { range: string };
+    const { startDate, endDate } = getDateRange(range);
+
+    const sales = await prisma.sale.findMany({
+      where: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } },
+      select: {
+        products: {
+          select: {
+            quantity: true,
+            product: { select: { price: true } }
+          }
+        }
+      }
     });
 
-    const result = await Promise.all(customers.map(async (c) => {
-      const posIds = c.pos.map(p => p.id);
-      const sales = await prisma.sale.findMany({
-        where: { customerPosId: { in: posIds } },
-        include: { products: { include: { product: true } } }
-      });
-      
-      let totalAmount = 0;
-      sales.forEach(sale => {
-        sale.products.forEach(sp => {
-          totalAmount += sp.quantity * sp.product.price;
-        });
-      });
+    const totalSales = sales.length;
+    let totalAmount = 0;
 
-      return {
-        customerId: c.id,
-        customerName: c.name,
-        totalSales: sales.length,
-        totalAmount
-      };
-    }));
+    for (const sale of sales) {
+      let saleAmount = 0;
+      for (const sp of sale.products) {
+        saleAmount += sp.quantity * sp.product.price;
+      }
+      totalAmount += saleAmount;
+    }
 
-    return result.sort((a, b) => b.totalAmount - a.totalAmount);
+    const averageAmount = totalSales > 0 ? totalAmount / totalSales : 0;
+
+    return { totalSales, totalAmount, averageAmount };
   });
 }

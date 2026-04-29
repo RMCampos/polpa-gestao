@@ -12,7 +12,7 @@ export default function Login({ setToken }: LoginProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

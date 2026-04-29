@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
@@ -28,8 +28,9 @@ export default function Customers() {
   const [selectedPhone, setSelectedPhone] = useState<{ number: string, name: string } | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
+  const [filterText, setFilterText] = useState<string>('');
   const token = localStorage.getItem('token');
-  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
   const cpfCnpjApiToken = import.meta.env.VITE_CPF_CNPJ_API_TOKEN || '';
 
   const fetchCustomers = useCallback(async () => {
@@ -45,6 +46,17 @@ export default function Customers() {
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
+
+  const filteredCustomers = useMemo(() => {
+    if (!filterText.trim()) return customers;
+    const lower = filterText.toLowerCase();
+    const digits = filterText.replace(/\D/g, '');
+    return customers.filter((c: Customer) =>
+      c.name.toLowerCase().includes(lower) ||
+      (c.personName && c.personName.toLowerCase().includes(lower)) ||
+      (digits && c.phone && c.phone.replace(/\D/g, '').includes(digits))
+    );
+  }, [customers, filterText]);
 
   const handleSaveCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -269,38 +281,57 @@ export default function Customers() {
         </div>
       </div>
 
+      <div className="mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Filter by name, person, or phone..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
+      </div>
+
       <div className="row g-3">
-        {customers.map((c: Customer) => (
-          <div key={c.id} className="col-12 col-md-6 col-lg-4">
-            <div className="glass-card p-3 h-100 d-flex flex-column">
-              <div className="mb-2">
-                <h5 className={`fw-bold m-0 ${c.disabledAt ? 'text-secondary' : 'text-white'}`}>{c.name}</h5>
-                <div className="text-secondary small mt-1">
-                  <i className="bi bi-file-earmark-text me-1"></i>{c.document ? formatDocument(c.document) : 'N/A'}
+        {filteredCustomers.map((c: Customer) => {
+          const customerPersonName = c.personName?.trim();
+
+          return (
+            <div key={c.id} className="col-12 col-md-6 col-lg-4">
+              <div className="glass-card p-3 h-100 d-flex flex-column">
+                <div className="mb-2">
+                  <h5 className={`fw-bold m-0 ${c.disabledAt ? 'text-secondary' : 'text-white'}`}>{c.name}</h5>
+                  {customerPersonName && (
+                    <div className="text-secondary small mt-1">
+                      <i className="bi bi-person me-1"></i>{customerPersonName}
+                    </div>
+                  )}
+                  <div className="text-secondary small mt-1">
+                    <i className="bi bi-file-earmark-text me-1"></i>{c.document ? formatDocument(c.document) : 'N/A'}
+                  </div>
                 </div>
-              </div>
-              <div className="d-flex flex-column gap-1 text-secondary small mb-3">
-                <div>
-                  <i className="bi bi-telephone me-1"></i>
-                  {c.phone ? (
-                    <button className="btn btn-link p-0 text-info fw-bold text-decoration-none align-baseline small" onClick={() => handlePhoneClick(c.phone, c.name)}>
-                      {formatPhone(c.phone)}
-                    </button>
-                  ) : 'N/A'}
+                <div className="d-flex flex-column gap-1 text-secondary small mb-3">
+                  <div>
+                    <i className="bi bi-telephone me-1"></i>
+                    {c.phone ? (
+                      <button className="btn btn-link p-0 text-info fw-bold text-decoration-none align-baseline small" onClick={() => handlePhoneClick(c.phone, c.name)}>
+                        {formatPhone(c.phone)}
+                      </button>
+                    ) : 'N/A'}
+                  </div>
+                  <div>
+                    <i className="bi bi-geo-alt me-1"></i>
+                    {c.pos?.length || 0} point{c.pos?.length !== 1 ? 's' : ''} of sale
+                  </div>
                 </div>
-                <div>
-                  <i className="bi bi-geo-alt me-1"></i>
-                  {c.pos?.length || 0} point{c.pos?.length !== 1 ? 's' : ''} of sale
+                <div className="mt-auto d-flex gap-2">
+                  <button className="btn btn-sm btn-outline-light flex-grow-1" onClick={() => openEditModal(c)}>Edit</button>
+                  <button className="btn btn-sm btn-outline-primary flex-grow-1" onClick={() => openPosModal(c)}>Manage POS</button>
                 </div>
-              </div>
-              <div className="mt-auto d-flex gap-2">
-                <button className="btn btn-sm btn-outline-light flex-grow-1" onClick={() => openEditModal(c)}>Edit</button>
-                <button className="btn btn-sm btn-outline-primary flex-grow-1" onClick={() => openPosModal(c)}>Manage POS</button>
               </div>
             </div>
-          </div>
-        ))}
-        {customers.length === 0 && (
+          );
+        })}
+        {filteredCustomers.length === 0 && (
           <div className="col-12 text-center text-secondary mt-4">
             <p>No customers found.</p>
           </div>

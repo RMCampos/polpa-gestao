@@ -80,7 +80,7 @@ export default function Sales() {
   const [loading, setLoading] = useState(false);
   const [togglingSaleId, setTogglingSaleId] = useState<string | null>(null);
   const [togglingDeliverySaleId, setTogglingDeliverySaleId] = useState<string | null>(null);
-  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const [customerPosId, setCustomerPosId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');

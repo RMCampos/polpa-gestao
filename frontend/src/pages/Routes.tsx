@@ -59,7 +59,7 @@ export default function RoutesPage() {
   const [editingRoute, setEditingRoute] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('token');
-  const apiBase = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:3000';
+  const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const fetchRoutes = useCallback(async () => {
     try {
