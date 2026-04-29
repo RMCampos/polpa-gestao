@@ -12,19 +12,14 @@ type ProductCart = {
 
 const formatCurrency = (value: number) => `R$ ${value.toFixed(2)}`;
 
-const formatDate = (value: string) => new Date(value).toLocaleDateString('pt-BR');
-
 const formatDateTime = (value: string) => new Date(value).toLocaleString('pt-BR');
 
 const buildSaleCopyText = (sale: Sale) => {
   const customerName = sale.customerPos?.customer?.name || 'Unknown';
-  const customerDocument = sale.customerPos?.customer?.document || 'N/A';
+  const customerPerson = sale.customerPos?.personName || sale.customerPos?.customer?.personName || 'N/A';
   const customerPhone = sale.customerPos?.customer?.phone || 'N/A';
   const posAddress = sale.customerPos?.address || 'Unknown';
-  const posPhone = sale.customerPos?.phone || 'N/A';
-  const paymentStatus = sale.paymentDate ? 'Pago' : 'Pendente';
   const saleDate = formatDateTime(sale.createdAt);
-  const dueDate = !sale.paymentDate && sale.paymentDueDate ? formatDate(sale.paymentDueDate) : null;
 
   const products = (sale.products || []).map((sp: SaleProduct) => {
     const productName = sp.product?.name || 'Unknown Product';
@@ -54,29 +49,18 @@ const buildSaleCopyText = (sale: Sale) => {
   const lines: string[] = [
     'Novo pedido gerado com sucesso! 🚀',
     `Data: ${saleDate}`,
-    '',
     '*CLIENTE*',
     `- Nome: ${customerName}`,
-    `- CPF/CNPJ: ${customerDocument}`,
+    `- Responsável: ${customerPerson}`,
     `- Telefone: ${customerPhone}`,
-    '',
     '*ENTREGA* 📦',
     `- Endereço: ${posAddress}`,
-    `- Telefone do Ponto de Venda: ${posPhone}`,
-    '',
     '*ITENS* 🛒',
     ...(products.length > 0 ? products : ['- Nenhum item']),
-    '',
     '---',
-    '',
     `Total 💰: ${formatCurrency(total)}`,
     `Pagamento: ${translatePaymentMethod(sale.paymentMethod)}`,
-    `Status: ${paymentStatus}`,
   ];
-
-  if (dueDate) {
-    lines.push(`Data de Vencimento: ${dueDate}`);
-  }
 
   if (sale.comments) {
     lines.push('', `Observações: ${sale.comments}`);
@@ -680,7 +664,7 @@ export default function Sales() {
                     <div className="col-md-6">
                       <h6 className="text-secondary fw-bold mb-2">Customer Info</h6>
                       <p className="mb-1"><strong>Name:</strong> {selectedSale.customerPos?.customer?.name || 'Unknown'}</p>
-                      <p className="mb-1"><strong>Document:</strong> {selectedSale.customerPos?.customer?.document || 'N/A'}</p>
+                      <p className="mb-1"><strong>Person:</strong> {selectedSale.customerPos?.personName || selectedSale.customerPos?.customer?.personName || 'N/A'}</p>
                       <p className="mb-1"><strong>POS Address:</strong> {selectedSale.customerPos?.address || 'Unknown'}</p>
                       <p className="mb-0"><strong>POS Phone:</strong> {selectedSale.customerPos?.phone || 'N/A'}</p>
                     </div>
