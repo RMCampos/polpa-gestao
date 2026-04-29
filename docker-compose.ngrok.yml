@@ -61,7 +61,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_BACKEND_SERVER: http://localhost:3000
+        VITE_BACKEND_SERVER: "/api/.."
         VITE_CPF_CNPJ_API_TOKEN: ${VITE_CPF_CNPJ_API_TOKEN}
     image: ghcr.io/rmcampos/polpa-gestao/frontend:latest
     container_name: polpa_gestao_frontend
