@@ -63,7 +63,7 @@ const buildSaleCopyText = (sale: Sale) => {
   ];
 
   if (sale.comments) {
-    lines.push('', `Observações: ${sale.comments}`);
+    lines.push(`Observações: ${sale.comments}`);
   }
 
   return lines.join('\n');
