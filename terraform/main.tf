@@ -361,8 +361,18 @@ resource "kubernetes_cron_job_v1" "polpa_gestao_db_backup" {
   spec {
     schedule = "0 0,12 * * *"
     job_template {
+      metadata {
+        labels = {
+          app = "polpa-gestao-db-backup"
+        }
+      }
       spec {
         template {
+          metadata {
+            labels = {
+              app = "polpa-gestao-db-backup"
+            }
+          }
           spec {
             container {
               name    = "backup"
