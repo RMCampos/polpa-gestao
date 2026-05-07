@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma/client';
 
 export default async function productsRoutes(app: FastifyInstance) {
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
