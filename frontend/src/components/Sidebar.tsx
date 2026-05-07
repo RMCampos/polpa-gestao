@@ -8,6 +8,7 @@ interface SidebarProps {
 export default function Sidebar({ onLogout }: SidebarProps) {
   const location = useLocation();
   const userName = JSON.parse(localStorage.getItem('user') || '{}').name;
+  const buildNumber = import.meta.env.VITE_BUILD_NUMBER || 'dev';
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenu = () => setIsOpen(false);
@@ -87,6 +88,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       </nav>
 
       <div className="mt-auto">
+        <div className="text-muted small text-center mb-2">Build {buildNumber}</div>
         <button className="btn btn-outline-danger w-100" onClick={onLogout}>
           <i className="bi bi-box-arrow-right me-2"></i> Logout
         </button>
