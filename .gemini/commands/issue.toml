@@ -1,0 +1,11 @@
+description = "Create a formatted GitHub issue"
+prompt = """
+Act as a project manager. Based on the following input: {{args}}
+Create a GitHub issue using the `gh` CLI tool with this exact structure:
+- Title: [Feat/Bug] <short summary>
+- Body: A detailed description, technical requirements, and acceptance criteria.
+- Label: Automatically determine if it's 'bug', 'enhencement', or 'task'.
+
+Once the user confirms the plan, execute the command:
+`gh issue create --title "[Type] Title" --body "..." --label "..."
+"""

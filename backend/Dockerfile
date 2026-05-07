@@ -4,8 +4,9 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 
-RUN npm ci && npx prisma generate
+RUN npm ci && DATABASE_URL=postgres://dummy npx prisma generate
 
 FROM deps AS prisma
 
@@ -14,9 +15,11 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/src/generated/prisma ./src/generated/prisma
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 COPY src ./src
 
 RUN npx tsc
@@ -31,8 +34,9 @@ ENV NODE_ENV=production
 
 COPY package*.json ./
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 
-RUN npm ci --omit=dev && npx prisma generate && npm cache clean --force
+RUN npm ci --omit=dev && DATABASE_URL=postgres://dummy npx prisma generate && npm cache clean --force
 
 COPY healthcheck.js ./
 COPY --from=builder /app/dist ./dist

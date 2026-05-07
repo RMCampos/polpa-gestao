@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './prisma';
 import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
 
 async function main() {
   const existing = await prisma.user.findFirst();
