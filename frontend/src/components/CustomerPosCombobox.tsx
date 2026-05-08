@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Customer } from '../types';
+import { formatCustomerPosDisplay } from '../utils/customerPos';
 
 type CustomerPosOption = {
   id: string;
@@ -60,7 +61,7 @@ export function CustomerPosCombobox({
   }, []);
 
   const getOptionDisplay = (option: CustomerPosOption) =>
-    `${option.customerName} - ${option.address}`;
+    formatCustomerPosDisplay(option.customerName, option.address);
 
   return (
     <div className="position-relative" ref={containerRef}>
@@ -75,12 +76,15 @@ export function CustomerPosCombobox({
           setIsOpen(true);
         }}
         autoComplete="off"
+        role="combobox"
+        aria-autocomplete="list"
         aria-expanded={isOpen}
         aria-controls="customer-pos-combobox-options"
       />
       {isOpen && (
         <div
           id="customer-pos-combobox-options"
+          role="listbox"
           className="list-group position-absolute w-100 mt-1"
           style={{ zIndex: 1060, maxHeight: '260px', overflowY: 'auto' }}
         >
@@ -90,8 +94,9 @@ export function CustomerPosCombobox({
                 key={option.id}
                 type="button"
                 className={`list-group-item list-group-item-action text-start ${selectedPosId === option.id ? 'active' : ''}`}
-                onMouseDown={(e) => {
-                  e.preventDefault();
+                role="option"
+                aria-selected={selectedPosId === option.id}
+                onClick={() => {
                   onSelectPos(option.id, getOptionDisplay(option));
                   setIsOpen(false);
                 }}

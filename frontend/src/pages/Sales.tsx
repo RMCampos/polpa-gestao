@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useToast } from '../context/toast';
 import { CustomerPosCombobox } from '../components/CustomerPosCombobox';
 import type { Customer, Product, Sale, SaleProduct } from '../types';
+import { formatCustomerPosDisplay } from '../utils/customerPos';
 
 type ProductCart = {
   productId: string;
@@ -148,7 +149,11 @@ export default function Sales() {
     }
     setEditingMode(true);
     setEditingSaleId(sale.id || null);
-    setCustomerFilter(`${sale.customerPos?.customer?.name || ''} - ${sale.customerPos?.address || ''}`.trim().replace(/^\s*-\s*/, ''));
+    setCustomerFilter(
+      sale.customerPos?.customer?.name && sale.customerPos?.address
+        ? formatCustomerPosDisplay(sale.customerPos.customer.name, sale.customerPos.address)
+        : ''
+    );
     setCustomerPosId(sale.customerPosId);
     setPaymentMethod(sale.paymentMethod);
     let paymentDueDateValue = '';
