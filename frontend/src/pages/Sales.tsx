@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
-import type { Customer, CustomerPOS, Product, Sale, SaleProduct } from '../types';
+import { CustomerPosCombobox } from '../components/CustomerPosCombobox';
+import type { Customer, Product, Sale, SaleProduct } from '../types';
 
 type ProductCart = {
   productId: string;
@@ -127,25 +128,6 @@ export default function Sales() {
     );
   }, [sales, filterText]);
 
-  const filteredCustomers = useMemo(() => {
-    const normalizedFilter = customerFilter.trim().toLowerCase();
-    if (!normalizedFilter) return customers;
-
-    return customers
-      .map((customer: Customer) => {
-        const customerNameMatches = customer.name.toLowerCase().includes(normalizedFilter);
-        const customerPersonMatches = (customer.personName || '').toLowerCase().includes(normalizedFilter);
-        const filteredPos = (customer.pos || []).filter((pos: CustomerPOS) =>
-          customerNameMatches
-          || customerPersonMatches
-          || (pos.address || '').toLowerCase().includes(normalizedFilter)
-        );
-
-        return { ...customer, pos: filteredPos };
-      })
-      .filter((customer: Customer) => (customer.pos || []).length > 0);
-  }, [customers, customerFilter]);
-
   const handleOpenModal = () => {
     setEditingMode(false);
     setEditingSaleId(null);
@@ -166,7 +148,7 @@ export default function Sales() {
     }
     setEditingMode(true);
     setEditingSaleId(sale.id || null);
-    setCustomerFilter('');
+    setCustomerFilter(`${sale.customerPos?.customer?.name || ''} - ${sale.customerPos?.address || ''}`.trim().replace(/^\s*-\s*/, ''));
     setCustomerPosId(sale.customerPosId);
     setPaymentMethod(sale.paymentMethod);
     let paymentDueDateValue = '';
@@ -594,29 +576,22 @@ export default function Sales() {
                       <div className="col-lg-4 border-end border-secondary">
                         <h6 className="text-secondary fw-bold mb-3">Customer & Payment</h6>
                         <div className="mb-3">
-                          <label className="form-label text-secondary small">Search Customer/POS</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Filter by customer, person, or address..."
-                            value={customerFilter}
-                            onChange={(e) => setCustomerFilter(e.target.value)}
-                          />
-                        </div>
-                        <div className="mb-3">
                           <label className="form-label text-secondary small">Customer Point of Sale</label>
-                          <select className="form-select" value={customerPosId} onChange={e => setCustomerPosId(e.target.value)} required>
-                            <option value="" disabled>Select POS...</option>
-                            {filteredCustomers.map((c: Customer) => (
-                              c.pos && c.pos.length > 0 && (
-                                <optgroup key={c.id} label={c.name}>
-                                  {c.pos.map((p: CustomerPOS) => (
-                                    <option key={p.id} value={p.id}>{p.address}</option>
-                                  ))}
-                                </optgroup>
-                              )
-                            ))}
-                          </select>
+                          <CustomerPosCombobox
+                            customers={customers}
+                            selectedPosId={customerPosId}
+                            filterText={customerFilter}
+                            onFilterTextChange={(value) => {
+                              setCustomerFilter(value);
+                              if (customerPosId) {
+                                setCustomerPosId('');
+                              }
+                            }}
+                            onSelectPos={(posId, displayText) => {
+                              setCustomerPosId(posId);
+                              setCustomerFilter(displayText);
+                            }}
+                          />
                         </div>
                         <div className="mb-3">
                           <label className="form-label text-secondary small">Payment Method</label>
