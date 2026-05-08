@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
@@ -89,6 +89,7 @@ export default function Sales() {
   const [comments, setComments] = useState('');
   const [cart, setCart] = useState<ProductCart[]>([]);
   const [showDelivered, setShowDelivered] = useState(false);
+  const [filterText, setFilterText] = useState<string>('');
   const [editingMode, setEditingMode] = useState(false);
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
 
@@ -113,6 +114,17 @@ export default function Sales() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const filteredSales = useMemo(() => {
+    if (!filterText.trim()) return sales;
+    const lower = filterText.toLowerCase();
+    return sales.filter((sale: Sale) =>
+      (sale.customerPos?.customer?.name || '').toLowerCase().includes(lower) ||
+      (sale.customerPos?.personName || '').toLowerCase().includes(lower) ||
+      (sale.customerPos?.customer?.personName || '').toLowerCase().includes(lower) ||
+      (sale.customerPos?.address || '').toLowerCase().includes(lower)
+    );
+  }, [sales, filterText]);
 
   const handleOpenModal = () => {
     setEditingMode(false);
@@ -453,8 +465,18 @@ export default function Sales() {
         </div>
       </div>
 
+      <div className="mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Filter by customer name, person, or address..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
+      </div>
+
       <div className="row g-3">
-        {sales.map((sale: Sale) => {
+        {filteredSales.map((sale: Sale) => {
           const total = sale.products?.reduce((acc: number, sp: SaleProduct) => acc + (sp.quantity * (sp.product?.price ?? 0)), 0) || 0;
           return (
             <div key={sale.id} className="col-12 col-md-6">
