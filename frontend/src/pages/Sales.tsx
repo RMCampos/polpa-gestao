@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
-import type { Customer, CustomerPOS, Product, Sale, SaleProduct } from '../types';
+import { CustomerPosCombobox } from '../components/CustomerPosCombobox';
+import type { Customer, Product, Sale, SaleProduct } from '../types';
+import { formatCustomerPosDisplay } from '../utils/customerPos';
 
 type ProductCart = {
   productId: string;
@@ -90,6 +92,7 @@ export default function Sales() {
   const [cart, setCart] = useState<ProductCart[]>([]);
   const [showDelivered, setShowDelivered] = useState(false);
   const [filterText, setFilterText] = useState<string>('');
+  const [customerFilter, setCustomerFilter] = useState('');
   const [editingMode, setEditingMode] = useState(false);
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
 
@@ -129,6 +132,7 @@ export default function Sales() {
   const handleOpenModal = () => {
     setEditingMode(false);
     setEditingSaleId(null);
+    setCustomerFilter('');
     setCustomerPosId('');
     setPaymentMethod('Cash');
     setPaymentDueDate('');
@@ -145,6 +149,9 @@ export default function Sales() {
     }
     setEditingMode(true);
     setEditingSaleId(sale.id || null);
+    const saleCustomerName = sale.customerPos?.customer?.name ?? '';
+    const saleCustomerAddress = sale.customerPos?.address ?? '';
+    setCustomerFilter(saleCustomerAddress ? formatCustomerPosDisplay(saleCustomerName, saleCustomerAddress) : '');
     setCustomerPosId(sale.customerPosId);
     setPaymentMethod(sale.paymentMethod);
     let paymentDueDateValue = '';
@@ -167,6 +174,11 @@ export default function Sales() {
     })));
     setShowDetailsModal(false);
     setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setCustomerFilter('');
+    setShowModal(false);
   };
 
   const handleAddCartItem = () => {
@@ -212,12 +224,12 @@ export default function Sales() {
 
       if (editingMode && editingSaleId) {
         await axios.put(`${apiBase}/api/sales/${editingSaleId}`, payload, config);
-        setShowModal(false);
+        handleCloseModal();
         fetchData();
         toast.showToast('Sale updated successfully.', 'success');
       } else {
         await axios.post(`${apiBase}/api/sales`, payload, config);
-        setShowModal(false);
+        handleCloseModal();
         fetchData();
         toast.showToast('Sale recorded successfully.', 'success');
       }
@@ -559,7 +571,7 @@ export default function Sales() {
               <div className="modal-content glass-card">
                 <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
                   <h5 className="modal-title text-white">{editingMode ? 'Edit Sale' : 'Record New Sale'}</h5>
-                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
+                  <button type="button" className="btn-close btn-close-white" onClick={handleCloseModal}></button>
                 </div>
                 <form onSubmit={handleSaveSale}>
                   <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
@@ -568,18 +580,21 @@ export default function Sales() {
                         <h6 className="text-secondary fw-bold mb-3">Customer & Payment</h6>
                         <div className="mb-3">
                           <label className="form-label text-secondary small">Customer Point of Sale</label>
-                          <select className="form-select" value={customerPosId} onChange={e => setCustomerPosId(e.target.value)} required>
-                            <option value="" disabled>Select POS...</option>
-                            {customers.map((c: Customer) => (
-                              c.pos && c.pos.length > 0 && (
-                                <optgroup key={c.id} label={c.name}>
-                                  {c.pos.map((p: CustomerPOS) => (
-                                    <option key={p.id} value={p.id}>{p.address}</option>
-                                  ))}
-                                </optgroup>
-                              )
-                            ))}
-                          </select>
+                          <CustomerPosCombobox
+                            customers={customers}
+                            selectedPosId={customerPosId}
+                            filterText={customerFilter}
+                            onFilterTextChange={(value) => {
+                              setCustomerFilter(value);
+                              if (customerPosId) {
+                                setCustomerPosId('');
+                              }
+                            }}
+                            onSelectPos={(posId, displayText) => {
+                              setCustomerPosId(posId);
+                              setCustomerFilter(displayText);
+                            }}
+                          />
                         </div>
                         <div className="mb-3">
                           <label className="form-label text-secondary small">Payment Method</label>
@@ -660,7 +675,7 @@ export default function Sales() {
                     </div>
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
-                    <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    <button type="button" className="btn btn-outline-light" onClick={handleCloseModal}>Cancel</button>
                     <button type="submit" className="btn btn-primary btn-lg px-4" disabled={loading || cart.length === 0}>{loading ? 'Processing...' : editingMode ? 'Save Changes' : 'Complete Sale'}</button>
                   </div>
                 </form>
