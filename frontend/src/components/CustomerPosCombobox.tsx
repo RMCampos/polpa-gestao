@@ -128,29 +128,28 @@ export function CustomerPosCombobox({
           style={{ zIndex: 1060, maxHeight: '260px', overflowY: 'auto' }}
         >
           {filteredOptions.length > 0 ? (
-            filteredOptions.map((option, index) => (
+            filteredOptions.map((option, index) => {
+              const isSelected = selectedPosId === option.id;
+              const isFocused = normalizedActiveIndex === index;
+              return (
               <button
                 key={option.id}
                 id={`customer-pos-option-${option.id}`}
                 type="button"
-                className={`list-group-item list-group-item-action text-start ${(selectedPosId === option.id || normalizedActiveIndex === index) ? 'active' : ''}`}
+                className={`list-group-item list-group-item-action text-start ${isSelected ? 'active' : ''}`}
                 role="option"
-                aria-selected={selectedPosId === option.id}
+                aria-selected={isSelected}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => {
                   handleSelectOption(option);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleSelectOption(option);
-                  }
-                }}
+                style={isFocused && !isSelected ? { backgroundColor: 'rgba(13, 110, 253, 0.2)' } : undefined}
               >
                 <div className="fw-semibold">{option.customerName}</div>
                 <div className="small text-secondary">{option.address}</div>
               </button>
-            ))
+              );
+            })
           ) : (
             <div className="list-group-item text-secondary">No matches found.</div>
           )}
