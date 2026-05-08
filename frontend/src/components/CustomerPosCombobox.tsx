@@ -130,7 +130,14 @@ export function CustomerPosCombobox({
           id="customer-pos-combobox-options"
           role="listbox"
           className="list-group position-absolute w-100 mt-1"
-          style={{ zIndex: 1060, maxHeight: '260px', overflowY: 'auto' }}
+          style={{
+            zIndex: 1060,
+            maxHeight: '260px',
+            overflowY: 'auto',
+            backgroundColor: '#1e293b',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '4px',
+          }}
         >
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option, index) => {
@@ -148,7 +155,7 @@ export function CustomerPosCombobox({
                 onClick={() => {
                   handleSelectOption(option);
                 }}
-                style={isFocused && !isSelected ? { backgroundColor: 'rgba(13, 110, 253, 0.2)' } : undefined}
+                style={!isSelected ? { backgroundColor: isFocused ? '#334155' : '#1e293b', color: '#f8fafc' } : undefined}
               >
                 <div className="fw-semibold">{option.customerName}</div>
                 <div className="small text-secondary">{option.address}</div>
@@ -156,7 +163,7 @@ export function CustomerPosCombobox({
               );
             })
           ) : (
-            <div className="list-group-item text-secondary">No matches found.</div>
+            <div className="list-group-item text-secondary" style={{ backgroundColor: '#1e293b' }}>No matches found.</div>
           )}
         </div>
       )}
