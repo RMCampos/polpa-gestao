@@ -90,6 +90,7 @@ export default function Sales() {
   const [cart, setCart] = useState<ProductCart[]>([]);
   const [showDelivered, setShowDelivered] = useState(false);
   const [filterText, setFilterText] = useState<string>('');
+  const [customerFilter, setCustomerFilter] = useState('');
   const [editingMode, setEditingMode] = useState(false);
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
 
@@ -126,9 +127,29 @@ export default function Sales() {
     );
   }, [sales, filterText]);
 
+  const filteredCustomers = useMemo(() => {
+    const normalizedFilter = customerFilter.trim().toLowerCase();
+    if (!normalizedFilter) return customers;
+
+    return customers
+      .map((customer: Customer) => {
+        const customerNameMatches = customer.name.toLowerCase().includes(normalizedFilter);
+        const customerPersonMatches = (customer.personName || '').toLowerCase().includes(normalizedFilter);
+        const filteredPos = (customer.pos || []).filter((pos: CustomerPOS) =>
+          customerNameMatches
+          || customerPersonMatches
+          || (pos.address || '').toLowerCase().includes(normalizedFilter)
+        );
+
+        return { ...customer, pos: filteredPos };
+      })
+      .filter((customer: Customer) => (customer.pos || []).length > 0);
+  }, [customers, customerFilter]);
+
   const handleOpenModal = () => {
     setEditingMode(false);
     setEditingSaleId(null);
+    setCustomerFilter('');
     setCustomerPosId('');
     setPaymentMethod('Cash');
     setPaymentDueDate('');
@@ -145,6 +166,7 @@ export default function Sales() {
     }
     setEditingMode(true);
     setEditingSaleId(sale.id || null);
+    setCustomerFilter('');
     setCustomerPosId(sale.customerPosId);
     setPaymentMethod(sale.paymentMethod);
     let paymentDueDateValue = '';
@@ -167,6 +189,11 @@ export default function Sales() {
     })));
     setShowDetailsModal(false);
     setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setCustomerFilter('');
+    setShowModal(false);
   };
 
   const handleAddCartItem = () => {
@@ -212,12 +239,12 @@ export default function Sales() {
 
       if (editingMode && editingSaleId) {
         await axios.put(`${apiBase}/api/sales/${editingSaleId}`, payload, config);
-        setShowModal(false);
+        handleCloseModal();
         fetchData();
         toast.showToast('Sale updated successfully.', 'success');
       } else {
         await axios.post(`${apiBase}/api/sales`, payload, config);
-        setShowModal(false);
+        handleCloseModal();
         fetchData();
         toast.showToast('Sale recorded successfully.', 'success');
       }
@@ -559,7 +586,7 @@ export default function Sales() {
               <div className="modal-content glass-card">
                 <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
                   <h5 className="modal-title text-white">{editingMode ? 'Edit Sale' : 'Record New Sale'}</h5>
-                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
+                  <button type="button" className="btn-close btn-close-white" onClick={handleCloseModal}></button>
                 </div>
                 <form onSubmit={handleSaveSale}>
                   <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
@@ -567,10 +594,20 @@ export default function Sales() {
                       <div className="col-lg-4 border-end border-secondary">
                         <h6 className="text-secondary fw-bold mb-3">Customer & Payment</h6>
                         <div className="mb-3">
+                          <label className="form-label text-secondary small">Search Customer/POS</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Filter by customer, person, or address..."
+                            value={customerFilter}
+                            onChange={(e) => setCustomerFilter(e.target.value)}
+                          />
+                        </div>
+                        <div className="mb-3">
                           <label className="form-label text-secondary small">Customer Point of Sale</label>
                           <select className="form-select" value={customerPosId} onChange={e => setCustomerPosId(e.target.value)} required>
                             <option value="" disabled>Select POS...</option>
-                            {customers.map((c: Customer) => (
+                            {filteredCustomers.map((c: Customer) => (
                               c.pos && c.pos.length > 0 && (
                                 <optgroup key={c.id} label={c.name}>
                                   {c.pos.map((p: CustomerPOS) => (
@@ -660,7 +697,7 @@ export default function Sales() {
                     </div>
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
-                    <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    <button type="button" className="btn btn-outline-light" onClick={handleCloseModal}>Cancel</button>
                     <button type="submit" className="btn btn-primary btn-lg px-4" disabled={loading || cart.length === 0}>{loading ? 'Processing...' : editingMode ? 'Save Changes' : 'Complete Sale'}</button>
                   </div>
                 </form>
