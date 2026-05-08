@@ -17,6 +17,10 @@ type CustomerPosComboboxProps = {
   onSelectPos: (posId: string, displayText: string) => void;
 };
 
+const dropdownBaseColor = '#1e293b';
+const dropdownFocusColor = '#334155';
+const dropdownTextColor = '#f8fafc';
+
 export function CustomerPosCombobox({
   customers,
   selectedPosId,
@@ -134,7 +138,7 @@ export function CustomerPosCombobox({
             zIndex: 1060,
             maxHeight: '260px',
             overflowY: 'auto',
-            backgroundColor: '#1e293b',
+            backgroundColor: dropdownBaseColor,
             border: '1px solid var(--glass-border)',
             borderRadius: '4px',
           }}
@@ -155,7 +159,7 @@ export function CustomerPosCombobox({
                 onClick={() => {
                   handleSelectOption(option);
                 }}
-                style={!isSelected ? { backgroundColor: isFocused ? '#334155' : '#1e293b', color: '#f8fafc' } : undefined}
+                style={!isSelected ? { backgroundColor: isFocused ? dropdownFocusColor : dropdownBaseColor, color: dropdownTextColor } : undefined}
               >
                 <div className="fw-semibold">{option.customerName}</div>
                 <div className="small text-secondary">{option.address}</div>
@@ -163,7 +167,7 @@ export function CustomerPosCombobox({
               );
             })
           ) : (
-            <div className="list-group-item text-secondary" style={{ backgroundColor: '#1e293b' }}>No matches found.</div>
+            <div className="list-group-item text-secondary" style={{ backgroundColor: dropdownBaseColor }}>No matches found.</div>
           )}
         </div>
       )}
