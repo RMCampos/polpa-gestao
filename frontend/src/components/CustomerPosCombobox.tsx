@@ -29,12 +29,14 @@ export function CustomerPosCombobox({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const options = useMemo(() => {
-    return customers.flatMap((customer) => (customer.pos || []).map((pos) => ({
-      id: pos.id || '',
-      customerName: customer.name,
-      customerPersonName: customer.personName || '',
-      address: pos.address,
-    }))).filter((option) => option.id);
+    return customers.flatMap((customer) => (customer.pos || [])
+      .filter((pos) => Boolean(pos.id))
+      .map((pos) => ({
+        id: pos.id as string,
+        customerName: customer.name,
+        customerPersonName: customer.personName || '',
+        address: pos.address,
+      })));
   }, [customers]);
 
   const filteredOptions = useMemo(() => {
@@ -72,6 +74,9 @@ export function CustomerPosCombobox({
   const normalizedActiveIndex = isOpen && filteredOptions.length > 0
     ? (activeIndex >= 0 && activeIndex < filteredOptions.length ? activeIndex : 0)
     : -1;
+  const activeDescendantId = isOpen && normalizedActiveIndex >= 0 && filteredOptions[normalizedActiveIndex]
+    ? `customer-pos-option-${filteredOptions[normalizedActiveIndex].id}`
+    : undefined;
 
   return (
     <div className="position-relative" ref={containerRef}>
@@ -118,7 +123,7 @@ export function CustomerPosCombobox({
         aria-autocomplete="list"
         aria-expanded={isOpen}
         aria-controls="customer-pos-combobox-options"
-        aria-activedescendant={isOpen && normalizedActiveIndex >= 0 && filteredOptions[normalizedActiveIndex] ? `customer-pos-option-${filteredOptions[normalizedActiveIndex].id}` : undefined}
+        aria-activedescendant={activeDescendantId}
       />
       {isOpen && (
         <div

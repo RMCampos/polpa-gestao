@@ -149,11 +149,9 @@ export default function Sales() {
     }
     setEditingMode(true);
     setEditingSaleId(sale.id || null);
-    setCustomerFilter(
-      sale.customerPos?.customer?.name && sale.customerPos?.address
-        ? formatCustomerPosDisplay(sale.customerPos.customer.name, sale.customerPos.address)
-        : ''
-    );
+    const saleCustomerName = sale.customerPos?.customer?.name ?? '';
+    const saleCustomerAddress = sale.customerPos?.address ?? '';
+    setCustomerFilter(saleCustomerAddress ? formatCustomerPosDisplay(saleCustomerName, saleCustomerAddress) : '');
     setCustomerPosId(sale.customerPosId);
     setPaymentMethod(sale.paymentMethod);
     let paymentDueDateValue = '';
