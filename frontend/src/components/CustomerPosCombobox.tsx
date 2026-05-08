@@ -25,6 +25,7 @@ export function CustomerPosCombobox({
   onSelectPos,
 }: CustomerPosComboboxProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const options = useMemo(() => {
@@ -63,6 +64,15 @@ export function CustomerPosCombobox({
   const getOptionDisplay = (option: CustomerPosOption) =>
     formatCustomerPosDisplay(option.customerName, option.address);
 
+  const handleSelectOption = (option: CustomerPosOption) => {
+    onSelectPos(option.id, getOptionDisplay(option));
+    setIsOpen(false);
+  };
+
+  const normalizedActiveIndex = isOpen && filteredOptions.length > 0
+    ? (activeIndex >= 0 && activeIndex < filteredOptions.length ? activeIndex : 0)
+    : -1;
+
   return (
     <div className="position-relative" ref={containerRef}>
       <input
@@ -74,12 +84,41 @@ export function CustomerPosCombobox({
         onChange={(e) => {
           onFilterTextChange(e.target.value);
           setIsOpen(true);
+          setActiveIndex(0);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (filteredOptions.length === 0) return;
+            setIsOpen(true);
+            setActiveIndex((current) => (current + 1) % filteredOptions.length);
+            return;
+          }
+
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (filteredOptions.length === 0) return;
+            setIsOpen(true);
+            setActiveIndex((current) => (current <= 0 ? filteredOptions.length - 1 : current - 1));
+            return;
+          }
+
+          if (e.key === 'Enter' && isOpen && normalizedActiveIndex >= 0 && filteredOptions[normalizedActiveIndex]) {
+            e.preventDefault();
+            handleSelectOption(filteredOptions[normalizedActiveIndex]);
+            return;
+          }
+
+          if (e.key === 'Escape') {
+            setIsOpen(false);
+          }
         }}
         autoComplete="off"
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={isOpen}
         aria-controls="customer-pos-combobox-options"
+        aria-activedescendant={isOpen && normalizedActiveIndex >= 0 && filteredOptions[normalizedActiveIndex] ? `customer-pos-option-${filteredOptions[normalizedActiveIndex].id}` : undefined}
       />
       {isOpen && (
         <div
@@ -89,16 +128,23 @@ export function CustomerPosCombobox({
           style={{ zIndex: 1060, maxHeight: '260px', overflowY: 'auto' }}
         >
           {filteredOptions.length > 0 ? (
-            filteredOptions.map((option) => (
+            filteredOptions.map((option, index) => (
               <button
                 key={option.id}
+                id={`customer-pos-option-${option.id}`}
                 type="button"
-                className={`list-group-item list-group-item-action text-start ${selectedPosId === option.id ? 'active' : ''}`}
+                className={`list-group-item list-group-item-action text-start ${(selectedPosId === option.id || normalizedActiveIndex === index) ? 'active' : ''}`}
                 role="option"
                 aria-selected={selectedPosId === option.id}
+                onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => {
-                  onSelectPos(option.id, getOptionDisplay(option));
-                  setIsOpen(false);
+                  handleSelectOption(option);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSelectOption(option);
+                  }
                 }}
               >
                 <div className="fw-semibold">{option.customerName}</div>
