@@ -148,17 +148,24 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     const { range } = request.query as { range: string };
     const { startDate, endDate } = getDateRange(range);
 
-    const sales = await prisma.sale.findMany({
-      where: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } },
-      select: {
-        products: {
-          select: {
-            quantity: true,
-            product: { select: { price: true } }
+    const [sales, totalCustomers, totalFridges] = await Promise.all([
+      prisma.sale.findMany({
+        where: { createdAt: { gte: startDate, ...(endDate ? { lte: endDate } : {}) } },
+        select: {
+          products: {
+            select: {
+              quantity: true,
+              product: { select: { price: true } }
+            }
           }
         }
-      }
-    });
+      }),
+      prisma.customer.count({ where: { disabledAt: null } }),
+      prisma.customerPos.aggregate({
+        _sum: { fridgeCount: true },
+        where: { disabledAt: null }
+      })
+    ]);
 
     const totalSales = sales.length;
     let totalAmount = 0;
@@ -173,6 +180,12 @@ export default async function dashboardRoutes(app: FastifyInstance) {
 
     const averageAmount = totalSales > 0 ? totalAmount / totalSales : 0;
 
-    return { totalSales, totalAmount, averageAmount };
+    return {
+      totalSales,
+      totalAmount,
+      averageAmount,
+      totalCustomers,
+      totalFridges: totalFridges._sum.fridgeCount ?? 0
+    };
   });
 }

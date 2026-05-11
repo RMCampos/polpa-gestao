@@ -17,6 +17,8 @@ export type SalesSummary = {
   totalSales: number;
   totalAmount: number;
   averageAmount: number;
+  totalCustomers: number;
+  totalFridges: number;
 }
 
 /* Users page types */
