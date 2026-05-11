@@ -119,7 +119,7 @@ export default function Visits() {
         })}
         {visits.length === 0 && (
           <div className="col-12 text-center text-secondary mt-4">
-            <p>{showVisited ? 'No visited visits found.' : 'No pending visits.'}</p>
+            <p>{showVisited ? 'No completed visits found.' : 'No pending visits.'}</p>
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { Prisma } from '../generated/prisma/client';
 import { prisma } from '../prisma';
 
 function parseBoolean(value: unknown): boolean | undefined {
@@ -11,21 +12,20 @@ function parseBoolean(value: unknown): boolean | undefined {
   return undefined;
 }
 
+interface VisitsQuery {
+  showVisited?: string;
+}
+
 export default async function visitsRoutes(app: FastifyInstance) {
   // Get all visits (sales with nextVisitDate set)
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
-    const { showVisited } = request.query as any;
+    const { showVisited } = request.query as VisitsQuery;
     const parsedShowVisited = parseBoolean(showVisited);
 
-    const where: any = {
-      nextVisitDate: { not: null }
+    const where: Prisma.SaleWhereInput = {
+      nextVisitDate: { not: null },
+      visitedAt: parsedShowVisited === true ? { not: null } : null
     };
-
-    if (parsedShowVisited === true) {
-      where.visitedAt = { not: null };
-    } else {
-      where.visitedAt = null;
-    }
 
     return prisma.sale.findMany({
       where,
