@@ -1,6 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
 
+const parseFridgeCount = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+
+  const parsedValue = Number(value);
+  if (!Number.isInteger(parsedValue) || parsedValue < 0) return 0;
+
+  return parsedValue;
+};
+
 export default async function customersRoutes(app: FastifyInstance) {
   // Get all customers (with pos optionally)
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -68,18 +77,24 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   app.post('/:customerId/pos', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { customerId } = request.params as any;
-    const { address, phone, personName } = request.body as any;
+    const { address, phone, personName, fridgeCount } = request.body as any;
     return prisma.customerPos.create({
-      data: { customerId, address, phone, personName }
+      data: { customerId, address, phone, personName, fridgeCount: parseFridgeCount(fridgeCount) ?? 0 }
     });
   });
 
   app.put('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { address, phone, personName } = request.body as any;
+    const { address, phone, personName, fridgeCount } = request.body as any;
+    const normalizedFridgeCount = parseFridgeCount(fridgeCount);
     return prisma.customerPos.update({
       where: { id },
-      data: { address, phone, personName }
+      data: {
+        address,
+        phone,
+        personName,
+        ...(normalizedFridgeCount !== undefined ? { fridgeCount: normalizedFridgeCount } : {})
+      }
     });
   });
 

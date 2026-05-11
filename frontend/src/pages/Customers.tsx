@@ -17,7 +17,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
-  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '' };
+  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '', fridgeCount: 0 };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -163,7 +163,7 @@ export default function Customers() {
       return;
     }
     setEditingPos(p.id);
-    setNewPos({ address: p.address, phone: p.phone, personName: p.personName || '' });
+    setNewPos({ address: p.address, phone: p.phone, personName: p.personName || '', fridgeCount: p.fridgeCount ?? 0 });
   };
 
   const cancelEditPos = () => {
@@ -427,6 +427,9 @@ export default function Customers() {
                               </button>
                             ) : 'N/A'}
                           </div>
+                          <div className="text-secondary small">
+                            Fridges: {p.fridgeCount ?? 0}
+                          </div>
                         </div>
                         <div className="d-flex gap-2">
                           <button className="btn btn-sm btn-outline-primary" onClick={() => openEditPos(p)}>Edit</button>
@@ -470,7 +473,22 @@ export default function Customers() {
                               maxLength={30}
                             />
                           </div>
-                          <div className="col-md-5 d-flex align-items-end gap-2">
+                          <div className="col-md-2">
+                            <label className="form-label text-secondary small">Fridges</label>
+                            <input
+                              type="number"
+                              className="form-control form-control-sm"
+                              value={newPos.fridgeCount ?? 0}
+                              onChange={e =>
+                                setNewPos({
+                                  ...newPos,
+                                  fridgeCount: Math.max(0, Number.parseInt(e.target.value || '0', 10) || 0),
+                                })
+                              }
+                              min={0}
+                            />
+                          </div>
+                          <div className="col-md-3 d-flex align-items-end gap-2">
                             {editingPos && (
                               <button type="button" className="btn btn-sm btn-outline-secondary w-100" onClick={cancelEditPos}>Cancel</button>
                             )}
