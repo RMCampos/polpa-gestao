@@ -52,6 +52,8 @@ export default function Dashboard() {
     .sort((a, b) => b.totalAmount - a.totalAmount)
     .slice(0, 3);
 
+  const { totalCustomers, totalFridges } = salesSummary ?? { totalCustomers: 0, totalFridges: 0 };
+
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -93,6 +95,24 @@ export default function Dashboard() {
               R$ {salesSummary ? salesSummary.averageAmount.toFixed(2) : '—'}
             </h3>
             <small className="text-secondary">per sale</small>
+          </div>
+        </div>
+
+        {/* Total Customers */}
+        <div className="col-12 col-sm-6 col-lg-3">
+          <div className="glass-card p-4 h-100">
+            <h6 className="text-secondary mb-2">Total Customers</h6>
+            <h3 className="fw-bold text-info mb-0">{salesSummary ? totalCustomers : '—'}</h3>
+            <small className="text-secondary">active customers</small>
+          </div>
+        </div>
+
+        {/* Total Fridges */}
+        <div className="col-12 col-sm-6 col-lg-3">
+          <div className="glass-card p-4 h-100">
+            <h6 className="text-secondary mb-2">Total Fridges</h6>
+            <h3 className="fw-bold text-warning mb-0">{salesSummary ? totalFridges : '—'}</h3>
+            <small className="text-secondary">active POS total</small>
           </div>
         </div>
 
