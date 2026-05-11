@@ -89,6 +89,7 @@ export default function Sales() {
   const [paymentDueDate, setPaymentDueDate] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [comments, setComments] = useState('');
+  const [nextVisitDate, setNextVisitDate] = useState('');
   const [cart, setCart] = useState<ProductCart[]>([]);
   const [showDelivered, setShowDelivered] = useState(false);
   const [filterText, setFilterText] = useState<string>('');
@@ -138,6 +139,7 @@ export default function Sales() {
     setPaymentDueDate('');
     setPaymentDate('');
     setComments('');
+    setNextVisitDate('');
     setCart([]);
     setShowModal(true);
   };
@@ -167,6 +169,12 @@ export default function Sales() {
     }
     setPaymentDate(paymentDateValue);
     setComments(sale.comments || '');
+    let nextVisitDateValue = '';
+    if (sale.nextVisitDate) {
+      const nvDate = new Date(sale.nextVisitDate);
+      nextVisitDateValue = nvDate.toISOString().slice(0, 10);
+    }
+    setNextVisitDate(nextVisitDateValue);
     setCart((sale.products || []).map((sp: SaleProduct) => ({
       productId: sp.productId,
       quantity: sp.quantity,
@@ -219,6 +227,7 @@ export default function Sales() {
         paymentDueDate: paymentDueDate ? new Date(paymentDueDate).toISOString() : null,
         paymentDate: paymentDate ? new Date(paymentDate).toISOString() : null,
         comments,
+        nextVisitDate: nextVisitDate ? new Date(nextVisitDate).toISOString() : null,
         products: cart.map(item => ({ productId: item.productId, quantity: item.quantity }))
       };
 
@@ -619,6 +628,10 @@ export default function Sales() {
                         <div className="mb-3">
                           <label className="form-label text-secondary small">Comments / Notes</label>
                           <textarea className="form-control" rows={3} value={comments} onChange={e => setComments(e.target.value)} placeholder="Any specific requirements..."></textarea>
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label text-secondary small">Next Visit Date (Optional)</label>
+                          <input type="date" className="form-control" value={nextVisitDate} onChange={e => setNextVisitDate(e.target.value)} />
                         </div>
                       </div>
 

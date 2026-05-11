@@ -90,6 +90,8 @@ export type Sale = {
   paymentDueDate: string | null;
   paymentDate: string | null;
   comments: string;
+  nextVisitDate: string | null;
+  visitedAt: string | null;
   createdAt: string;
   customerPos?: CustomerPOS;
   products?: SaleProduct[];
