@@ -32,6 +32,8 @@ export type SaleMinAggregateOutputType = {
   paymentDueDate: Date | null
   paymentDate: Date | null
   comments: string | null
+  nextVisitDate: Date | null
+  visitedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,8 @@ export type SaleMaxAggregateOutputType = {
   paymentDueDate: Date | null
   paymentDate: Date | null
   comments: string | null
+  nextVisitDate: Date | null
+  visitedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +60,8 @@ export type SaleCountAggregateOutputType = {
   paymentDueDate: number
   paymentDate: number
   comments: number
+  nextVisitDate: number
+  visitedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -70,6 +76,8 @@ export type SaleMinAggregateInputType = {
   paymentDueDate?: true
   paymentDate?: true
   comments?: true
+  nextVisitDate?: true
+  visitedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +90,8 @@ export type SaleMaxAggregateInputType = {
   paymentDueDate?: true
   paymentDate?: true
   comments?: true
+  nextVisitDate?: true
+  visitedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +104,8 @@ export type SaleCountAggregateInputType = {
   paymentDueDate?: true
   paymentDate?: true
   comments?: true
+  nextVisitDate?: true
+  visitedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -179,6 +191,8 @@ export type SaleGroupByOutputType = {
   paymentDueDate: Date | null
   paymentDate: Date | null
   comments: string | null
+  nextVisitDate: Date | null
+  visitedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: SaleCountAggregateOutputType | null
@@ -212,6 +226,8 @@ export type SaleWhereInput = {
   paymentDueDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   paymentDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   comments?: Prisma.StringNullableFilter<"Sale"> | string | null
+  nextVisitDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
+  visitedAt?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   customerPos?: Prisma.XOR<Prisma.CustomerPosScalarRelationFilter, Prisma.CustomerPosWhereInput>
@@ -226,6 +242,8 @@ export type SaleOrderByWithRelationInput = {
   paymentDueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   comments?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextVisitDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  visitedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customerPos?: Prisma.CustomerPosOrderByWithRelationInput
@@ -243,6 +261,8 @@ export type SaleWhereUniqueInput = Prisma.AtLeast<{
   paymentDueDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   paymentDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   comments?: Prisma.StringNullableFilter<"Sale"> | string | null
+  nextVisitDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
+  visitedAt?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   customerPos?: Prisma.XOR<Prisma.CustomerPosScalarRelationFilter, Prisma.CustomerPosWhereInput>
@@ -257,6 +277,8 @@ export type SaleOrderByWithAggregationInput = {
   paymentDueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentDate?: Prisma.SortOrderInput | Prisma.SortOrder
   comments?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextVisitDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  visitedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SaleCountOrderByAggregateInput
@@ -275,6 +297,8 @@ export type SaleScalarWhereWithAggregatesInput = {
   paymentDueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Sale"> | Date | string | null
   paymentDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Sale"> | Date | string | null
   comments?: Prisma.StringNullableWithAggregatesFilter<"Sale"> | string | null
+  nextVisitDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Sale"> | Date | string | null
+  visitedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Sale"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Sale"> | Date | string
 }
@@ -286,6 +310,8 @@ export type SaleCreateInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customerPos: Prisma.CustomerPosCreateNestedOneWithoutSalesInput
@@ -300,6 +326,8 @@ export type SaleUncheckedCreateInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.SaleProductUncheckedCreateNestedManyWithoutSaleInput
@@ -312,6 +340,8 @@ export type SaleUpdateInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerPos?: Prisma.CustomerPosUpdateOneRequiredWithoutSalesNestedInput
@@ -326,6 +356,8 @@ export type SaleUncheckedUpdateInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.SaleProductUncheckedUpdateManyWithoutSaleNestedInput
@@ -339,6 +371,8 @@ export type SaleCreateManyInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -350,6 +384,8 @@ export type SaleUpdateManyMutationInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -362,6 +398,8 @@ export type SaleUncheckedUpdateManyInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -384,6 +422,8 @@ export type SaleCountOrderByAggregateInput = {
   paymentDueDate?: Prisma.SortOrder
   paymentDate?: Prisma.SortOrder
   comments?: Prisma.SortOrder
+  nextVisitDate?: Prisma.SortOrder
+  visitedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -396,6 +436,8 @@ export type SaleMaxOrderByAggregateInput = {
   paymentDueDate?: Prisma.SortOrder
   paymentDate?: Prisma.SortOrder
   comments?: Prisma.SortOrder
+  nextVisitDate?: Prisma.SortOrder
+  visitedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -408,6 +450,8 @@ export type SaleMinOrderByAggregateInput = {
   paymentDueDate?: Prisma.SortOrder
   paymentDate?: Prisma.SortOrder
   comments?: Prisma.SortOrder
+  nextVisitDate?: Prisma.SortOrder
+  visitedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -484,6 +528,8 @@ export type SaleCreateWithoutCustomerPosInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.SaleProductCreateNestedManyWithoutSaleInput
@@ -496,6 +542,8 @@ export type SaleUncheckedCreateWithoutCustomerPosInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.SaleProductUncheckedCreateNestedManyWithoutSaleInput
@@ -538,6 +586,8 @@ export type SaleScalarWhereInput = {
   paymentDueDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   paymentDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   comments?: Prisma.StringNullableFilter<"Sale"> | string | null
+  nextVisitDate?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
+  visitedAt?: Prisma.DateTimeNullableFilter<"Sale"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
 }
@@ -549,6 +599,8 @@ export type SaleCreateWithoutProductsInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customerPos: Prisma.CustomerPosCreateNestedOneWithoutSalesInput
@@ -562,6 +614,8 @@ export type SaleUncheckedCreateWithoutProductsInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -589,6 +643,8 @@ export type SaleUpdateWithoutProductsInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerPos?: Prisma.CustomerPosUpdateOneRequiredWithoutSalesNestedInput
@@ -602,6 +658,8 @@ export type SaleUncheckedUpdateWithoutProductsInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -613,6 +671,8 @@ export type SaleCreateManyCustomerPosInput = {
   paymentDueDate?: Date | string | null
   paymentDate?: Date | string | null
   comments?: string | null
+  nextVisitDate?: Date | string | null
+  visitedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -624,6 +684,8 @@ export type SaleUpdateWithoutCustomerPosInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.SaleProductUpdateManyWithoutSaleNestedInput
@@ -636,6 +698,8 @@ export type SaleUncheckedUpdateWithoutCustomerPosInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.SaleProductUncheckedUpdateManyWithoutSaleNestedInput
@@ -648,6 +712,8 @@ export type SaleUncheckedUpdateManyWithoutCustomerPosInput = {
   paymentDueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextVisitDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  visitedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -691,6 +757,8 @@ export type SaleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   paymentDueDate?: boolean
   paymentDate?: boolean
   comments?: boolean
+  nextVisitDate?: boolean
+  visitedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customerPos?: boolean | Prisma.CustomerPosDefaultArgs<ExtArgs>
@@ -706,6 +774,8 @@ export type SaleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   paymentDueDate?: boolean
   paymentDate?: boolean
   comments?: boolean
+  nextVisitDate?: boolean
+  visitedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customerPos?: boolean | Prisma.CustomerPosDefaultArgs<ExtArgs>
@@ -719,6 +789,8 @@ export type SaleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   paymentDueDate?: boolean
   paymentDate?: boolean
   comments?: boolean
+  nextVisitDate?: boolean
+  visitedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customerPos?: boolean | Prisma.CustomerPosDefaultArgs<ExtArgs>
@@ -732,11 +804,13 @@ export type SaleSelectScalar = {
   paymentDueDate?: boolean
   paymentDate?: boolean
   comments?: boolean
+  nextVisitDate?: boolean
+  visitedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SaleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerPosId" | "delivered" | "paymentMethod" | "paymentDueDate" | "paymentDate" | "comments" | "createdAt" | "updatedAt", ExtArgs["result"]["sale"]>
+export type SaleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerPosId" | "delivered" | "paymentMethod" | "paymentDueDate" | "paymentDate" | "comments" | "nextVisitDate" | "visitedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["sale"]>
 export type SaleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customerPos?: boolean | Prisma.CustomerPosDefaultArgs<ExtArgs>
   products?: boolean | Prisma.Sale$productsArgs<ExtArgs>
@@ -763,6 +837,8 @@ export type $SalePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     paymentDueDate: Date | null
     paymentDate: Date | null
     comments: string | null
+    nextVisitDate: Date | null
+    visitedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["sale"]>
@@ -1197,6 +1273,8 @@ export interface SaleFieldRefs {
   readonly paymentDueDate: Prisma.FieldRef<"Sale", 'DateTime'>
   readonly paymentDate: Prisma.FieldRef<"Sale", 'DateTime'>
   readonly comments: Prisma.FieldRef<"Sale", 'String'>
+  readonly nextVisitDate: Prisma.FieldRef<"Sale", 'DateTime'>
+  readonly visitedAt: Prisma.FieldRef<"Sale", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Sale", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Sale", 'DateTime'>
 }

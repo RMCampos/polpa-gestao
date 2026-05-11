@@ -85,6 +85,13 @@ export default function Sidebar({ onLogout }: SidebarProps) {
         >
           <i className="bi bi-cart-check me-2"></i> Sales
         </Link>
+        <Link
+          to="/visits"
+          className={`nav-link ${location.pathname === '/visits' ? 'active' : ''}`}
+          onClick={closeMenu}
+        >
+          <i className="bi bi-calendar-event me-2"></i> Visits
+        </Link>
       </nav>
 
       <div className="mt-auto">

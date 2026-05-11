@@ -7,6 +7,7 @@ import Customers from './pages/Customers';
 import Products from './pages/Products';
 import RoutesPage from './pages/Routes';
 import Sales from './pages/Sales';
+import Visits from './pages/Visits';
 import Sidebar from './components/Sidebar';
 import { Toast } from './components/Toast';
 import { ConfirmDialog } from './components/ConfirmDialog';
@@ -55,6 +56,7 @@ export default function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/routes" element={<RoutesPage />} />
             <Route path="/sales" element={<Sales />} />
+            <Route path="/visits" element={<Visits />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>

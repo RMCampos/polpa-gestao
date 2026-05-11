@@ -67,6 +67,8 @@ model Sale {
   paymentDueDate DateTime?
   paymentDate    DateTime?
   comments       String?
+  nextVisitDate  DateTime?
+  visitedAt      DateTime?
   products       SaleProduct[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt

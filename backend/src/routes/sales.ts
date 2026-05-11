@@ -49,6 +49,7 @@ export default async function salesRoutes(app: FastifyInstance) {
       paymentDueDate,
       paymentDate,
       comments,
+      nextVisitDate,
       products // Array of { productId, quantity }
     } = request.body as any;
 
@@ -72,6 +73,7 @@ export default async function salesRoutes(app: FastifyInstance) {
             paymentDueDate: paymentDueDate ? new Date(paymentDueDate) : null,
             paymentDate: paymentDate ? new Date(paymentDate) : null,
             comments,
+            nextVisitDate: nextVisitDate ? new Date(nextVisitDate) : null,
             products: {
               create: products.map((p: any) => ({
                 productId: p.productId,
@@ -112,6 +114,8 @@ export default async function salesRoutes(app: FastifyInstance) {
       paymentDueDate,
       paymentDate,
       comments,
+      nextVisitDate,
+      visitedAt,
       products
     } = request.body as any;
 
@@ -135,6 +139,8 @@ export default async function salesRoutes(app: FastifyInstance) {
       if (paymentDueDate !== undefined) data.paymentDueDate = paymentDueDate ? new Date(paymentDueDate) : null;
       if (paymentDate !== undefined) data.paymentDate = paymentDate ? new Date(paymentDate) : null;
       if (comments !== undefined) data.comments = comments;
+      if (nextVisitDate !== undefined) data.nextVisitDate = nextVisitDate ? new Date(nextVisitDate) : null;
+      if (visitedAt !== undefined) data.visitedAt = visitedAt ? new Date(visitedAt) : null;
 
       // If products are provided, replace the entire product list with stock management
       if (products !== undefined && !Array.isArray(products)) {

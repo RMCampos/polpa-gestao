@@ -1107,6 +1107,8 @@ export const SaleScalarFieldEnum = {
   paymentDueDate: 'paymentDueDate',
   paymentDate: 'paymentDate',
   comments: 'comments',
+  nextVisitDate: 'nextVisitDate',
+  visitedAt: 'visitedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
