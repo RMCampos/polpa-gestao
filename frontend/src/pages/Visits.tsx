@@ -3,8 +3,22 @@ import axios from 'axios';
 import { useToast } from '../context/toast';
 import type { Sale } from '../types';
 
-const formatDate = (value: string | null) =>
-  value ? new Date(value).toLocaleDateString('pt-BR') : 'N/A';
+const formatDate = (value: string | null) => {
+  if (value) {
+    const valueDate = new Date(value);
+    const formatted = valueDate.toLocaleDateString('pt-BR');
+    switch (valueDate.getDay()) {
+      case 0: return `${formatted} - Sunday`;
+      case 1: return `${formatted} - Monday`;
+      case 2: return `${formatted} - Tuesday`;
+      case 3: return `${formatted} - Wednesday`;
+      case 4: return `${formatted} - Thursday`;
+      case 5: return `${formatted} - Friday`;
+      case 6: return `${formatted} - Saturday`;
+    }
+  }
+  return 'N/A';
+}
 
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString('pt-BR');
