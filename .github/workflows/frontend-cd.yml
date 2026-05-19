@@ -77,6 +77,7 @@ jobs:
             VITE_BACKEND_SERVER=${{ vars.BACKEND_SERVER_URL }}
             VITE_CPF_CNPJ_API_TOKEN=${{ secrets.CPF_CNPJ_API_TOKEN }}
             VITE_BUILD_NUMBER=${{ steps.version.outputs.build_number }}
+            VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
 
       - name: Create and push Git tag
         run: |
