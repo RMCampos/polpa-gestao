@@ -8,6 +8,12 @@ type ClosestPos = {
   lastBuyingDate: string | null;
 };
 
+const formatDistance = (distanceKm: number): string => {
+  const distanceMeters = Math.round(distanceKm * 1000);
+  if (distanceMeters < 1000) return `${distanceMeters} m away`;
+  return `${distanceKm.toFixed(2)} km away`;
+};
+
 export default function ClosestPos() {
   const [items, setItems] = useState<ClosestPos[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +57,7 @@ export default function ClosestPos() {
   }, [fetchClosestPos]);
 
   return (
-    <div className="container py-5 animate-fade-in">
+    <div className="container py-4 py-md-5 animate-fade-in d-flex flex-column" style={{ minHeight: '100vh' }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="fw-bold m-0">Closest Points of Sale</h2>
@@ -68,12 +74,12 @@ export default function ClosestPos() {
         </div>
       )}
 
-      <div className="row g-3">
+      <div className="d-flex flex-column gap-3">
         {items.map((pos) => (
-          <div key={pos.id} className="col-12 col-md-6 col-lg-4">
-            <div className="glass-card p-3 h-100 d-flex flex-column">
+          <div key={pos.id} className="w-100">
+            <div className="glass-card p-4 d-flex flex-column" style={{ minHeight: '140px' }}>
               <strong className="text-white">{pos.address}</strong>
-              <div className="text-secondary small mt-2">{pos.distanceKm.toFixed(2)} km away</div>
+              <div className="text-secondary small mt-2">{formatDistance(pos.distanceKm)}</div>
               <div className="text-secondary small mt-auto pt-3">
                 Last buying date: {pos.lastBuyingDate
                   ? new Date(pos.lastBuyingDate).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
@@ -88,7 +94,7 @@ export default function ClosestPos() {
         <div className="text-secondary mt-4">No points of sale with coordinates were found.</div>
       )}
 
-      <footer className="text-center text-secondary small mt-5">© 2026 Polpa Gestão</footer>
+      <footer className="text-center text-secondary small mt-auto pt-4">© 2026 Polpa Gestão</footer>
     </div>
   );
 }
