@@ -31,6 +31,7 @@ import salesRoutes from './routes/sales';
 import visitsRoutes from './routes/visits';
 import dashboardRoutes from './routes/dashboard';
 import healthRoutes from './routes/health';
+import publicRoutes from './routes/public';
 
 app.register(usersRoutes, { prefix: '/api/users' });
 app.register(customersRoutes, { prefix: '/api/customers' });
@@ -40,6 +41,7 @@ app.register(salesRoutes, { prefix: '/api/sales' });
 app.register(visitsRoutes, { prefix: '/api/visits' });
 app.register(dashboardRoutes, { prefix: '/api/dashboard' });
 app.register(healthRoutes, { prefix: '/api/health' });
+app.register(publicRoutes, { prefix: '/api/public' });
 
 app.get('/health', async (request, reply) => {
   return { status: 'ok' };

@@ -17,7 +17,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
-  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '', fridgeCount: 0, banner: false, indiBanner: false };
+  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '', fridgeCount: 0, banner: false, indiBanner: false, lat: null, lng: null };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -32,6 +32,7 @@ export default function Customers() {
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
   const cpfCnpjApiToken = import.meta.env.VITE_CPF_CNPJ_API_TOKEN || '';
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
   const fetchCustomers = useCallback(async () => {
     try {
@@ -169,7 +170,9 @@ export default function Customers() {
       personName: p.personName || '',
       fridgeCount: p.fridgeCount ?? 0,
       banner: p.banner ?? false,
-      indiBanner: p.indiBanner ?? false
+      indiBanner: p.indiBanner ?? false,
+      lat: p.lat ?? null,
+      lng: p.lng ?? null
     });
   };
 
@@ -199,6 +202,41 @@ export default function Customers() {
       setSelectedCustomer(res.data);
     } catch (err) {
       toast.showToast(`Failed to save POS: ${toErrorMessage(err, 'Unknown error')}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGeocodePos = async () => {
+    if (!newPos.address?.trim()) {
+      toast.showToast('Enter an address before geocoding.', 'error');
+      return;
+    }
+
+    if (!googleMapsApiKey) {
+      toast.showToast('Geocoding is currently unavailable. Please contact support.', 'error');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+        params: {
+          address: newPos.address.trim(),
+          key: googleMapsApiKey
+        }
+      });
+
+      const location = response.data?.results?.[0]?.geometry?.location;
+      if (response.data?.status !== 'OK' || typeof location?.lat !== 'number' || typeof location?.lng !== 'number') {
+        toast.showToast('Address not found for geocoding.', 'error');
+        return;
+      }
+
+      setNewPos((prev) => ({ ...prev, lat: location.lat, lng: location.lng }));
+      toast.showToast('Geocode set successfully.', 'success');
+    } catch (err) {
+      toast.showToast(`Failed to geocode address: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -440,6 +478,9 @@ export default function Customers() {
                           <div className="text-secondary small">
                             Banner: {p.banner ? 'Yes' : 'No'} | Indi Banner: {p.indiBanner ? 'Yes' : 'No'}
                           </div>
+                          <div className="text-secondary small">
+                            Geocode: {p.lat != null && p.lng != null ? 'Set' : 'Missing'}
+                          </div>
                         </div>
                         <div className="d-flex gap-2">
                           <button className="btn btn-sm btn-outline-primary" onClick={() => openEditPos(p)}>Edit</button>
@@ -534,10 +575,11 @@ export default function Customers() {
                               </label>
                             </div>
                           </div>
-                          <div className="col-md-3 d-flex align-items-end gap-2">
+                          <div className="col-md-5 d-flex align-items-end gap-2">
                             {editingPos && (
                               <button type="button" className="btn btn-sm btn-outline-secondary w-100" onClick={cancelEditPos}>Cancel</button>
                             )}
+                            <button type="button" className="btn btn-sm btn-outline-info w-100" onClick={handleGeocodePos} disabled={loading}>Geocode</button>
                             <button type="submit" className="btn btn-sm btn-success w-100" disabled={loading}>{loading ? '...' : editingPos ? 'Save' : 'Add'}</button>
                           </div>
                         </div>

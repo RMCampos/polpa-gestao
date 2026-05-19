@@ -42,6 +42,7 @@ services:
     container_name: polpa_gestao_backend
     environment:
       DATABASE_URL: postgres://admin:adminpassword@postgres:5432/polpa_gestao
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
     ports:
       - "3000:3000"
     depends_on:
@@ -63,6 +64,7 @@ services:
       args:
         VITE_BACKEND_SERVER: http://localhost:3000
         VITE_CPF_CNPJ_API_TOKEN: ${VITE_CPF_CNPJ_API_TOKEN}
+        VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY}
         VITE_BUILD_NUMBER: snapshot
     image: ghcr.io/rmcampos/polpa-gestao/frontend:latest
     container_name: polpa_gestao_frontend
