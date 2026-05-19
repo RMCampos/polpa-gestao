@@ -14,6 +14,27 @@ const formatDistance = (distanceKm: number): string => {
   return `${distanceKm.toFixed(2)} km away`;
 };
 
+const openAddressInMaps = (address: string, preferredApp?: 'google' | 'apple') => {
+  const encodedAddress = encodeURIComponent(address);
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isAndroid = /Android/i.test(navigator.userAgent);
+
+  if (isIOS) {
+    if (preferredApp === 'google') {
+      window.location.href = `comgooglemaps://?q=${encodedAddress}`;
+      setTimeout(() => {
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+      }, 500);
+    } else {
+      window.location.href = `http://maps.apple.com/?q=${encodedAddress}`;
+    }
+  } else if (isAndroid) {
+    window.location.href = `geo:0,0?q=${encodedAddress}`;
+  } else {
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+  }
+};
+
 export default function ClosestPos() {
   const [items, setItems] = useState<ClosestPos[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,6 +105,22 @@ export default function ClosestPos() {
                 Last buying date: {pos.lastBuyingDate
                   ? new Date(pos.lastBuyingDate).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
                   : 'No sales yet'}
+              </div>
+              <div className="d-flex justify-content-end gap-2 pt-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-light btn-sm"
+                  onClick={() => openAddressInMaps(pos.address, 'google')}
+                >
+                  Open in Google Maps
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-light btn-sm"
+                  onClick={() => openAddressInMaps(pos.address, 'apple')}
+                >
+                  Open in Apple Maps
+                </button>
               </div>
             </div>
           </div>
