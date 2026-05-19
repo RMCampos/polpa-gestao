@@ -56,12 +56,15 @@ This command will:
 | Backend API | http://localhost:3000 |
 | Database | `localhost:5432` (user: `admin`, password: `adminpassword`, db: `polpa_gestao`) |
 
-**Optional environment variable:**
+**Optional environment variables:**
 
-To enable CPF/CNPJ document validation, set the `VITE_CPF_CNPJ_API_TOKEN` variable before starting:
+To enable CPF/CNPJ document validation and POS geocoding, set these variables before starting:
 
 ```bash
-VITE_CPF_CNPJ_API_TOKEN=your_token_here docker compose up
+VITE_CPF_CNPJ_API_TOKEN=your_token_here \
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here \
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here \
+docker compose up
 ```
 
 **Stop all services:**

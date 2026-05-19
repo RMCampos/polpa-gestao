@@ -41,6 +41,8 @@ model CustomerPos {
   fridgeCount Int     @default(0)
   banner     Boolean  @default(false)
   indiBanner Boolean  @default(false)
+  lat        Float?
+  lng        Float?
   sales      Sale[]
   routes     RouteCustomerPos[]
   createdAt  DateTime @default(now())

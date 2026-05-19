@@ -8,6 +8,7 @@ import Products from './pages/Products';
 import RoutesPage from './pages/Routes';
 import Sales from './pages/Sales';
 import Visits from './pages/Visits';
+import ClosestPos from './pages/ClosestPos';
 import Sidebar from './components/Sidebar';
 import { Toast } from './components/Toast';
 import { ConfirmDialog } from './components/ConfirmDialog';
@@ -18,7 +19,8 @@ export default function App() {
 
   useEffect(() => {
     if (!token) {
-      if (window.location.pathname !== '/login') {
+      const isPublicPath = window.location.pathname === '/login' || window.location.pathname === '/closest';
+      if (!isPublicPath) {
         navigate('/login');
       }
     }
@@ -34,6 +36,7 @@ export default function App() {
     return (
       <>
         <Routes>
+          <Route path="/closest" element={<ClosestPos />} />
           <Route path="/login" element={<Login setToken={setToken} />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
@@ -57,6 +60,7 @@ export default function App() {
             <Route path="/routes" element={<RoutesPage />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/visits" element={<Visits />} />
+            <Route path="/closest" element={<ClosestPos />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </main>

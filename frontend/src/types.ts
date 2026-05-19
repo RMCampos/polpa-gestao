@@ -41,6 +41,8 @@ export type CustomerPOS = {
   fridgeCount?: number;
   banner: boolean;
   indiBanner: boolean;
+  lat?: number | null;
+  lng?: number | null;
   customer?: Customer;
 }
 
