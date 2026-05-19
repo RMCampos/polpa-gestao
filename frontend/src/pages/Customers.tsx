@@ -483,7 +483,7 @@ export default function Customers() {
                               maxLength={30}
                             />
                           </div>
-                          <div className="col-md-2">
+                          <div className="col-md-5">
                             <label className="form-label text-secondary small">Fridges</label>
                             <input
                               type="number"
@@ -498,7 +498,7 @@ export default function Customers() {
                               min={0}
                             />
                           </div>
-                          <div className="col-md-3 d-flex align-items-end gap-2">
+                          <div className="col-md-7">
                             <div className="form-check">
                               <input
                                 className="form-check-input"
@@ -530,7 +530,7 @@ export default function Customers() {
                                 }
                               />
                               <label className="form-check-label text-secondary small" htmlFor="pos-indi-banner">
-                                Indi Banner
+                                Wind Banner
                               </label>
                             </div>
                           </div>
