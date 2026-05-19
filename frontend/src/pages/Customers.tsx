@@ -17,7 +17,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
-  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '', fridgeCount: 0 };
+  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '', fridgeCount: 0, banner: false, indiBanner: false };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -163,7 +163,14 @@ export default function Customers() {
       return;
     }
     setEditingPos(p.id);
-    setNewPos({ address: p.address, phone: p.phone, personName: p.personName || '', fridgeCount: p.fridgeCount ?? 0 });
+    setNewPos({
+      address: p.address,
+      phone: p.phone,
+      personName: p.personName || '',
+      fridgeCount: p.fridgeCount ?? 0,
+      banner: p.banner ?? false,
+      indiBanner: p.indiBanner ?? false
+    });
   };
 
   const cancelEditPos = () => {
@@ -430,6 +437,9 @@ export default function Customers() {
                           <div className="text-secondary small">
                             Fridges: {p.fridgeCount ?? 0}
                           </div>
+                          <div className="text-secondary small">
+                            Banner: {p.banner ? 'Yes' : 'No'} | Indi Banner: {p.indiBanner ? 'Yes' : 'No'}
+                          </div>
                         </div>
                         <div className="d-flex gap-2">
                           <button className="btn btn-sm btn-outline-primary" onClick={() => openEditPos(p)}>Edit</button>
@@ -473,7 +483,7 @@ export default function Customers() {
                               maxLength={30}
                             />
                           </div>
-                          <div className="col-md-2">
+                          <div className="col-md-5">
                             <label className="form-label text-secondary small">Fridges</label>
                             <input
                               type="number"
@@ -487,6 +497,42 @@ export default function Customers() {
                               }
                               min={0}
                             />
+                          </div>
+                          <div className="col-md-7">
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="pos-banner"
+                                checked={newPos.banner}
+                                onChange={e =>
+                                  setNewPos({
+                                    ...newPos,
+                                    banner: e.target.checked,
+                                  })
+                                }
+                              />
+                              <label className="form-check-label text-secondary small" htmlFor="pos-banner">
+                                Banner
+                              </label>
+                            </div>
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="pos-indi-banner"
+                                checked={newPos.indiBanner}
+                                onChange={e =>
+                                  setNewPos({
+                                    ...newPos,
+                                    indiBanner: e.target.checked,
+                                  })
+                                }
+                              />
+                              <label className="form-check-label text-secondary small" htmlFor="pos-indi-banner">
+                                Wind Banner
+                              </label>
+                            </div>
                           </div>
                           <div className="col-md-3 d-flex align-items-end gap-2">
                             {editingPos && (

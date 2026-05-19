@@ -112,6 +112,8 @@ export const CustomerPosScalarFieldEnum = {
   phone: 'phone',
   personName: 'personName',
   fridgeCount: 'fridgeCount',
+  banner: 'banner',
+  indiBanner: 'indiBanner',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   disabledAt: 'disabledAt'

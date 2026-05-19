@@ -39,6 +39,8 @@ model CustomerPos {
   phone      String
   personName String?  @db.VarChar(30)
   fridgeCount Int     @default(0)
+  banner     Boolean  @default(false)
+  indiBanner Boolean  @default(false)
   sales      Sale[]
   routes     RouteCustomerPos[]
   createdAt  DateTime @default(now())
