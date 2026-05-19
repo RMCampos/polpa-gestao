@@ -22,11 +22,8 @@ const openAddressInMaps = (address: string, preferredApp?: 'google' | 'apple') =
   if (isIOS) {
     if (preferredApp === 'google') {
       window.location.href = `comgooglemaps://?q=${encodedAddress}`;
-      setTimeout(() => {
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
-      }, 500);
     } else {
-      window.location.href = `http://maps.apple.com/?q=${encodedAddress}`;
+      window.location.href = `https://maps.apple.com/?q=${encodedAddress}`;
     }
   } else if (isAndroid) {
     window.location.href = `geo:0,0?q=${encodedAddress}`;
@@ -110,6 +107,7 @@ export default function ClosestPos() {
                 <button
                   type="button"
                   className="btn btn-outline-light btn-sm"
+                  aria-label={`Open ${pos.address} in Google Maps`}
                   onClick={() => openAddressInMaps(pos.address, 'google')}
                 >
                   Open in Google Maps
@@ -117,6 +115,7 @@ export default function ClosestPos() {
                 <button
                   type="button"
                   className="btn btn-outline-light btn-sm"
+                  aria-label={`Open ${pos.address} in Apple Maps`}
                   onClick={() => openAddressInMaps(pos.address, 'apple')}
                 >
                   Open in Apple Maps
