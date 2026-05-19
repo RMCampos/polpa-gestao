@@ -32,11 +32,15 @@ const calculateDistanceKm = (originLat: number, originLng: number, destinationLa
 export default async function publicRoutes(app: FastifyInstance) {
   app.get('/pos/closest', async (request, reply) => {
     const { lat, lng } = request.query as { lat?: string; lng?: string };
+    if (lat === undefined || lng === undefined) {
+      return reply.code(400).send({ error: 'lat and lng query parameters are required' });
+    }
+
     const referenceLat = Number(lat);
     const referenceLng = Number(lng);
 
     if (!Number.isFinite(referenceLat) || !Number.isFinite(referenceLng)) {
-      return reply.code(400).send({ error: 'lat and lng query parameters are required and must be valid numbers' });
+      return reply.code(400).send({ error: 'lat and lng query parameters must be valid numbers' });
     }
 
     const activePosList = await prisma.customerPos.findMany({

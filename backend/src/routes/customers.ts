@@ -30,7 +30,7 @@ const parseCoordinate = (value: unknown): number | null | undefined => {
 };
 
 const geocodeAddress = async (address: string): Promise<PosCoordinates | null> => {
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey || !address?.trim()) return null;
 
   const geocodeUrl = new URL('https://maps.googleapis.com/maps/api/geocode/json');
@@ -148,9 +148,8 @@ export default async function customersRoutes(app: FastifyInstance) {
     const parsedLat = parseCoordinate(lat);
     const parsedLng = parseCoordinate(lng);
 
-    if ((lat !== undefined && parsedLat === undefined) || (lng !== undefined && parsedLng === undefined)) {
-      return reply.code(400).send({ error: 'Invalid lat/lng coordinates' });
-    }
+    if (lat !== undefined && parsedLat === undefined) return reply.code(400).send({ error: 'Invalid lat coordinate' });
+    if (lng !== undefined && parsedLng === undefined) return reply.code(400).send({ error: 'Invalid lng coordinate' });
 
     const coordinates = await resolvePosCoordinates({ address, lat: parsedLat, lng: parsedLng });
     if ((parsedLat !== undefined || parsedLng !== undefined) && !coordinates) {
@@ -180,9 +179,8 @@ export default async function customersRoutes(app: FastifyInstance) {
     const parsedLat = parseCoordinate(lat);
     const parsedLng = parseCoordinate(lng);
 
-    if ((lat !== undefined && parsedLat === undefined) || (lng !== undefined && parsedLng === undefined)) {
-      return reply.code(400).send({ error: 'Invalid lat/lng coordinates' });
-    }
+    if (lat !== undefined && parsedLat === undefined) return reply.code(400).send({ error: 'Invalid lat coordinate' });
+    if (lng !== undefined && parsedLng === undefined) return reply.code(400).send({ error: 'Invalid lng coordinate' });
 
     const coordinates = await resolvePosCoordinates({ address, lat: parsedLat, lng: parsedLng });
     if ((parsedLat !== undefined || parsedLng !== undefined) && !coordinates) {

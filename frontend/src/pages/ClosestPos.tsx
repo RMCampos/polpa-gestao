@@ -13,6 +13,7 @@ export default function ClosestPos() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
+  const locale = navigator.language || 'en-US';
 
   const fetchClosestPos = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -74,7 +75,9 @@ export default function ClosestPos() {
               <strong className="text-white">{pos.address}</strong>
               <div className="text-secondary small mt-2">{pos.distanceKm.toFixed(2)} km away</div>
               <div className="text-secondary small mt-auto pt-3">
-                Last buying date: {pos.lastBuyingDate ? new Date(pos.lastBuyingDate).toLocaleString() : 'No sales yet'}
+                Last buying date: {pos.lastBuyingDate
+                  ? new Date(pos.lastBuyingDate).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
+                  : 'No sales yet'}
               </div>
             </div>
           </div>

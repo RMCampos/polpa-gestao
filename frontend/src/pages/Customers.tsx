@@ -214,7 +214,7 @@ export default function Customers() {
     }
 
     if (!googleMapsApiKey) {
-      toast.showToast('Google Maps API key is missing.', 'error');
+      toast.showToast('Geocoding is currently unavailable. Please contact support.', 'error');
       return;
     }
 
