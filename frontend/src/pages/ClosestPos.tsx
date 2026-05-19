@@ -3,6 +3,7 @@ import axios from 'axios';
 
 type ClosestPos = {
   id: string;
+  customerName: string;
   address: string;
   distanceKm: number;
   lastBuyingDate: string | null;
@@ -96,7 +97,8 @@ export default function ClosestPos() {
         {items.map((pos) => (
           <div key={pos.id} className="w-100">
             <div className="glass-card p-4 d-flex flex-column" style={{ minHeight: '140px' }}>
-              <strong className="text-white">{pos.address}</strong>
+              <strong className="text-white fs-5">{pos.customerName}</strong>
+              <div className="text-white-50 small mb-2">{pos.address}</div>
               <div className="text-secondary small mt-2">{formatDistance(pos.distanceKm)}</div>
               <div className="text-secondary small mt-auto pt-3">
                 Last buying date: {pos.lastBuyingDate

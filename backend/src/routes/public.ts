@@ -3,6 +3,7 @@ import { prisma } from '../prisma';
 
 type PosClosestResponse = {
   id: string;
+  customerName: string;
   address: string;
   lat: number;
   lng: number;
@@ -55,6 +56,9 @@ export default async function publicRoutes(app: FastifyInstance) {
         address: true,
         lat: true,
         lng: true,
+        customer: {
+          select: { name: true }
+        },
         sales: {
           select: { createdAt: true },
           orderBy: { createdAt: 'desc' },
@@ -69,6 +73,7 @@ export default async function publicRoutes(app: FastifyInstance) {
         const posLng = pos.lng as number;
         return {
           id: pos.id,
+          customerName: pos.customer.name,
           address: pos.address,
           lat: posLat,
           lng: posLng,
