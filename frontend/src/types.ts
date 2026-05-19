@@ -39,6 +39,8 @@ export type CustomerPOS = {
   phone: string;
   personName?: string;
   fridgeCount?: number;
+  banner: boolean;
+  indiBanner: boolean;
   customer?: Customer;
 }
 

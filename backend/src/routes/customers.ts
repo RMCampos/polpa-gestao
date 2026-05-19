@@ -10,6 +10,12 @@ const parseFridgeCount = (value: unknown): number | undefined => {
   return parsedValue;
 };
 
+const parseBooleanFlag = (value: unknown): boolean | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'boolean') return value;
+  return undefined;
+};
+
 export default async function customersRoutes(app: FastifyInstance) {
   // Get all customers (with pos optionally)
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -77,23 +83,35 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   app.post('/:customerId/pos', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { customerId } = request.params as any;
-    const { address, phone, personName, fridgeCount } = request.body as any;
+    const { address, phone, personName, fridgeCount, banner, indiBanner } = request.body as any;
     return prisma.customerPos.create({
-      data: { customerId, address, phone, personName, fridgeCount: parseFridgeCount(fridgeCount) ?? 0 }
+      data: {
+        customerId,
+        address,
+        phone,
+        personName,
+        fridgeCount: parseFridgeCount(fridgeCount) ?? 0,
+        banner: parseBooleanFlag(banner) ?? false,
+        indiBanner: parseBooleanFlag(indiBanner) ?? false
+      }
     });
   });
 
   app.put('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { address, phone, personName, fridgeCount } = request.body as any;
+    const { address, phone, personName, fridgeCount, banner, indiBanner } = request.body as any;
     const normalizedFridgeCount = parseFridgeCount(fridgeCount);
+    const normalizedBanner = parseBooleanFlag(banner);
+    const normalizedIndiBanner = parseBooleanFlag(indiBanner);
     return prisma.customerPos.update({
       where: { id },
       data: {
         address,
         phone,
         personName,
-        ...(normalizedFridgeCount !== undefined ? { fridgeCount: normalizedFridgeCount } : {})
+        ...(normalizedFridgeCount !== undefined ? { fridgeCount: normalizedFridgeCount } : {}),
+        ...(normalizedBanner !== undefined ? { banner: normalizedBanner } : {}),
+        ...(normalizedIndiBanner !== undefined ? { indiBanner: normalizedIndiBanner } : {})
       }
     });
   });

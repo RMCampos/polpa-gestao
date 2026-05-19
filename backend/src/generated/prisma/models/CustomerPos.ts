@@ -41,6 +41,8 @@ export type CustomerPosMinAggregateOutputType = {
   phone: string | null
   personName: string | null
   fridgeCount: number | null
+  banner: boolean | null
+  indiBanner: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   disabledAt: Date | null
@@ -53,6 +55,8 @@ export type CustomerPosMaxAggregateOutputType = {
   phone: string | null
   personName: string | null
   fridgeCount: number | null
+  banner: boolean | null
+  indiBanner: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
   disabledAt: Date | null
@@ -65,6 +69,8 @@ export type CustomerPosCountAggregateOutputType = {
   phone: number
   personName: number
   fridgeCount: number
+  banner: number
+  indiBanner: number
   createdAt: number
   updatedAt: number
   disabledAt: number
@@ -87,6 +93,8 @@ export type CustomerPosMinAggregateInputType = {
   phone?: true
   personName?: true
   fridgeCount?: true
+  banner?: true
+  indiBanner?: true
   createdAt?: true
   updatedAt?: true
   disabledAt?: true
@@ -99,6 +107,8 @@ export type CustomerPosMaxAggregateInputType = {
   phone?: true
   personName?: true
   fridgeCount?: true
+  banner?: true
+  indiBanner?: true
   createdAt?: true
   updatedAt?: true
   disabledAt?: true
@@ -111,6 +121,8 @@ export type CustomerPosCountAggregateInputType = {
   phone?: true
   personName?: true
   fridgeCount?: true
+  banner?: true
+  indiBanner?: true
   createdAt?: true
   updatedAt?: true
   disabledAt?: true
@@ -210,6 +222,8 @@ export type CustomerPosGroupByOutputType = {
   phone: string
   personName: string | null
   fridgeCount: number
+  banner: boolean
+  indiBanner: boolean
   createdAt: Date
   updatedAt: Date
   disabledAt: Date | null
@@ -245,6 +259,8 @@ export type CustomerPosWhereInput = {
   phone?: Prisma.StringFilter<"CustomerPos"> | string
   personName?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntFilter<"CustomerPos"> | number
+  banner?: Prisma.BoolFilter<"CustomerPos"> | boolean
+  indiBanner?: Prisma.BoolFilter<"CustomerPos"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CustomerPos"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerPos"> | Date | string
   disabledAt?: Prisma.DateTimeNullableFilter<"CustomerPos"> | Date | string | null
@@ -260,6 +276,8 @@ export type CustomerPosOrderByWithRelationInput = {
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrderInput | Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
+  banner?: Prisma.SortOrder
+  indiBanner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -278,6 +296,8 @@ export type CustomerPosWhereUniqueInput = Prisma.AtLeast<{
   phone?: Prisma.StringFilter<"CustomerPos"> | string
   personName?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntFilter<"CustomerPos"> | number
+  banner?: Prisma.BoolFilter<"CustomerPos"> | boolean
+  indiBanner?: Prisma.BoolFilter<"CustomerPos"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CustomerPos"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerPos"> | Date | string
   disabledAt?: Prisma.DateTimeNullableFilter<"CustomerPos"> | Date | string | null
@@ -293,6 +313,8 @@ export type CustomerPosOrderByWithAggregationInput = {
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrderInput | Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
+  banner?: Prisma.SortOrder
+  indiBanner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -313,6 +335,8 @@ export type CustomerPosScalarWhereWithAggregatesInput = {
   phone?: Prisma.StringWithAggregatesFilter<"CustomerPos"> | string
   personName?: Prisma.StringNullableWithAggregatesFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntWithAggregatesFilter<"CustomerPos"> | number
+  banner?: Prisma.BoolWithAggregatesFilter<"CustomerPos"> | boolean
+  indiBanner?: Prisma.BoolWithAggregatesFilter<"CustomerPos"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerPos"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerPos"> | Date | string
   disabledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CustomerPos"> | Date | string | null
@@ -324,6 +348,8 @@ export type CustomerPosCreateInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -339,6 +365,8 @@ export type CustomerPosUncheckedCreateInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -352,6 +380,8 @@ export type CustomerPosUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -367,6 +397,8 @@ export type CustomerPosUncheckedUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -381,6 +413,8 @@ export type CustomerPosCreateManyInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -392,6 +426,8 @@ export type CustomerPosUpdateManyMutationInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -404,6 +440,8 @@ export type CustomerPosUncheckedUpdateManyInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -426,6 +464,8 @@ export type CustomerPosCountOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
+  banner?: Prisma.SortOrder
+  indiBanner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrder
@@ -442,6 +482,8 @@ export type CustomerPosMaxOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
+  banner?: Prisma.SortOrder
+  indiBanner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrder
@@ -454,6 +496,8 @@ export type CustomerPosMinOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
+  banner?: Prisma.SortOrder
+  indiBanner?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrder
@@ -518,6 +562,10 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type CustomerPosCreateNestedOneWithoutSalesInput = {
   create?: Prisma.XOR<Prisma.CustomerPosCreateWithoutSalesInput, Prisma.CustomerPosUncheckedCreateWithoutSalesInput>
   connectOrCreate?: Prisma.CustomerPosCreateOrConnectWithoutSalesInput
@@ -552,6 +600,8 @@ export type CustomerPosCreateWithoutCustomerInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -565,6 +615,8 @@ export type CustomerPosUncheckedCreateWithoutCustomerInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -608,6 +660,8 @@ export type CustomerPosScalarWhereInput = {
   phone?: Prisma.StringFilter<"CustomerPos"> | string
   personName?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntFilter<"CustomerPos"> | number
+  banner?: Prisma.BoolFilter<"CustomerPos"> | boolean
+  indiBanner?: Prisma.BoolFilter<"CustomerPos"> | boolean
   createdAt?: Prisma.DateTimeFilter<"CustomerPos"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerPos"> | Date | string
   disabledAt?: Prisma.DateTimeNullableFilter<"CustomerPos"> | Date | string | null
@@ -619,6 +673,8 @@ export type CustomerPosCreateWithoutSalesInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -633,6 +689,8 @@ export type CustomerPosUncheckedCreateWithoutSalesInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -661,6 +719,8 @@ export type CustomerPosUpdateWithoutSalesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -675,6 +735,8 @@ export type CustomerPosUncheckedUpdateWithoutSalesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -687,6 +749,8 @@ export type CustomerPosCreateWithoutRoutesInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -701,6 +765,8 @@ export type CustomerPosUncheckedCreateWithoutRoutesInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -729,6 +795,8 @@ export type CustomerPosUpdateWithoutRoutesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -743,6 +811,8 @@ export type CustomerPosUncheckedUpdateWithoutRoutesInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -755,6 +825,8 @@ export type CustomerPosCreateManyCustomerInput = {
   phone: string
   personName?: string | null
   fridgeCount?: number
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -766,6 +838,8 @@ export type CustomerPosUpdateWithoutCustomerInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -779,6 +853,8 @@ export type CustomerPosUncheckedUpdateWithoutCustomerInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -792,6 +868,8 @@ export type CustomerPosUncheckedUpdateManyWithoutCustomerInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
+  banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  indiBanner?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -844,6 +922,8 @@ export type CustomerPosSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   phone?: boolean
   personName?: boolean
   fridgeCount?: boolean
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
@@ -860,6 +940,8 @@ export type CustomerPosSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   phone?: boolean
   personName?: boolean
   fridgeCount?: boolean
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
@@ -873,6 +955,8 @@ export type CustomerPosSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   phone?: boolean
   personName?: boolean
   fridgeCount?: boolean
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
@@ -886,12 +970,14 @@ export type CustomerPosSelectScalar = {
   phone?: boolean
   personName?: boolean
   fridgeCount?: boolean
+  banner?: boolean
+  indiBanner?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
 }
 
-export type CustomerPosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "address" | "phone" | "personName" | "fridgeCount" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["customerPos"]>
+export type CustomerPosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "address" | "phone" | "personName" | "fridgeCount" | "banner" | "indiBanner" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["customerPos"]>
 export type CustomerPosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   sales?: boolean | Prisma.CustomerPos$salesArgs<ExtArgs>
@@ -919,6 +1005,8 @@ export type $CustomerPosPayload<ExtArgs extends runtime.Types.Extensions.Interna
     phone: string
     personName: string | null
     fridgeCount: number
+    banner: boolean
+    indiBanner: boolean
     createdAt: Date
     updatedAt: Date
     disabledAt: Date | null
@@ -1354,6 +1442,8 @@ export interface CustomerPosFieldRefs {
   readonly phone: Prisma.FieldRef<"CustomerPos", 'String'>
   readonly personName: Prisma.FieldRef<"CustomerPos", 'String'>
   readonly fridgeCount: Prisma.FieldRef<"CustomerPos", 'Int'>
+  readonly banner: Prisma.FieldRef<"CustomerPos", 'Boolean'>
+  readonly indiBanner: Prisma.FieldRef<"CustomerPos", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"CustomerPos", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CustomerPos", 'DateTime'>
   readonly disabledAt: Prisma.FieldRef<"CustomerPos", 'DateTime'>

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "CustomerPos" ADD COLUMN "banner" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "indiBanner" BOOLEAN NOT NULL DEFAULT false;
