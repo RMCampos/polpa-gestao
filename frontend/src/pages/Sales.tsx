@@ -668,7 +668,26 @@ export default function Sales() {
                                 <div className="d-flex gap-2 align-items-end">
                                   <div style={{ width: '90px' }}>
                                     <label className="form-label text-secondary small mb-1">Qty</label>
-                                    <input type="number" className="form-control form-control-sm" min="1" value={item.quantity} onChange={(e) => handleUpdateCartItem(idx, 'quantity', parseInt(e.target.value) || 1)} required />
+                                    <input
+                                      type="text"
+                                      inputMode="numeric"
+                                      pattern="[0-9]*"
+                                      className="form-control form-control-sm"
+                                      value={String(item.quantity)}
+                                      onChange={(e) => {
+                                        const raw = e.target.value;
+
+                                        if (raw === '') {
+                                          handleUpdateCartItem(idx, 'quantity', '' as unknown as number);
+                                          return;
+                                        }
+                                        const parsed = Number.parseInt(raw, 10);
+                                        if (!Number.isNaN(parsed) && parsed > 0) {
+                                          handleUpdateCartItem(idx, 'quantity', parsed);
+                                        }
+                                      }}
+                                      required
+                                    />
                                   </div>
                                   <div className="text-end ms-auto">
                                     <div className="text-secondary small">Unit: R$ {item.price.toFixed(2)}</div>
