@@ -75,7 +75,7 @@ export default function Customers() {
       fetchCustomers();
       toast.showToast(editingCustomer ? 'Customer updated successfully.' : 'Customer created successfully.', 'success');
     } catch (err) {
-      toast.showToast(`Failed to save customer. Document (CNPJ/CPF) may already exist: ${toErrorMessage(err, 'Unknown error')}`, 'error');
+      toast.showToast(`Failed to save customer: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
