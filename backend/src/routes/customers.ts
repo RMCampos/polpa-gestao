@@ -77,6 +77,9 @@ const resolvePosCoordinates = async ({
   return geocoded;
 };
 
+const conflictError = (message: string): Error & { statusCode: number } =>
+  Object.assign(new Error(message), { statusCode: 409 });
+
 export default async function customersRoutes(app: FastifyInstance) {
   // Get all customers (with pos optionally)
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -103,9 +106,31 @@ export default async function customersRoutes(app: FastifyInstance) {
     const { name, document, phone, personName } = request.body as any;
     const docValue = document || null;
     try {
-      return await prisma.customer.create({ data: { name, document: docValue, phone, personName } });
+      return await prisma.$transaction(async (tx) => {
+        const existingByName = await tx.customer.findFirst({
+          where: { name: { equals: name, mode: 'insensitive' }, disabledAt: null }
+        });
+        if (existingByName) throw conflictError('A customer with this name already exists');
+
+        if (phone) {
+          const existingByPhone = await tx.customer.findFirst({
+            where: { phone, disabledAt: null }
+          });
+          if (existingByPhone) throw conflictError('A customer with this phone number already exists');
+        }
+
+        if (docValue) {
+          const existingByDoc = await tx.customer.findFirst({
+            where: { document: docValue, disabledAt: null }
+          });
+          if (existingByDoc) throw conflictError('A customer with this document already exists');
+        }
+
+        return tx.customer.create({ data: { name, document: docValue, phone, personName } });
+      });
     } catch (e: any) {
-      if (e.code === 'P2002') return reply.code(400).send({ error: 'Document already exists' });
+      if (e.statusCode === 409) return reply.code(409).send({ error: e.message });
+      if (e.code === 'P2002') return reply.code(409).send({ error: 'Document already exists' });
       throw e;
     }
   });
@@ -116,16 +141,30 @@ export default async function customersRoutes(app: FastifyInstance) {
     const { name, document, phone, personName } = request.body as any;
     const docValue = document || null;
     try {
-      if (docValue) {
-        const existing = await prisma.customer.findFirst({
-          where: { document: docValue, id: { not: id } }
+      return await prisma.$transaction(async (tx) => {
+        const existingByName = await tx.customer.findFirst({
+          where: { name: { equals: name, mode: 'insensitive' }, disabledAt: null, id: { not: id } }
         });
-        if (existing) {
-          return reply.code(400).send({ error: 'Document already exists for another customer' });
+        if (existingByName) throw conflictError('A customer with this name already exists');
+
+        if (phone) {
+          const existingByPhone = await tx.customer.findFirst({
+            where: { phone, disabledAt: null, id: { not: id } }
+          });
+          if (existingByPhone) throw conflictError('A customer with this phone number already exists');
         }
-      }
-      return await prisma.customer.update({ where: { id }, data: { name, document: docValue, phone, personName } });
+
+        if (docValue) {
+          const existingByDoc = await tx.customer.findFirst({
+            where: { document: docValue, disabledAt: null, id: { not: id } }
+          });
+          if (existingByDoc) throw conflictError('Document already exists for another customer');
+        }
+
+        return tx.customer.update({ where: { id }, data: { name, document: docValue, phone, personName } });
+      });
     } catch (e: any) {
+      if (e.statusCode === 409) return reply.code(409).send({ error: e.message });
       if (e && e.code === 'P2025') {
         return reply.code(404).send({ error: 'Customer not found' });
       }
@@ -156,18 +195,37 @@ export default async function customersRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Both lat and lng must be provided together' });
     }
 
-    return prisma.customerPos.create({
-      data: {
-        customerId,
-        address,
-        phone,
-        personName,
-        fridgeCount: parseFridgeCount(fridgeCount) ?? 0,
-        banner: parseBooleanFlag(banner) ?? false,
-        indiBanner: parseBooleanFlag(indiBanner) ?? false,
-        ...(coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : {})
-      }
-    });
+    try {
+      return await prisma.$transaction(async (tx) => {
+        if (phone) {
+          const existingByPhone = await tx.customerPos.findFirst({
+            where: { phone, disabledAt: null }
+          });
+          if (existingByPhone) throw conflictError('A point of sale with this phone number already exists');
+        }
+        if (address) {
+          const existingByAddress = await tx.customerPos.findFirst({
+            where: { address: { equals: address, mode: 'insensitive' }, disabledAt: null }
+          });
+          if (existingByAddress) throw conflictError('A point of sale with this address already exists');
+        }
+        return tx.customerPos.create({
+          data: {
+            customerId,
+            address,
+            phone,
+            personName,
+            fridgeCount: parseFridgeCount(fridgeCount) ?? 0,
+            banner: parseBooleanFlag(banner) ?? false,
+            indiBanner: parseBooleanFlag(indiBanner) ?? false,
+            ...(coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : {})
+          }
+        });
+      });
+    } catch (e: any) {
+      if (e.statusCode === 409) return reply.code(409).send({ error: e.message });
+      throw e;
+    }
   });
 
   app.put('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -187,18 +245,37 @@ export default async function customersRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Both lat and lng must be provided together' });
     }
 
-    return prisma.customerPos.update({
-      where: { id },
-      data: {
-        address,
-        phone,
-        personName,
-        ...(normalizedFridgeCount !== undefined ? { fridgeCount: normalizedFridgeCount } : {}),
-        ...(normalizedBanner !== undefined ? { banner: normalizedBanner } : {}),
-        ...(normalizedIndiBanner !== undefined ? { indiBanner: normalizedIndiBanner } : {}),
-        ...(coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : {})
-      }
-    });
+    try {
+      return await prisma.$transaction(async (tx) => {
+        if (phone) {
+          const existingByPhone = await tx.customerPos.findFirst({
+            where: { phone, disabledAt: null, id: { not: id } }
+          });
+          if (existingByPhone) throw conflictError('A point of sale with this phone number already exists');
+        }
+        if (address) {
+          const existingByAddress = await tx.customerPos.findFirst({
+            where: { address: { equals: address, mode: 'insensitive' }, disabledAt: null, id: { not: id } }
+          });
+          if (existingByAddress) throw conflictError('A point of sale with this address already exists');
+        }
+        return tx.customerPos.update({
+          where: { id },
+          data: {
+            address,
+            phone,
+            personName,
+            ...(normalizedFridgeCount !== undefined ? { fridgeCount: normalizedFridgeCount } : {}),
+            ...(normalizedBanner !== undefined ? { banner: normalizedBanner } : {}),
+            ...(normalizedIndiBanner !== undefined ? { indiBanner: normalizedIndiBanner } : {}),
+            ...(coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : {})
+          }
+        });
+      });
+    } catch (e: any) {
+      if (e.statusCode === 409) return reply.code(409).send({ error: e.message });
+      throw e;
+    }
   });
 
   app.delete('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
