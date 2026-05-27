@@ -48,6 +48,25 @@ export default function Customers() {
     fetchCustomers();
   }, [fetchCustomers]);
 
+  const addressFilterMatches = (pos: CustomerPOS[] | undefined, text: string): boolean => {
+    if (pos && Array.isArray(pos)) {
+      for (let i = 0; i < pos.length; i++) {
+        const normalizedAddress = pos[i].address
+            .replace(/á/g, 'a')
+            .replace(/ã/g, 'a')
+            .replace(/â/g, 'a')
+            .replace(/ê/g, 'e')
+            .replace(/é/g, 'e')
+            .replace(/ó/g, 'o')
+            .replace(/ú/g, 'u')
+            .replace(/ç/g, 'c')
+            .toLowerCase();
+        return normalizedAddress.includes(text.toLowerCase());
+      }
+    }
+    return false;
+  };
+
   const filteredCustomers = useMemo(() => {
     if (!filterText.trim()) return customers;
     const lower = filterText.toLowerCase();
@@ -55,7 +74,8 @@ export default function Customers() {
     return customers.filter((c: Customer) =>
       c.name.toLowerCase().includes(lower) ||
       (c.personName && c.personName.toLowerCase().includes(lower)) ||
-      (digits && c.phone && c.phone.replace(/\D/g, '').includes(digits))
+      (digits && c.phone && c.phone.replace(/\D/g, '').includes(digits)) ||
+      addressFilterMatches(c.pos, filterText)
     );
   }, [customers, filterText]);
 
