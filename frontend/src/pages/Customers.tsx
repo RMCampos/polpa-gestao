@@ -585,15 +585,25 @@ export default function Customers() {
                           <div className="col-md-5">
                             <label className="form-label text-secondary small">Fridges</label>
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
                               className="form-control form-control-sm"
-                              value={newPos.fridgeCount ?? 0}
-                              onChange={e =>
-                                setNewPos({
-                                  ...newPos,
-                                  fridgeCount: Math.max(0, Number.parseInt(e.target.value || '0', 10) || 0),
-                                })
-                              }
+                              value={String(newPos.fridgeCount ?? 0)}
+                              onChange={e => {
+                                const raw = e.target.value;
+
+                                if (raw === '') {
+                                  return;
+                                }
+                                const parsed = Number.parseInt(raw, 10);
+                                if (!Number.isNaN(parsed) && parsed > 0) {
+                                  setNewPos({
+                                    ...newPos,
+                                    fridgeCount: Math.max(0, parsed || 0),
+                                  })
+                                }
+                              }}
                               min={0}
                             />
                           </div>
