@@ -4,6 +4,22 @@ import axios from 'axios';
 import { useToast } from '../context/toast';
 import type { Customer, CustomerPOS } from '../types';
 
+const POS_INDUSTRY_OPTIONS = [
+  'Academia',
+  'Conveniência',
+  'Hamburgueria',
+  'Lanchonete',
+  'Mercado',
+  'Panificadora',
+  'Restaurante',
+  'Sorveteria',
+  'Verdureira/Frutaria',
+  'Parque aquático',
+  'Recanto',
+  'Pesque e pague',
+  'Arena de esporte'
+] as const;
+
 const toErrorMessage = (err: unknown, fallback: string): string => {
   if (axios.isAxiosError(err)) {
     const data = err.response?.data as { message?: string; error?: string } | undefined;
@@ -17,7 +33,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
-  const emptyPos: CustomerPOS = { address: '', phone: '', personName: '', fridgeCount: 0, banner: false, indiBanner: false, lat: null, lng: null };
+  const emptyPos: CustomerPOS = { address: '', phone: '', industry: '', personName: '', fridgeCount: 0, banner: false, indiBanner: false, lat: null, lng: null };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -187,6 +203,7 @@ export default function Customers() {
     setNewPos({
       address: p.address,
       phone: p.phone,
+      industry: p.industry || '',
       personName: p.personName || '',
       fridgeCount: p.fridgeCount ?? 0,
       banner: p.banner ?? false,
@@ -493,6 +510,9 @@ export default function Customers() {
                             ) : 'N/A'}
                           </div>
                           <div className="text-secondary small">
+                            Industry: {p.industry || 'N/A'}
+                          </div>
+                          <div className="text-secondary small">
                             Fridges: {p.fridgeCount ?? 0}
                           </div>
                           <div className="text-secondary small">
@@ -543,6 +563,24 @@ export default function Customers() {
                               placeholder="Contact person name..."
                               maxLength={30}
                             />
+                          </div>
+                          <div className="col-md-5">
+                            <label className="form-label text-secondary small">Industry (Optional)</label>
+                            <select
+                              className="form-select form-select-sm"
+                              value={newPos.industry || ''}
+                              onChange={e =>
+                                setNewPos({
+                                  ...newPos,
+                                  industry: e.target.value,
+                                })
+                              }
+                            >
+                              <option value="">Select an industry...</option>
+                              {POS_INDUSTRY_OPTIONS.map((industryOption) => (
+                                <option key={industryOption} value={industryOption}>{industryOption}</option>
+                              ))}
+                            </select>
                           </div>
                           <div className="col-md-5">
                             <label className="form-label text-secondary small">Fridges</label>

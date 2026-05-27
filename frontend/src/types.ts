@@ -37,6 +37,7 @@ export type CustomerPOS = {
   customerId?: string;
   address: string;
   phone: string;
+  industry?: string | null;
   personName?: string;
   fridgeCount?: number;
   banner: boolean;

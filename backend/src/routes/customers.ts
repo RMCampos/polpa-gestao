@@ -6,6 +6,22 @@ type PosCoordinates = {
   lng: number | null;
 };
 
+const POS_INDUSTRIES = new Set([
+  'Academia',
+  'Conveniência',
+  'Hamburgueria',
+  'Lanchonete',
+  'Mercado',
+  'Panificadora',
+  'Restaurante',
+  'Sorveteria',
+  'Verdureira/Frutaria',
+  'Parque aquático',
+  'Recanto',
+  'Pesque e pague',
+  'Arena de esporte'
+]);
+
 const parseFridgeCount = (value: unknown): number | undefined => {
   if (value === undefined || value === null || value === '') return undefined;
 
@@ -27,6 +43,16 @@ const parseCoordinate = (value: unknown): number | null | undefined => {
   const parsedValue = Number(value);
   if (!Number.isFinite(parsedValue)) return undefined;
   return parsedValue;
+};
+
+const parseIndustry = (value: unknown): string | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  if (typeof value !== 'string') return undefined;
+  const normalizedValue = value.trim();
+  if (!normalizedValue) return null;
+  if (!POS_INDUSTRIES.has(normalizedValue)) return undefined;
+  return normalizedValue;
 };
 
 const geocodeAddress = async (address: string): Promise<PosCoordinates | null> => {
@@ -183,10 +209,12 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   app.post('/:customerId/pos', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { customerId } = request.params as any;
-    const { address, phone, personName, fridgeCount, banner, indiBanner, lat, lng } = request.body as any;
+    const { address, phone, personName, industry, fridgeCount, banner, indiBanner, lat, lng } = request.body as any;
+    const normalizedIndustry = parseIndustry(industry);
     const parsedLat = parseCoordinate(lat);
     const parsedLng = parseCoordinate(lng);
 
+    if (industry !== undefined && normalizedIndustry === undefined) return reply.code(400).send({ error: 'Invalid industry' });
     if (lat !== undefined && parsedLat === undefined) return reply.code(400).send({ error: 'Invalid lat coordinate' });
     if (lng !== undefined && parsedLng === undefined) return reply.code(400).send({ error: 'Invalid lng coordinate' });
 
@@ -214,6 +242,7 @@ export default async function customersRoutes(app: FastifyInstance) {
             customerId,
             address,
             phone,
+            industry: normalizedIndustry ?? null,
             personName,
             fridgeCount: parseFridgeCount(fridgeCount) ?? 0,
             banner: parseBooleanFlag(banner) ?? false,
@@ -230,13 +259,15 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   app.put('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { address, phone, personName, fridgeCount, banner, indiBanner, lat, lng } = request.body as any;
+    const { address, phone, personName, industry, fridgeCount, banner, indiBanner, lat, lng } = request.body as any;
+    const normalizedIndustry = parseIndustry(industry);
     const normalizedFridgeCount = parseFridgeCount(fridgeCount);
     const normalizedBanner = parseBooleanFlag(banner);
     const normalizedIndiBanner = parseBooleanFlag(indiBanner);
     const parsedLat = parseCoordinate(lat);
     const parsedLng = parseCoordinate(lng);
 
+    if (industry !== undefined && normalizedIndustry === undefined) return reply.code(400).send({ error: 'Invalid industry' });
     if (lat !== undefined && parsedLat === undefined) return reply.code(400).send({ error: 'Invalid lat coordinate' });
     if (lng !== undefined && parsedLng === undefined) return reply.code(400).send({ error: 'Invalid lng coordinate' });
 
@@ -265,6 +296,7 @@ export default async function customersRoutes(app: FastifyInstance) {
             address,
             phone,
             personName,
+            ...(normalizedIndustry !== undefined ? { industry: normalizedIndustry } : {}),
             ...(normalizedFridgeCount !== undefined ? { fridgeCount: normalizedFridgeCount } : {}),
             ...(normalizedBanner !== undefined ? { banner: normalizedBanner } : {}),
             ...(normalizedIndiBanner !== undefined ? { indiBanner: normalizedIndiBanner } : {}),

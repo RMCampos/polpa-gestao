@@ -43,6 +43,7 @@ export type CustomerPosMinAggregateOutputType = {
   customerId: string | null
   address: string | null
   phone: string | null
+  industry: string | null
   personName: string | null
   fridgeCount: number | null
   banner: boolean | null
@@ -59,6 +60,7 @@ export type CustomerPosMaxAggregateOutputType = {
   customerId: string | null
   address: string | null
   phone: string | null
+  industry: string | null
   personName: string | null
   fridgeCount: number | null
   banner: boolean | null
@@ -75,6 +77,7 @@ export type CustomerPosCountAggregateOutputType = {
   customerId: number
   address: number
   phone: number
+  industry: number
   personName: number
   fridgeCount: number
   banner: number
@@ -105,6 +108,7 @@ export type CustomerPosMinAggregateInputType = {
   customerId?: true
   address?: true
   phone?: true
+  industry?: true
   personName?: true
   fridgeCount?: true
   banner?: true
@@ -121,6 +125,7 @@ export type CustomerPosMaxAggregateInputType = {
   customerId?: true
   address?: true
   phone?: true
+  industry?: true
   personName?: true
   fridgeCount?: true
   banner?: true
@@ -137,6 +142,7 @@ export type CustomerPosCountAggregateInputType = {
   customerId?: true
   address?: true
   phone?: true
+  industry?: true
   personName?: true
   fridgeCount?: true
   banner?: true
@@ -240,6 +246,7 @@ export type CustomerPosGroupByOutputType = {
   customerId: string
   address: string
   phone: string
+  industry: string | null
   personName: string | null
   fridgeCount: number
   banner: boolean
@@ -279,6 +286,7 @@ export type CustomerPosWhereInput = {
   customerId?: Prisma.UuidFilter<"CustomerPos"> | string
   address?: Prisma.StringFilter<"CustomerPos"> | string
   phone?: Prisma.StringFilter<"CustomerPos"> | string
+  industry?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   personName?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntFilter<"CustomerPos"> | number
   banner?: Prisma.BoolFilter<"CustomerPos"> | boolean
@@ -298,6 +306,7 @@ export type CustomerPosOrderByWithRelationInput = {
   customerId?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  industry?: Prisma.SortOrderInput | Prisma.SortOrder
   personName?: Prisma.SortOrderInput | Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
   banner?: Prisma.SortOrder
@@ -320,6 +329,7 @@ export type CustomerPosWhereUniqueInput = Prisma.AtLeast<{
   customerId?: Prisma.UuidFilter<"CustomerPos"> | string
   address?: Prisma.StringFilter<"CustomerPos"> | string
   phone?: Prisma.StringFilter<"CustomerPos"> | string
+  industry?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   personName?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntFilter<"CustomerPos"> | number
   banner?: Prisma.BoolFilter<"CustomerPos"> | boolean
@@ -339,6 +349,7 @@ export type CustomerPosOrderByWithAggregationInput = {
   customerId?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  industry?: Prisma.SortOrderInput | Prisma.SortOrder
   personName?: Prisma.SortOrderInput | Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
   banner?: Prisma.SortOrder
@@ -363,6 +374,7 @@ export type CustomerPosScalarWhereWithAggregatesInput = {
   customerId?: Prisma.UuidWithAggregatesFilter<"CustomerPos"> | string
   address?: Prisma.StringWithAggregatesFilter<"CustomerPos"> | string
   phone?: Prisma.StringWithAggregatesFilter<"CustomerPos"> | string
+  industry?: Prisma.StringNullableWithAggregatesFilter<"CustomerPos"> | string | null
   personName?: Prisma.StringNullableWithAggregatesFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntWithAggregatesFilter<"CustomerPos"> | number
   banner?: Prisma.BoolWithAggregatesFilter<"CustomerPos"> | boolean
@@ -378,6 +390,7 @@ export type CustomerPosCreateInput = {
   id?: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -397,6 +410,7 @@ export type CustomerPosUncheckedCreateInput = {
   customerId: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -414,6 +428,7 @@ export type CustomerPosUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -433,6 +448,7 @@ export type CustomerPosUncheckedUpdateInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -451,6 +467,7 @@ export type CustomerPosCreateManyInput = {
   customerId: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -466,6 +483,7 @@ export type CustomerPosUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -482,6 +500,7 @@ export type CustomerPosUncheckedUpdateManyInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -508,6 +527,7 @@ export type CustomerPosCountOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
   personName?: Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
   banner?: Prisma.SortOrder
@@ -530,6 +550,7 @@ export type CustomerPosMaxOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
   personName?: Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
   banner?: Prisma.SortOrder
@@ -546,6 +567,7 @@ export type CustomerPosMinOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   address?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  industry?: Prisma.SortOrder
   personName?: Prisma.SortOrder
   fridgeCount?: Prisma.SortOrder
   banner?: Prisma.SortOrder
@@ -662,6 +684,7 @@ export type CustomerPosCreateWithoutCustomerInput = {
   id?: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -679,6 +702,7 @@ export type CustomerPosUncheckedCreateWithoutCustomerInput = {
   id?: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -726,6 +750,7 @@ export type CustomerPosScalarWhereInput = {
   customerId?: Prisma.UuidFilter<"CustomerPos"> | string
   address?: Prisma.StringFilter<"CustomerPos"> | string
   phone?: Prisma.StringFilter<"CustomerPos"> | string
+  industry?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   personName?: Prisma.StringNullableFilter<"CustomerPos"> | string | null
   fridgeCount?: Prisma.IntFilter<"CustomerPos"> | number
   banner?: Prisma.BoolFilter<"CustomerPos"> | boolean
@@ -741,6 +766,7 @@ export type CustomerPosCreateWithoutSalesInput = {
   id?: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -759,6 +785,7 @@ export type CustomerPosUncheckedCreateWithoutSalesInput = {
   customerId: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -791,6 +818,7 @@ export type CustomerPosUpdateWithoutSalesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -809,6 +837,7 @@ export type CustomerPosUncheckedUpdateWithoutSalesInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -825,6 +854,7 @@ export type CustomerPosCreateWithoutRoutesInput = {
   id?: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -843,6 +873,7 @@ export type CustomerPosUncheckedCreateWithoutRoutesInput = {
   customerId: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -875,6 +906,7 @@ export type CustomerPosUpdateWithoutRoutesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -893,6 +925,7 @@ export type CustomerPosUncheckedUpdateWithoutRoutesInput = {
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -909,6 +942,7 @@ export type CustomerPosCreateManyCustomerInput = {
   id?: string
   address: string
   phone: string
+  industry?: string | null
   personName?: string | null
   fridgeCount?: number
   banner?: boolean
@@ -924,6 +958,7 @@ export type CustomerPosUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -941,6 +976,7 @@ export type CustomerPosUncheckedUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -958,6 +994,7 @@ export type CustomerPosUncheckedUpdateManyWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fridgeCount?: Prisma.IntFieldUpdateOperationsInput | number
   banner?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1014,6 +1051,7 @@ export type CustomerPosSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   customerId?: boolean
   address?: boolean
   phone?: boolean
+  industry?: boolean
   personName?: boolean
   fridgeCount?: boolean
   banner?: boolean
@@ -1034,6 +1072,7 @@ export type CustomerPosSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   customerId?: boolean
   address?: boolean
   phone?: boolean
+  industry?: boolean
   personName?: boolean
   fridgeCount?: boolean
   banner?: boolean
@@ -1051,6 +1090,7 @@ export type CustomerPosSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   customerId?: boolean
   address?: boolean
   phone?: boolean
+  industry?: boolean
   personName?: boolean
   fridgeCount?: boolean
   banner?: boolean
@@ -1068,6 +1108,7 @@ export type CustomerPosSelectScalar = {
   customerId?: boolean
   address?: boolean
   phone?: boolean
+  industry?: boolean
   personName?: boolean
   fridgeCount?: boolean
   banner?: boolean
@@ -1079,7 +1120,7 @@ export type CustomerPosSelectScalar = {
   disabledAt?: boolean
 }
 
-export type CustomerPosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "address" | "phone" | "personName" | "fridgeCount" | "banner" | "indiBanner" | "lat" | "lng" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["customerPos"]>
+export type CustomerPosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "address" | "phone" | "industry" | "personName" | "fridgeCount" | "banner" | "indiBanner" | "lat" | "lng" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["customerPos"]>
 export type CustomerPosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   sales?: boolean | Prisma.CustomerPos$salesArgs<ExtArgs>
@@ -1105,6 +1146,7 @@ export type $CustomerPosPayload<ExtArgs extends runtime.Types.Extensions.Interna
     customerId: string
     address: string
     phone: string
+    industry: string | null
     personName: string | null
     fridgeCount: number
     banner: boolean
@@ -1544,6 +1586,7 @@ export interface CustomerPosFieldRefs {
   readonly customerId: Prisma.FieldRef<"CustomerPos", 'String'>
   readonly address: Prisma.FieldRef<"CustomerPos", 'String'>
   readonly phone: Prisma.FieldRef<"CustomerPos", 'String'>
+  readonly industry: Prisma.FieldRef<"CustomerPos", 'String'>
   readonly personName: Prisma.FieldRef<"CustomerPos", 'String'>
   readonly fridgeCount: Prisma.FieldRef<"CustomerPos", 'Int'>
   readonly banner: Prisma.FieldRef<"CustomerPos", 'Boolean'>
