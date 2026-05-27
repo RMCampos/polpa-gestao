@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import type { SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
+import type { IndustriesSummary, SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
 
 export default function Dashboard() {
   const [range, setRange] = useState('last-30-days');
   const [salesByProduct, setSalesByProduct] = useState<SalesByProduct[]>([]);
   const [salesByCustomer, setSalesByCustomer] = useState<SalesByCustomer[]>([]);
   const [salesSummary, setSalesSummary] = useState<SalesSummary | null>(null);
+  const [industriesSummary, setIndustriesSummary] = useState<IndustriesSummary[]>([]);
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
@@ -33,10 +34,12 @@ export default function Dashboard() {
         const resProducts = await axios.get(`${apiBase}/api/dashboard/sales-by-product`, config);
         const resCustomers = await axios.get(`${apiBase}/api/dashboard/sales-by-customer`, config);
         const resSummary = await axios.get(`${apiBase}/api/dashboard/sales-summary`, config);
+        const resIndustries = await axios.get(`${apiBase}/api/dashboard/industries-summary`, config);
         
         setSalesByProduct(resProducts.data);
         setSalesByCustomer(resCustomers.data);
         setSalesSummary(resSummary.data);
+        setIndustriesSummary(resIndustries.data);
       } catch (err) {
         console.error('Failed to load dashboard', err);
       }
@@ -152,6 +155,25 @@ export default function Dashboard() {
                   </li>
                 ))}
               </ol>
+            )}
+          </div>
+        </div>
+
+        {/* POS by Industry */}
+        <div className="col-12 col-sm-6 col-lg-6">
+          <div className="glass-card p-4 h-100">
+            <h6 className="text-secondary mb-2">POS by Industry</h6>
+            {industriesSummary.length === 0 ? (
+              <p className="text-secondary mb-0 small">No data available.</p>
+            ) : (
+              <ul className="list-group list-group-flush" style={{ background: 'transparent' }}>
+                {industriesSummary.map((item) => (
+                  <li key={item.industry} className="list-group-item d-flex justify-content-between align-items-center text-white px-0" style={{ background: 'transparent', borderBottomColor: 'var(--glass-border)' }}>
+                    <span>{item.industry}</span>
+                    <span className="badge bg-secondary rounded-pill">{item.count}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         </div>

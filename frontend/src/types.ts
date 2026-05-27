@@ -21,6 +21,11 @@ export type SalesSummary = {
   totalFridges: number;
 }
 
+export type IndustriesSummary = {
+  industry: string;
+  count: number;
+}
+
 /* Users page types */
 export type User = {
   id?: string;

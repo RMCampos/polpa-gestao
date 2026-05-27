@@ -188,4 +188,24 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       totalFridges: totalFridges._sum.fridgeCount ?? 0
     };
   });
+
+  app.get('/industries-summary', { preValidation: [app.authenticate] }, async () => {
+    const grouped = await prisma.customerPos.groupBy({
+      by: ['industry'],
+      _count: { _all: true },
+      where: { disabledAt: null }
+    });
+
+    const fallbackIndustry = 'Não Informado';
+    const summaryMap = new Map<string, number>();
+
+    for (const item of grouped) {
+      const normalizedIndustry = item.industry?.trim() || fallbackIndustry;
+      summaryMap.set(normalizedIndustry, (summaryMap.get(normalizedIndustry) ?? 0) + item._count._all);
+    }
+
+    return Array.from(summaryMap.entries())
+      .map(([industry, count]) => ({ industry, count }))
+      .sort((a, b) => b.count - a.count);
+  });
 }
