@@ -33,7 +33,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
-  const emptyPos: CustomerPOS = { address: '', phone: '', industry: '', personName: '', fridgeCount: 0, banner: false, indiBanner: false, lat: null, lng: null };
+  const emptyPos: CustomerPOS = { address: '', phone: '', industry: '', personName: '', fridgeCount: undefined, banner: false, indiBanner: false, lat: null, lng: null };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -205,7 +205,7 @@ export default function Customers() {
       phone: p.phone,
       industry: p.industry || '',
       personName: p.personName || '',
-      fridgeCount: p.fridgeCount ?? 0,
+      fridgeCount: p.fridgeCount ?? undefined,
       banner: p.banner ?? false,
       indiBanner: p.indiBanner ?? false,
       lat: p.lat ?? null,
@@ -589,22 +589,25 @@ export default function Customers() {
                               inputMode="numeric"
                               pattern="[0-9]*"
                               className="form-control form-control-sm"
-                              value={String(newPos.fridgeCount ?? 0)}
+                              value={String(newPos.fridgeCount ?? '')}
                               onChange={e => {
                                 const raw = e.target.value;
 
                                 if (raw === '') {
+                                  setNewPos({
+                                    ...newPos,
+                                    fridgeCount: undefined,
+                                  })
                                   return;
                                 }
                                 const parsed = Number.parseInt(raw, 10);
                                 if (!Number.isNaN(parsed) && parsed > 0) {
                                   setNewPos({
                                     ...newPos,
-                                    fridgeCount: Math.max(0, parsed || 0),
+                                    fridgeCount: parsed,
                                   })
                                 }
                               }}
-                              min={0}
                             />
                           </div>
                           <div className="col-md-7">
