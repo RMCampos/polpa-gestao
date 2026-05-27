@@ -26,6 +26,15 @@ export type IndustriesSummary = {
   count: number;
 }
 
+export type FridgePosSummary = {
+  id: string;
+  address: string;
+  fridgeCount: number;
+  customer: {
+    name: string;
+  };
+}
+
 /* Users page types */
 export type User = {
   id?: string;

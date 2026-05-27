@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
-import type { IndustriesSummary, SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
+import type { FridgePosSummary, IndustriesSummary, SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
 
 export default function Dashboard() {
   const [range, setRange] = useState('last-30-days');
@@ -8,6 +9,9 @@ export default function Dashboard() {
   const [salesByCustomer, setSalesByCustomer] = useState<SalesByCustomer[]>([]);
   const [salesSummary, setSalesSummary] = useState<SalesSummary | null>(null);
   const [industriesSummary, setIndustriesSummary] = useState<IndustriesSummary[]>([]);
+  const [fridgePoses, setFridgePoses] = useState<FridgePosSummary[]>([]);
+  const [showFridgesModal, setShowFridgesModal] = useState(false);
+  const [loadingFridgePoses, setLoadingFridgePoses] = useState(false);
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
@@ -56,6 +60,21 @@ export default function Dashboard() {
     .slice(0, 3);
 
   const { totalCustomers, totalFridges } = salesSummary ?? { totalCustomers: 0, totalFridges: 0 };
+
+  const openFridgesModal = async () => {
+    setShowFridgesModal(true);
+    setLoadingFridgePoses(true);
+    try {
+      const config = { headers: { Authorization: 'Bearer ' + token } };
+      const response = await axios.get(`${apiBase}/api/dashboard/fridges`, config);
+      setFridgePoses(response.data);
+    } catch (err) {
+      console.error('Failed to load fridge POS details', err);
+      setFridgePoses([]);
+    } finally {
+      setLoadingFridgePoses(false);
+    }
+  };
 
   return (
     <div>
@@ -112,7 +131,19 @@ export default function Dashboard() {
 
         {/* Total Fridges */}
         <div className="col-12 col-sm-6 col-lg-3">
-          <div className="glass-card p-4 h-100">
+          <div
+            className="glass-card p-4 h-100"
+            role="button"
+            tabIndex={0}
+            style={{ cursor: 'pointer' }}
+            onClick={openFridgesModal}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openFridgesModal();
+              }
+            }}
+          >
             <h6 className="text-secondary mb-2">Total Fridges</h6>
             <h3 className="fw-bold text-warning mb-0">{salesSummary ? totalFridges : '—'}</h3>
             <small className="text-secondary">active POS total</small>
@@ -220,6 +251,61 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {showFridgesModal && createPortal(
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fridges-modal-title"
+            style={{ zIndex: 1050 }}
+          >
+            <div className="modal-dialog modal-dialog-centered modal-lg">
+              <div className="modal-content glass-card">
+                <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <h5 id="fridges-modal-title" className="modal-title text-white">POS with Fridges</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowFridgesModal(false)}></button>
+                </div>
+                <div className="modal-body">
+                  {loadingFridgePoses ? (
+                    <p className="text-secondary mb-0">Loading...</p>
+                  ) : fridgePoses.length === 0 ? (
+                    <p className="text-secondary mb-0">No active POS with fridges found.</p>
+                  ) : (
+                    <div className="table-responsive">
+                      <table className="table table-dark table-hover align-middle mb-0">
+                        <thead>
+                          <tr>
+                            <th>Customer</th>
+                            <th>Address</th>
+                            <th className="text-end">Fridge Count</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {fridgePoses.map((pos) => (
+                            <tr key={pos.id}>
+                              <td>{pos.customer.name}</td>
+                              <td>{pos.address}</td>
+                              <td className="text-end">{pos.fridgeCount}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <button type="button" className="btn btn-outline-light" onClick={() => setShowFridgesModal(false)}>Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   );
 }

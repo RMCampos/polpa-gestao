@@ -189,6 +189,27 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     };
   });
 
+  app.get('/fridges', { preValidation: [app.authenticate] }, async () => {
+    const fridges = await prisma.customerPos.findMany({
+      where: {
+        disabledAt: null,
+        fridgeCount: { gt: 0 }
+      },
+      select: {
+        id: true,
+        address: true,
+        fridgeCount: true,
+        customer: { select: { name: true } }
+      }
+    });
+
+    return fridges.sort((a, b) => {
+      const byCustomer = (a.customer.name ?? '').localeCompare(b.customer.name ?? '');
+      if (byCustomer !== 0) return byCustomer;
+      return a.address.localeCompare(b.address);
+    });
+  });
+
   app.get('/industries-summary', { preValidation: [app.authenticate] }, async () => {
     const grouped = await prisma.customerPos.groupBy({
       by: ['industry'],
