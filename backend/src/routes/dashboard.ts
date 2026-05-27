@@ -190,7 +190,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
   });
 
   app.get('/fridges', { preValidation: [app.authenticate] }, async () => {
-    return prisma.customerPos.findMany({
+    const fridges = await prisma.customerPos.findMany({
       where: {
         disabledAt: null,
         fridgeCount: { gt: 0 }
@@ -200,11 +200,13 @@ export default async function dashboardRoutes(app: FastifyInstance) {
         address: true,
         fridgeCount: true,
         customer: { select: { name: true } }
-      },
-      orderBy: [
-        { customer: { name: 'asc' } },
-        { address: 'asc' }
-      ]
+      }
+    });
+
+    return fridges.sort((a, b) => {
+      const byCustomer = (a.customer.name ?? '').localeCompare(b.customer.name ?? '');
+      if (byCustomer !== 0) return byCustomer;
+      return a.address.localeCompare(b.address);
     });
   });
 

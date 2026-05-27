@@ -255,11 +255,18 @@ export default function Dashboard() {
       {showFridgesModal && createPortal(
         <>
           <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
-          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fridges-modal-title"
+            style={{ zIndex: 1050 }}
+          >
             <div className="modal-dialog modal-dialog-centered modal-lg">
               <div className="modal-content glass-card">
                 <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
-                  <h5 className="modal-title text-white">POS with Fridges</h5>
+                  <h5 id="fridges-modal-title" className="modal-title text-white">POS with Fridges</h5>
                   <button type="button" className="btn-close btn-close-white" onClick={() => setShowFridgesModal(false)}></button>
                 </div>
                 <div className="modal-body">
