@@ -119,6 +119,13 @@ export default async function customersRoutes(app: FastifyInstance) {
           if (existingByPhone) throw conflictError('A customer with this phone number already exists');
         }
 
+        if (docValue) {
+          const existingByDoc = await tx.customer.findFirst({
+            where: { document: docValue, disabledAt: null }
+          });
+          if (existingByDoc) throw conflictError('A customer with this document already exists');
+        }
+
         return tx.customer.create({ data: { name, document: docValue, phone, personName } });
       });
     } catch (e: any) {
@@ -196,6 +203,12 @@ export default async function customersRoutes(app: FastifyInstance) {
           });
           if (existingByPhone) throw conflictError('A point of sale with this phone number already exists');
         }
+        if (address) {
+          const existingByAddress = await tx.customerPos.findFirst({
+            where: { address: { equals: address, mode: 'insensitive' }, disabledAt: null }
+          });
+          if (existingByAddress) throw conflictError('A point of sale with this address already exists');
+        }
         return tx.customerPos.create({
           data: {
             customerId,
@@ -239,6 +252,12 @@ export default async function customersRoutes(app: FastifyInstance) {
             where: { phone, disabledAt: null, id: { not: id } }
           });
           if (existingByPhone) throw conflictError('A point of sale with this phone number already exists');
+        }
+        if (address) {
+          const existingByAddress = await tx.customerPos.findFirst({
+            where: { address: { equals: address, mode: 'insensitive' }, disabledAt: null, id: { not: id } }
+          });
+          if (existingByAddress) throw conflictError('A point of sale with this address already exists');
         }
         return tx.customerPos.update({
           where: { id },
