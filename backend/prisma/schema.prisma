@@ -37,6 +37,7 @@ model CustomerPos {
   customer   Customer @relation(fields: [customerId], references: [id])
   address    String
   phone      String
+  industry   String?
   personName String?  @db.VarChar(30)
   fridgeCount Int     @default(0)
   banner     Boolean  @default(false)
