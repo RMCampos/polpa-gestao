@@ -160,7 +160,7 @@ export default function Dashboard() {
         </div>
 
         {/* POS by Industry */}
-        <div className="col-12 col-sm-6 col-lg-3">
+        <div className="col-12 col-sm-6 col-lg-6">
           <div className="glass-card p-4 h-100">
             <h6 className="text-secondary mb-2">POS by Industry</h6>
             {industriesSummary.length === 0 ? (
