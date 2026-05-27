@@ -200,7 +200,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     const summaryMap = new Map<string, number>();
 
     for (const item of grouped) {
-      const normalizedIndustry = item.industry?.trim() ? item.industry : fallbackIndustry;
+      const normalizedIndustry = item.industry?.trim() || fallbackIndustry;
       summaryMap.set(normalizedIndustry, (summaryMap.get(normalizedIndustry) ?? 0) + item._count._all);
     }
 
