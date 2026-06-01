@@ -229,4 +229,24 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       .map(([industry, count]) => ({ industry, count }))
       .sort((a, b) => b.count - a.count);
   });
+
+  app.get('/regions-summary', { preValidation: [app.authenticate] }, async () => {
+    const grouped = await prisma.customerPos.groupBy({
+      by: ['region'],
+      _count: { _all: true },
+      where: { disabledAt: null }
+    });
+
+    const fallbackRegion = 'Não Informado';
+    const summaryMap = new Map<string, number>();
+
+    for (const item of grouped) {
+      const normalizedRegion = item.region?.trim() || fallbackRegion;
+      summaryMap.set(normalizedRegion, (summaryMap.get(normalizedRegion) ?? 0) + item._count._all);
+    }
+
+    return Array.from(summaryMap.entries())
+      .map(([region, count]) => ({ region, count }))
+      .sort((a, b) => b.count - a.count);
+  });
 }

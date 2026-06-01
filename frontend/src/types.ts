@@ -26,6 +26,11 @@ export type IndustriesSummary = {
   count: number;
 }
 
+export type RegionsSummary = {
+  region: string;
+  count: number;
+}
+
 export type FridgePosSummary = {
   id: string;
   address: string;
