@@ -42,6 +42,7 @@ model CustomerPos {
   fridgeCount Int     @default(0)
   banner     Boolean  @default(false)
   indiBanner Boolean  @default(false)
+  region     String?
   lat        Float?
   lng        Float?
   sales      Sale[]
