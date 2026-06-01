@@ -58,6 +58,7 @@ export type CustomerPOS = {
   indiBanner: boolean;
   lat?: number | null;
   lng?: number | null;
+  region?: string | null;
   customer?: Customer;
 }
 

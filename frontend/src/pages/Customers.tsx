@@ -33,7 +33,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
-  const emptyPos: CustomerPOS = { address: '', phone: '', industry: '', personName: '', fridgeCount: undefined, banner: false, indiBanner: false, lat: null, lng: null };
+  const emptyPos: CustomerPOS = { address: '', phone: '', industry: '', personName: '', fridgeCount: undefined, banner: false, indiBanner: false, lat: null, lng: null, region: null };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -209,7 +209,8 @@ export default function Customers() {
       banner: p.banner ?? false,
       indiBanner: p.indiBanner ?? false,
       lat: p.lat ?? null,
-      lng: p.lng ?? null
+      lng: p.lng ?? null,
+      region: p.region || null
     });
   };
 
@@ -513,6 +514,9 @@ export default function Customers() {
                             Industry: {p.industry || 'N/A'}
                           </div>
                           <div className="text-secondary small">
+                            Region: {p.region || 'N/A'}
+                          </div>
+                          <div className="text-secondary small">
                             Fridges: {p.fridgeCount ?? 0}
                           </div>
                           <div className="text-secondary small">
@@ -581,6 +585,21 @@ export default function Customers() {
                                 <option key={industryOption} value={industryOption}>{industryOption}</option>
                               ))}
                             </select>
+                          </div>
+                          <div className="col-md-7">
+                            <label className="form-label text-secondary small">Region (Optional)</label>
+                            <input
+                              type="text"
+                              className="form-control form-control-sm"
+                              value={newPos.region || ''}
+                              onChange={e =>
+                                setNewPos({
+                                  ...newPos,
+                                  region: e.target.value,
+                                })
+                              }
+                              placeholder="e.g. North, Downtown..."
+                            />
                           </div>
                           <div className="col-md-5">
                             <label className="form-label text-secondary small">Fridges</label>

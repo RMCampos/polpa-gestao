@@ -106,6 +106,14 @@ const resolvePosCoordinates = async ({
 const conflictError = (message: string): Error & { statusCode: number } =>
   Object.assign(new Error(message), { statusCode: 409 });
 
+const normalizeOptionalString = (value: unknown): string | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null || value === '') return null;
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed || null;
+};
+
 export default async function customersRoutes(app: FastifyInstance) {
   // Get all customers (with pos optionally)
   app.get('/', { preValidation: [app.authenticate] }, async (request, reply) => {
@@ -209,8 +217,9 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   app.post('/:customerId/pos', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { customerId } = request.params as any;
-    const { address, phone, personName, industry, fridgeCount, banner, indiBanner, lat, lng } = request.body as any;
+    const { address, phone, personName, industry, fridgeCount, banner, indiBanner, lat, lng, region } = request.body as any;
     const normalizedIndustry = parseIndustry(industry);
+    const normalizedRegion = normalizeOptionalString(region);
     const parsedLat = parseCoordinate(lat);
     const parsedLng = parseCoordinate(lng);
 
@@ -247,6 +256,7 @@ export default async function customersRoutes(app: FastifyInstance) {
             fridgeCount: parseFridgeCount(fridgeCount) ?? 0,
             banner: parseBooleanFlag(banner) ?? false,
             indiBanner: parseBooleanFlag(indiBanner) ?? false,
+            region: normalizedRegion ?? null,
             ...(coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : {})
           }
         });
@@ -259,13 +269,14 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   app.put('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { address, phone, personName, industry, fridgeCount, banner, indiBanner, lat, lng } = request.body as any;
+    const { address, phone, personName, industry, fridgeCount, banner, indiBanner, lat, lng, region } = request.body as any;
     const normalizedIndustry = parseIndustry(industry);
     const normalizedFridgeCount = parseFridgeCount(fridgeCount);
     const normalizedBanner = parseBooleanFlag(banner);
     const normalizedIndiBanner = parseBooleanFlag(indiBanner);
     const parsedLat = parseCoordinate(lat);
     const parsedLng = parseCoordinate(lng);
+    const normalizedRegion = normalizeOptionalString(region);
 
     if (industry !== undefined && normalizedIndustry === undefined) return reply.code(400).send({ error: 'Invalid industry' });
     if (lat !== undefined && parsedLat === undefined) return reply.code(400).send({ error: 'Invalid lat coordinate' });
@@ -300,6 +311,7 @@ export default async function customersRoutes(app: FastifyInstance) {
             ...(normalizedFridgeCount !== undefined ? { fridgeCount: normalizedFridgeCount } : {}),
             ...(normalizedBanner !== undefined ? { banner: normalizedBanner } : {}),
             ...(normalizedIndiBanner !== undefined ? { indiBanner: normalizedIndiBanner } : {}),
+            ...(normalizedRegion !== undefined ? { region: normalizedRegion } : {}),
             ...(coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : {})
           }
         });
