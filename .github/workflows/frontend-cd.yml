@@ -36,14 +36,28 @@ jobs:
           node-version: 22.x
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Doppler CLI
+        uses: dopplerhq/cli-action@v4
+
+      - name: Fetch secrets from Doppler
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          doppler secrets download \
+            --no-file \
+            --format env \
+            --project polpa-gestao \
+            --config prod-tokens \
+            | sed 's/"//g' >> $GITHUB_ENV
   
       - run: cd frontend && npm i
       - run: cd frontend && npm run lint
       - run: cd frontend && npm run build
         env:
           VITE_BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
-          VITE_CPF_CNPJ_API_TOKEN: ${{ secrets.CPF_CNPJ_API_TOKEN }}
-          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+          VITE_CPF_CNPJ_API_TOKEN: ${{ env.CPF_CNPJ_API_TOKEN }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ env.GOOGLE_MAPS_API_KEY }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -75,9 +89,9 @@ jobs:
           sbom: false
           build-args: |
             VITE_BACKEND_SERVER=${{ vars.BACKEND_SERVER_URL }}
-            VITE_CPF_CNPJ_API_TOKEN=${{ secrets.CPF_CNPJ_API_TOKEN }}
+            VITE_CPF_CNPJ_API_TOKEN=${{ env.CPF_CNPJ_API_TOKEN }}
             VITE_BUILD_NUMBER=${{ steps.version.outputs.build_number }}
-            VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+            VITE_GOOGLE_MAPS_API_KEY=${{ env.GOOGLE_MAPS_API_KEY }}
 
       - name: Create and push Git tag
         run: |

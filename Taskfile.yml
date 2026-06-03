@@ -11,23 +11,11 @@ tasks:
       export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
       doppler run --config dev_secrets -- docker compose -f docker-compose.yml build
 
-  build-frontend:
-    desc: Build the frontend Docker image using docker compose
+  build-all-ngrok:
+    desc: Build frontend, backend and prisma Docker images using docker-compose.ngrok.yml
     cmd: |
       export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
-      doppler run --config dev_secrets -- docker compose -f docker-compose.yml build polpa_frontend
-
-  build-backend:
-    desc: Build the backend Docker image using docker compose
-    cmd: |
-      export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
-      doppler run --config dev_secrets -- docker compose -f docker-compose.yml build polpa_backend 
-
-  build-prisma:
-    desc: Build the prisma Docker image using docker compose
-    cmd: |
-      export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
-      doppler run --config dev_secrets -- docker compose -f docker-compose.yml build polpa_prisma
+      doppler run --config dev_secrets -- docker compose -f docker-compose.ngrok.yml build
 
   dev-up:
     desc: Start the development environment using docker compose
@@ -38,7 +26,7 @@ tasks:
 
   dev-up-ngrok:
     desc: Start the development environment using docker compose and ngrok
-    deps: [build-all]
+    deps: [build-all-ngrok]
     cmds:
       - |
         export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
