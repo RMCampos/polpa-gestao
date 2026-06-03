@@ -49,7 +49,7 @@ jobs:
 
       - name: Setup Kubeconfig
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRETS }}
         run: |
           mkdir -p ~/.kube
           doppler run --config prd_secrets -- bash -c 'echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config'
@@ -167,7 +167,7 @@ jobs:
 
       - name: Setup Kubeconfig
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRETS }}
         run: |
           mkdir -p ~/.kube
           doppler run --config prd_secrets -- bash -c 'echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config'
