@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stop and remove existing proxy if it exists
-#docker stop nginx-proxy 2>/dev/null
+docker stop nginx-proxy 2>/dev/null
 #docker rm nginx-proxy 2>/dev/null
 
 docker run -d --rm \

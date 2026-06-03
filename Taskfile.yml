@@ -2,35 +2,47 @@
 
 version: '3'
 
+silent: true
+
 tasks:
   build-all:
     desc: Build frontend, backend and prisma Docker images using docker compose
-    cmd: doppler run -- docker compose -f docker-compose.yml build
+    cmd: |
+      export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
+      doppler run --config dev_secrets -- docker compose -f docker-compose.yml build
 
   build-frontend:
     desc: Build the frontend Docker image using docker compose
-    cmd: doppler run -- docker compose -f docker-compose.yml build polpa_frontend
+    cmd: |
+      export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
+      doppler run --config dev_secrets -- docker compose -f docker-compose.yml build polpa_frontend
 
   build-backend:
     desc: Build the backend Docker image using docker compose
-    cmd: doppler run -- docker compose -f docker-compose.yml build polpa_backend 
+    cmd: |
+      export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
+      doppler run --config dev_secrets -- docker compose -f docker-compose.yml build polpa_backend 
 
   build-prisma:
     desc: Build the prisma Docker image using docker compose
-    cmd: doppler run -- docker compose -f docker-compose.yml build polpa_prisma
+    cmd: |
+      export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
+      doppler run --config dev_secrets -- docker compose -f docker-compose.yml build polpa_prisma
 
   dev-up:
     desc: Start the development environment using docker compose
-    deps:
-      - build-all
-    cmd: doppler run -- docker compose -f docker-compose.yml up -d
+    deps: [build-all]
+    cmd: |
+      export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
+      doppler run --config dev_secrets -- docker compose -f docker-compose.yml up -d
 
   dev-up-ngrok:
     desc: Start the development environment using docker compose and ngrok
-    deps:
-      - build-all
+    deps: [build-all]
     cmds:
-      - doppler run -- docker compose -f docker-compose.ngrok.yml up -d
+      - |
+        export $(doppler secrets download --no-file --format env --config dev_tokens | sed 's/"//g' | xargs) && \
+        doppler run --config dev_secrets -- docker compose -f docker-compose.ngrok.yml up -d
       - task: ngrok-up
 
   dev-down:
@@ -41,9 +53,17 @@ tasks:
     desc: Stop the development environment using docker compose and ngrok
     cmds:
       - docker compose -f docker-compose.ngrok.yml down
-      - docker stop nginx-proxy
-      - pkill ngrok
-      - rm -rf /tmp/ngrok.log
+      - task: ngrok-down
+
+  dev-db-access:
+    desc: Print local DB credentials
+    cmd: |
+      doppler run --config dev_secrets -- sh -c '
+        echo "Local database credentials:"
+        echo "- Database name=$DB_NAME"
+        echo "- Database user=$DB_USER"
+        echo "- Database password=$DB_PASSWORD"
+      '
 
   dev-tier-down:
     desc: Stop the development environment using docker compose, removing volumes
@@ -52,8 +72,38 @@ tasks:
   ngrok-up:
     desc: Start ngrok tunnel in background
     cmds:
-      - bash nginx/start-proxy.sh
-      - nohup ngrok http 8080 > /tmp/ngrok.log 2>&1 &
-      - echo "Waiting for ngrok tunnel..."
-      - sleep 2
-      - curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
+      - ./nginx/start-proxy.sh
+      - |
+        bash -c '
+          if pgrep -f "ngrok http" | grep -v $$ > /dev/null; then
+            echo "ngrok is already running, skipping..."
+          else
+            nohup ngrok http 8080 --log=stdout --log-format=logfmt --log-level=info > /tmp/ngrok.log 2>&1 &
+            echo $! > /tmp/ngrok.pid
+            echo "ngrok started with PID $(cat /tmp/ngrok.pid)"
+            sleep 3
+            if ! pgrep -f "ngrok http" > /dev/null; then
+              echo "ngrok failed to start, log output:"
+              cat /tmp/ngrok.log
+              exit 1
+            fi
+            echo "ngrok is running"
+          fi
+        '
+      - curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url' 
+
+  ngrok-down:
+    desc: Stop ngrok tunnel
+    cmds:
+      - docker stop nginx-proxy 2> /dev/null || true
+      - |
+        if [ -f /tmp/ngrok.pid ]; then
+          echo "Killing ngrok PID $(cat /tmp/ngrok.pid)"
+          /bin/kill -9 $(cat /tmp/ngrok.pid)
+          rm -rf /tmp/ngrok.pid
+        else
+          echo "No PID file found. trying pkill..."
+          pkill -9 -f ngrok || true
+        fi
+      - rm -rf /tmp/ngrok.log
+
