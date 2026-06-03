@@ -41,11 +41,13 @@ The project uses `Taskfile.yml` to standardize local commands and `doppler.yaml`
 `doppler.yaml` defaults to:
 
 - project: `polpa-gestao`
-- config: `dev_ricardo`
+- config: `dev_secrets`
 
 ```bash
 doppler login
-doppler setup --project polpa-gestao --config dev_ricardo
+doppler setup --project polpa-gestao --config dev_secrets
+
+# PS: tokens will be handled directly in runs, injected as ENV VARS
 ```
 
 ### 2. Start services
@@ -66,7 +68,7 @@ This command will:
 |---|---|
 | Frontend | http://localhost:5173 |
 | Backend API | http://localhost:3000 |
-| Database | `localhost:5432` (user: `admin`, password: `adminpassword`, db: `polpa_gestao`) |
+| Database | `localhost:5432` (Please run `task dev-db-access` to get DB credentials) |
 
 ### Optional ngrok stack
 
@@ -79,9 +81,10 @@ task dev-up-ngrok
 ### Build Docker images
 
 ```bash
-task build-frontend
-task build-backend
-task build-prisma
+task build-all
+
+# For ngrok, use
+task build-all-ngrok
 ```
 
 Build tasks run with `doppler run`, which injects secrets as environment variables (for example `CPF_CNPJ_API_TOKEN` and `GOOGLE_MAPS_API_KEY`) during Docker builds.
@@ -90,6 +93,9 @@ Build tasks run with `doppler run`, which injects secrets as environment variabl
 
 ```bash
 task dev-down
+
+# For ngrok, use
+task dev-down-ngrok
 ```
 
 To also remove volumes/orphans:
@@ -110,9 +116,9 @@ docker compose up
 
 ## Deployment
 
-The application is deployed using **Terraform**. The infrastructure-as-code configuration can be found in the following public repository:
+The application is deployed using **Terraform**. The infrastructure-as-code configuration can be found in the terraform directory:
 
-[https://github.com/RMCampos/personal-projects-iaac/blob/main/polpa-gestao/main.tf](https://github.com/RMCampos/personal-projects-iaac/blob/main/polpa-gestao/main.tf)
+[terraform/main.tf](terraform/main.tf)
 
 Docker images are built and published to the GitHub Container Registry automatically via GitHub Actions on every push:
 
