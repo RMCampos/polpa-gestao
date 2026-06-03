@@ -14,6 +14,9 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      CPF_CNPJ_API_TOKEN: ""
+      GOOGLE_MAPS_API_KEY: ""
     steps:
       - name: Generate version tag
         id: version
@@ -42,7 +45,7 @@ jobs:
 
       - name: Fetch secrets from Doppler
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_TOKENS }}
         run: |
           doppler secrets download \
             --no-file \

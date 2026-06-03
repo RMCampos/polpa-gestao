@@ -29,6 +29,9 @@ jobs:
       no_changes: ${{ steps.check-changes.outputs.no_changes }}
     permissions:
       contents: read
+    env:
+      CPF_CNPJ_API_TOKEN: ""
+      GOOGLE_MAPS_API_KEY: ""
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -41,10 +44,15 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
 
+      - name: Setup Doppler CLI
+        uses: dopplerhq/cli-action@v4
+
       - name: Setup Kubeconfig
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > ~/.kube/config
+          doppler run --config prd_secrets -- bash -c 'echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config'
           chmod 600 ~/.kube/config
 
       - name: Validate cluster access
@@ -84,28 +92,34 @@ jobs:
       - name: Terraform Init
         working-directory: terraform
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: terraform init -input=false
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+        run: doppler run --config prd_secrets -- terraform init -input=false
 
       - name: Terraform Validate
         working-directory: terraform
         run: terraform validate
 
+      - name: Fetch public tokens
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_TOKENS }}
+        run: |
+          doppler secrets download --no-file --format env \
+            --config prd_tokens | sed 's/"//g' >> $GITHUB_ENV
+
       - name: Terraform Plan
         id: check-changes
         working-directory: terraform
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
         run: |
-          timeout 1m terraform plan -input=false -out=tfplan \
-            -var="db_user=${{ secrets.DB_USER }}" \
-            -var="db_password=${{ secrets.DB_PASSWORD }}" \
-            -var="db_name=${{ secrets.DB_NAME }}" \
-            -var="cpf_cnpj_api_token=${{ secrets.CPF_CNPJ_API_TOKEN }}" \
-            -var="r2_access_key=${{ secrets.R2_ACCESS_KEY_ID }}" \
-            -var="r2_secret_key=${{ secrets.R2_SECRET_ACCESS_KEY }}" \
+          doppler run --config prd_secrets -- \
+            timeout 1m terraform plan -input=false -out=tfplan \
+            -var="db_user=$DB_USER" \
+            -var="db_password=$DB_PASSWORD" \
+            -var="db_name=$DB_NAME" \
+            -var="cpf_cnpj_api_token=${{ env.CPF_CNPJ_API_TOKEN }}" \
+            -var="r2_access_key=$AWS_ACCESS_KEY_ID" \
+            -var="r2_secret_key=$AWS_SECRET_ACCESS_KEY" \
             -var="backend_image=${{ steps.deploy-vars.outputs.backend_image }}" \
             -var="frontend_image=${{ steps.deploy-vars.outputs.frontend_image }}"
           terraform show -json tfplan > tfplan.json
@@ -148,23 +162,26 @@ jobs:
           name: tfplan
           path: terraform
 
+      - name: Setup Doppler CLI
+        uses: dopplerhq/cli-action@v4
+
       - name: Setup Kubeconfig
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > ~/.kube/config
+          doppler run --config prd_secrets -- bash -c 'echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config'
           chmod 600 ~/.kube/config
 
       - name: Terraform Init
         working-directory: terraform
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: terraform init -input=false
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+        run: doppler run --config prd_secrets -- terraform init -input=false
 
       - name: Terraform Apply
         working-directory: terraform
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: timeout 1m terraform apply tfplan
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+        run: doppler run --config prd_secrets -- timeout 1m terraform apply tfplan
 
