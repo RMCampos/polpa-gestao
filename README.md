@@ -30,16 +30,28 @@ A dashboard provides analytics and reporting. The application includes user mana
 | CI/CD | GitHub Actions → GitHub Container Registry |
 | Deployment | Terraform |
 
-## Running Locally with Docker
+## Running Locally with Taskfile + Doppler
 
-The entire application stack (database, backend API, and frontend) can be started with a single command using Docker Compose.
+The project uses `Taskfile.yml` to standardize local commands and `doppler.yaml` to define Doppler project/config for secrets.
 
-**Prerequisites:** [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
+**Prerequisites:** [Docker](https://docs.docker.com/get-docker/), [Docker Compose](https://docs.docker.com/compose/install/), [Task](https://taskfile.dev/installation/), and [Doppler CLI](https://docs.doppler.com/docs/cli).
 
-**Start all services:**
+### 1. Authenticate and configure Doppler
+
+`doppler.yaml` defaults to:
+
+- project: `polpa-gestao`
+- config: `dev_ricardo`
 
 ```bash
-docker compose up
+doppler login
+doppler setup --project polpa-gestao --config dev_ricardo
+```
+
+### 2. Start services
+
+```bash
+task dev-up
 ```
 
 This command will:
@@ -56,24 +68,45 @@ This command will:
 | Backend API | http://localhost:3000 |
 | Database | `localhost:5432` (user: `admin`, password: `adminpassword`, db: `polpa_gestao`) |
 
-**Optional environment variables:**
+### Optional ngrok stack
 
-To enable CPF/CNPJ document validation and POS geocoding, set these variables before starting:
+To run the ngrok compose file:
 
 ```bash
-VITE_CPF_CNPJ_API_TOKEN=your_token_here \
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here \
-GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here \
+task dev-up-ngrok
+```
+
+### Build Docker images
+
+```bash
+task build-frontend
+task build-backend
+task build-prisma
+```
+
+Build tasks run with `doppler run`, which injects secrets as environment variables (for example `CPF_CNPJ_API_TOKEN` and `GOOGLE_MAPS_API_KEY`) during Docker builds.
+
+### Stop services
+
+```bash
+task dev-down
+```
+
+To also remove volumes/orphans:
+
+```bash
+task dev-tier-down
+```
+
+Database data is persisted in a Docker volume (`pgdata`) and survives regular restarts.
+
+## Running Locally with Docker Compose (Alternative)
+
+If you prefer not to use Taskfile, you can still start the stack directly:
+
+```bash
 docker compose up
 ```
-
-**Stop all services:**
-
-```bash
-docker compose down
-```
-
-Database data is persisted in a Docker volume (`pgdata`) and will survive container restarts. To also remove the volume when stopping, run `docker compose down -v`.
 
 ## Deployment
 

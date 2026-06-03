@@ -1,0 +1,47 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  build-frontend:
+    desc: Build the frontend Docker image
+    cmd:  |
+      doppler run -- docker build \
+        --build-arg VITE_BUILD_NUMBER=snapshot \
+        --build-arg VITE_CPF_CNPJ_API_TOKEN=$CPF_CNPJ_API_TOKEN \
+        --build-arg VITE_GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY \
+        -t ghcr.io/rmcampos/polpa-gestao/frontend:latest \
+        frontend/
+
+  build-backend:
+    desc: Build the backend Docker image
+    cmd:  |
+      doppler run -- docker build \
+        --build-arg BUILD_VERSION=snapshot \
+        -t ghcr.io/rmcampos/polpa-gestao/backend:latest \
+        backend/
+
+  build-prisma:
+    desc: Build the prisma Docker image
+    cmd:  |
+      doppler run -- docker build \
+        --build-arg BUILD_VERSION=snapshot \
+        -t ghcr.io/rmcampos/polpa-gestao/backend:latest-prisma \
+        --target prisma \
+        backend/
+
+  dev-up:
+    desc: Start the development environment using docker compose
+    cmd: doppler run -- docker compose -f docker-compose.yml up -d --build
+
+  dev-up-ngrok:
+    desc: Start the development environment using docker compose
+    cmd: doppler run -- docker compose -f docker-compose.ngrok.yml up -d
+
+  dev-down:
+    desc: Stop the development environment using docker compose
+    cmd: docker compose -f docker-compose.yml down
+
+  dev-tier-down:
+    desc: Stop the development environment using docker compose, removing volumes
+    cmd: docker compose -f docker-compose.yml down -v --remove-orphans

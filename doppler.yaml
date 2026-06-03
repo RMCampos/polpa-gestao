@@ -1,0 +1,3 @@
+setup:
+  project: polpa-gestao
+  config: dev_ricardo
