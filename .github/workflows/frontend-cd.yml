@@ -48,7 +48,7 @@ jobs:
             --no-file \
             --format env \
             --project polpa-gestao \
-            --config prod-tokens \
+            --config prd_tokens \
             | sed 's/"//g' >> $GITHUB_ENV
   
       - run: cd frontend && npm i
