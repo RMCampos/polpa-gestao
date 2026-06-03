@@ -92,7 +92,7 @@ jobs:
       - name: Terraform Init
         working-directory: terraform
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRETS }}
         run: doppler run --config prd_secrets -- terraform init -input=false
 
       - name: Terraform Validate
@@ -110,7 +110,7 @@ jobs:
         id: check-changes
         working-directory: terraform
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRETS }}
         run: |
           doppler run --config prd_secrets -- \
             timeout 1m terraform plan -input=false -out=tfplan \
@@ -176,12 +176,12 @@ jobs:
       - name: Terraform Init
         working-directory: terraform
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRETS }}
         run: doppler run --config prd_secrets -- terraform init -input=false
 
       - name: Terraform Apply
         working-directory: terraform
         env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRCETS }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRETS }}
         run: doppler run --config prd_secrets -- timeout 1m terraform apply tfplan
 
