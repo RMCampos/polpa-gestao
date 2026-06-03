@@ -1,9 +1,9 @@
 ---
 
 services:
-  postgres:
+  polpa_db:
     image: postgres:15
-    container_name: polpa_gestao_db
+    container_name: polpa_db
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -20,35 +20,35 @@ services:
     networks:
       - polpa-network
 
-  prisma-push:
+  polpa_prisma:
     build:
       context: ./backend
       target: prisma
     image: ghcr.io/rmcampos/polpa-gestao/backend-prisma:latest
-    container_name: polpa_gestao_prisma_push
+    container_name: polpa_prisma
     environment:
-      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@polpa_db:5432/${DB_NAME}
     command: ["npx", "prisma", "migrate", "deploy"]
     depends_on:
-      postgres:
+      polpa_db:
         condition: service_healthy
     restart: "no"
     networks:
       - polpa-network
 
-  backend:
+  polpa_backend:
     build: ./backend
     image: ghcr.io/rmcampos/polpa-gestao/backend:latest
-    container_name: polpa_gestao_backend
+    container_name: polpa_backend
     environment:
-      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@polpa_db:5432/${DB_NAME}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
     ports:
       - "3000:3000"
     depends_on:
-      postgres:
+      polpa_db:
         condition: service_healthy
-      prisma-push:
+      polpa_prisma:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "node", "healthcheck.js"]
@@ -58,7 +58,7 @@ services:
     networks:
       - polpa-network
 
-  frontend:
+  polpa_frontend:
     build:
       context: ./frontend
       args:
@@ -67,11 +67,11 @@ services:
         VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
         VITE_BUILD_NUMBER: snapshot
     image: ghcr.io/rmcampos/polpa-gestao/frontend:latest
-    container_name: polpa_gestao_frontend
+    container_name: polpa_frontend
     ports:
       - "5173:80"
     depends_on:
-      - backend
+      - polpa_backend
     networks:
       - polpa-network
 

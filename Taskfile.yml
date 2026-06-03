@@ -3,45 +3,57 @@
 version: '3'
 
 tasks:
+  build-all:
+    desc: Build frontend, backend and prisma Docker images using docker compose
+    cmd: doppler run -- docker compose -f docker-compose.yml build
+
   build-frontend:
-    desc: Build the frontend Docker image
-    cmd:  |
-      doppler run -- docker build \
-        --build-arg VITE_BUILD_NUMBER=snapshot \
-        --build-arg VITE_CPF_CNPJ_API_TOKEN=$CPF_CNPJ_API_TOKEN \
-        --build-arg VITE_GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY \
-        -t ghcr.io/rmcampos/polpa-gestao/frontend:latest \
-        frontend/
+    desc: Build the frontend Docker image using docker compose
+    cmd: doppler run -- docker compose -f docker-compose.yml build polpa_frontend
 
   build-backend:
-    desc: Build the backend Docker image
-    cmd:  |
-      doppler run -- docker build \
-        --build-arg BUILD_VERSION=snapshot \
-        -t ghcr.io/rmcampos/polpa-gestao/backend:latest \
-        backend/
+    desc: Build the backend Docker image using docker compose
+    cmd: doppler run -- docker compose -f docker-compose.yml build polpa_backend 
 
   build-prisma:
-    desc: Build the prisma Docker image
-    cmd:  |
-      doppler run -- docker build \
-        --build-arg BUILD_VERSION=snapshot \
-        -t ghcr.io/rmcampos/polpa-gestao/backend:latest-prisma \
-        --target prisma \
-        backend/
+    desc: Build the prisma Docker image using docker compose
+    cmd: doppler run -- docker compose -f docker-compose.yml build polpa_prisma
 
   dev-up:
     desc: Start the development environment using docker compose
-    cmd: doppler run -- docker compose -f docker-compose.yml up -d --build
+    deps:
+      - build-all
+    cmd: doppler run -- docker compose -f docker-compose.yml up -d
 
   dev-up-ngrok:
-    desc: Start the development environment using docker compose
-    cmd: doppler run -- docker compose -f docker-compose.ngrok.yml up -d
+    desc: Start the development environment using docker compose and ngrok
+    deps:
+      - build-all
+    cmds:
+      - doppler run -- docker compose -f docker-compose.ngrok.yml up -d
+      - task: ngrok-up
 
   dev-down:
-    desc: Stop the development environment using docker compose
+    desc: Stop the development environment using docker compose 
     cmd: docker compose -f docker-compose.yml down
+
+  dev-down-ngrok:
+    desc: Stop the development environment using docker compose and ngrok
+    cmds:
+      - docker compose -f docker-compose.ngrok.yml down
+      - docker stop nginx-proxy
+      - pkill ngrok
+      - rm -rf /tmp/ngrok.log
 
   dev-tier-down:
     desc: Stop the development environment using docker compose, removing volumes
     cmd: docker compose -f docker-compose.yml down -v --remove-orphans
+
+  ngrok-up:
+    desc: Start ngrok tunnel in background
+    cmds:
+      - bash nginx/start-proxy.sh
+      - nohup ngrok http 8080 > /tmp/ngrok.log 2>&1 &
+      - echo "Waiting for ngrok tunnel..."
+      - sleep 2
+      - curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url'
