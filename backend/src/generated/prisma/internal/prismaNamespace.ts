@@ -1062,6 +1062,7 @@ export const CustomerScalarFieldEnum = {
   document: 'document',
   phone: 'phone',
   personName: 'personName',
+  notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   disabledAt: 'disabledAt'

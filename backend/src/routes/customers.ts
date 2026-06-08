@@ -137,8 +137,9 @@ export default async function customersRoutes(app: FastifyInstance) {
 
   // Create customer
   app.post('/', { preValidation: [app.authenticate] }, async (request, reply) => {
-    const { name, document, phone, personName } = request.body as any;
+    const { name, document, phone, personName, notes } = request.body as any;
     const docValue = document || null;
+    const notesValue = normalizeOptionalString(notes);
     try {
       return await prisma.$transaction(async (tx) => {
         const existingByName = await tx.customer.findFirst({
@@ -160,7 +161,7 @@ export default async function customersRoutes(app: FastifyInstance) {
           if (existingByDoc) throw conflictError('A customer with this document already exists');
         }
 
-        return tx.customer.create({ data: { name, document: docValue, phone, personName } });
+        return tx.customer.create({ data: { name, document: docValue, phone, personName, notes: notesValue ?? null } });
       });
     } catch (e: any) {
       if (e.statusCode === 409) return reply.code(409).send({ error: e.message });
@@ -172,8 +173,9 @@ export default async function customersRoutes(app: FastifyInstance) {
   // Update customer
   app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    const { name, document, phone, personName } = request.body as any;
+    const { name, document, phone, personName, notes } = request.body as any;
     const docValue = document || null;
+    const notesValue = normalizeOptionalString(notes);
     try {
       return await prisma.$transaction(async (tx) => {
         const existingByName = await tx.customer.findFirst({
@@ -195,7 +197,7 @@ export default async function customersRoutes(app: FastifyInstance) {
           if (existingByDoc) throw conflictError('Document already exists for another customer');
         }
 
-        return tx.customer.update({ where: { id }, data: { name, document: docValue, phone, personName } });
+        return tx.customer.update({ where: { id }, data: { name, document: docValue, phone, personName, notes: notesValue ?? null } });
       });
     } catch (e: any) {
       if (e.statusCode === 409) return reply.code(409).send({ error: e.message });

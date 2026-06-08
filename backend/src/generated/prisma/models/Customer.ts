@@ -30,6 +30,7 @@ export type CustomerMinAggregateOutputType = {
   document: string | null
   phone: string | null
   personName: string | null
+  notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
   disabledAt: Date | null
@@ -41,6 +42,7 @@ export type CustomerMaxAggregateOutputType = {
   document: string | null
   phone: string | null
   personName: string | null
+  notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
   disabledAt: Date | null
@@ -52,6 +54,7 @@ export type CustomerCountAggregateOutputType = {
   document: number
   phone: number
   personName: number
+  notes: number
   createdAt: number
   updatedAt: number
   disabledAt: number
@@ -65,6 +68,7 @@ export type CustomerMinAggregateInputType = {
   document?: true
   phone?: true
   personName?: true
+  notes?: true
   createdAt?: true
   updatedAt?: true
   disabledAt?: true
@@ -76,6 +80,7 @@ export type CustomerMaxAggregateInputType = {
   document?: true
   phone?: true
   personName?: true
+  notes?: true
   createdAt?: true
   updatedAt?: true
   disabledAt?: true
@@ -87,6 +92,7 @@ export type CustomerCountAggregateInputType = {
   document?: true
   phone?: true
   personName?: true
+  notes?: true
   createdAt?: true
   updatedAt?: true
   disabledAt?: true
@@ -171,6 +177,7 @@ export type CustomerGroupByOutputType = {
   document: string | null
   phone: string | null
   personName: string | null
+  notes: string | null
   createdAt: Date
   updatedAt: Date
   disabledAt: Date | null
@@ -203,6 +210,7 @@ export type CustomerWhereInput = {
   document?: Prisma.StringNullableFilter<"Customer"> | string | null
   phone?: Prisma.StringNullableFilter<"Customer"> | string | null
   personName?: Prisma.StringNullableFilter<"Customer"> | string | null
+  notes?: Prisma.StringNullableFilter<"Customer"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   disabledAt?: Prisma.DateTimeNullableFilter<"Customer"> | Date | string | null
@@ -215,6 +223,7 @@ export type CustomerOrderByWithRelationInput = {
   document?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   personName?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -230,6 +239,7 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Customer"> | string
   phone?: Prisma.StringNullableFilter<"Customer"> | string | null
   personName?: Prisma.StringNullableFilter<"Customer"> | string | null
+  notes?: Prisma.StringNullableFilter<"Customer"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   disabledAt?: Prisma.DateTimeNullableFilter<"Customer"> | Date | string | null
@@ -242,6 +252,7 @@ export type CustomerOrderByWithAggregationInput = {
   document?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   personName?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -259,6 +270,7 @@ export type CustomerScalarWhereWithAggregatesInput = {
   document?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   personName?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  notes?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Customer"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Customer"> | Date | string
   disabledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Customer"> | Date | string | null
@@ -270,6 +282,7 @@ export type CustomerCreateInput = {
   document?: string | null
   phone?: string | null
   personName?: string | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -282,6 +295,7 @@ export type CustomerUncheckedCreateInput = {
   document?: string | null
   phone?: string | null
   personName?: string | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -294,6 +308,7 @@ export type CustomerUpdateInput = {
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -306,6 +321,7 @@ export type CustomerUncheckedUpdateInput = {
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -318,6 +334,7 @@ export type CustomerCreateManyInput = {
   document?: string | null
   phone?: string | null
   personName?: string | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -329,6 +346,7 @@ export type CustomerUpdateManyMutationInput = {
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -340,6 +358,7 @@ export type CustomerUncheckedUpdateManyInput = {
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -351,6 +370,7 @@ export type CustomerCountOrderByAggregateInput = {
   document?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrder
@@ -362,6 +382,7 @@ export type CustomerMaxOrderByAggregateInput = {
   document?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrder
@@ -373,6 +394,7 @@ export type CustomerMinOrderByAggregateInput = {
   document?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   personName?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   disabledAt?: Prisma.SortOrder
@@ -407,6 +429,7 @@ export type CustomerCreateWithoutPosInput = {
   document?: string | null
   phone?: string | null
   personName?: string | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -418,6 +441,7 @@ export type CustomerUncheckedCreateWithoutPosInput = {
   document?: string | null
   phone?: string | null
   personName?: string | null
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   disabledAt?: Date | string | null
@@ -445,6 +469,7 @@ export type CustomerUpdateWithoutPosInput = {
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -456,6 +481,7 @@ export type CustomerUncheckedUpdateWithoutPosInput = {
   document?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   personName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -498,6 +524,7 @@ export type CustomerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   document?: boolean
   phone?: boolean
   personName?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
@@ -511,6 +538,7 @@ export type CustomerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   document?: boolean
   phone?: boolean
   personName?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
@@ -522,6 +550,7 @@ export type CustomerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   document?: boolean
   phone?: boolean
   personName?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
@@ -533,12 +562,13 @@ export type CustomerSelectScalar = {
   document?: boolean
   phone?: boolean
   personName?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   disabledAt?: boolean
 }
 
-export type CustomerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "document" | "phone" | "personName" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["customer"]>
+export type CustomerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "document" | "phone" | "personName" | "notes" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["customer"]>
 export type CustomerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   pos?: boolean | Prisma.Customer$posArgs<ExtArgs>
   _count?: boolean | Prisma.CustomerCountOutputTypeDefaultArgs<ExtArgs>
@@ -557,6 +587,7 @@ export type $CustomerPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     document: string | null
     phone: string | null
     personName: string | null
+    notes: string | null
     createdAt: Date
     updatedAt: Date
     disabledAt: Date | null
@@ -989,6 +1020,7 @@ export interface CustomerFieldRefs {
   readonly document: Prisma.FieldRef<"Customer", 'String'>
   readonly phone: Prisma.FieldRef<"Customer", 'String'>
   readonly personName: Prisma.FieldRef<"Customer", 'String'>
+  readonly notes: Prisma.FieldRef<"Customer", 'String'>
   readonly createdAt: Prisma.FieldRef<"Customer", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Customer", 'DateTime'>
   readonly disabledAt: Prisma.FieldRef<"Customer", 'DateTime'>

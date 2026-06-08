@@ -25,6 +25,7 @@ model Customer {
   document   String?        @unique
   phone      String?
   personName String?        @db.VarChar(30)
+  notes      String?
   pos        CustomerPos[]
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt

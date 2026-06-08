@@ -32,7 +32,7 @@ export default function Customers() {
   const toast = useToast();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '' });
+  const [newCustomer, setNewCustomer] = useState<Customer>({ name: '', document: '', phone: '', personName: '', notes: '' });
   const emptyPos: CustomerPOS = { address: '', phone: '', industry: '', personName: '', fridgeCount: undefined, banner: false, indiBanner: false, lat: null, lng: null, region: null };
   const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
   const [showPosModal, setShowPosModal] = useState(false);
@@ -107,7 +107,7 @@ export default function Customers() {
         await axios.post(`${apiBase}/api/customers`, newCustomer, config);
       }
       setShowModal(false);
-      setNewCustomer({ name: '', document: '', phone: '', personName: '' });
+      setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
       setEditingCustomer(null);
       fetchCustomers();
       toast.showToast(editingCustomer ? 'Customer updated successfully.' : 'Customer created successfully.', 'success');
@@ -170,7 +170,7 @@ export default function Customers() {
 
   const openNewModal = () => {
     setEditingCustomer(null);
-    setNewCustomer({ name: '', document: '', phone: '', personName: '' });
+    setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
     setDocValidation({ valid: null, loading: false });
     setShowModal(true);
   };
@@ -186,7 +186,7 @@ export default function Customers() {
       return;
     }
     setEditingCustomer(c.id);
-    setNewCustomer({ name: c.name, document: c.document || '', phone: c.phone || '', personName: c.personName || '' });
+    setNewCustomer({ name: c.name, document: c.document || '', phone: c.phone || '', personName: c.personName || '', notes: c.notes || '' });
     setDocValidation({ valid: null, loading: false });
     setShowModal(true);
   };
@@ -332,7 +332,7 @@ export default function Customers() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`${apiBase}/api/customers/${editingCustomer}`, config);
       setShowModal(false);
-      setNewCustomer({ name: '', document: '', phone: '', personName: '' });
+      setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
       setEditingCustomer(null);
       fetchCustomers();
       toast.showToast('Customer disabled successfully.', 'success');
@@ -401,6 +401,11 @@ export default function Customers() {
                   <div className="text-secondary small mt-1">
                     <i className="bi bi-file-earmark-text me-1"></i>{c.document ? formatDocument(c.document) : 'N/A'}
                   </div>
+                  {c.notes?.trim() && (
+                    <div className="text-secondary small mt-1">
+                      <i className="bi bi-journal-text me-1"></i>{c.notes.trim().slice(0, 80)}{c.notes.trim().length > 80 ? '...' : ''}
+                    </div>
+                  )}
                 </div>
                 <div className="d-flex flex-column gap-1 text-secondary small mb-3">
                   <div>
@@ -470,6 +475,16 @@ export default function Customers() {
                     <div className="mb-3">
                       <label className="form-label text-secondary">Phone (Optional)</label>
                       <input type="text" className="form-control" value={newCustomer.phone} onChange={e => setNewCustomer({ ...newCustomer, phone: formatPhone(e.target.value) })} placeholder="(11) 99999-9999" maxLength={15} />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label text-secondary">Notes (Optional)</label>
+                      <textarea
+                        className="form-control"
+                        rows={3}
+                        value={newCustomer.notes || ''}
+                        onChange={e => setNewCustomer({ ...newCustomer, notes: e.target.value })}
+                        placeholder="Add notes/observations about this customer..."
+                      />
                     </div>
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
