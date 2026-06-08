@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - POS Industry Summary endpoint and dashboard card.
 - Industry field to Customer POS for categorization.
 - Optional `region` field to POS for filtering and reporting.
+- Optional `notes` field for customers in Prisma schema and database migration.
+- Notes textarea in the customer create/edit modal with support for loading existing notes.
+- Optional notes snippet display on customer cards.
 
 ### Changed
 - Improved Terraform deployment plan with variables for better configurability.
@@ -24,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Container names and Docker flows updated for better naming consistency.
 - Quantity input in sales page changed to text type for better UX.
 - Closest page updated to include customer name for easier identification.
+- Customer POST/PUT API handlers now accept and persist optional `notes`.
 
 ### Fixed
 - Unable to type all 14 digits for enterprise documents on customer creation.
