@@ -144,7 +144,7 @@ export default function Customers() {
   };
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let rawVal = e.target.value.replace(/\D/g, '').slice(0, 14);
+    const rawVal = e.target.value.replace(/\D/g, '').slice(0, 14);
     setNewCustomer({ ...newCustomer, document: rawVal });
     if (rawVal.length === 11 || rawVal.length === 14) {
       validateDocument(rawVal);
