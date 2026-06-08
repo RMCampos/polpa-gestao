@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
@@ -41,6 +41,7 @@ export default function Customers() {
   const [editingPos, setEditingPos] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [docValidation, setDocValidation] = useState<{ valid: boolean | null, loading: boolean }>({ valid: null, loading: false });
+  const docAbortRef = useRef<AbortController | null>(null);
   const [selectedPhone, setSelectedPhone] = useState<{ number: string, name: string } | null>(null);
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
@@ -118,25 +119,34 @@ export default function Customers() {
   };
 
   const validateDocument = async (doc: string) => {
-    if (!doc || doc.length < 11) {
+    if (!doc || (doc.length !== 11 && doc.length !== 14)) {
       setDocValidation({ valid: null, loading: false });
       return;
     }
+    docAbortRef.current?.abort();
+    const controller = new AbortController();
+    docAbortRef.current = controller;
     setDocValidation({ valid: null, loading: true });
     try {
-      const res = await axios.get(`https://api.invertexto.com/v1/validator?token=${cpfCnpjApiToken}&value=${doc}`);
-      setNewCustomer(prev => ({ ...prev, document: res.data.formatted }));
+      const res = await axios.get(
+        `https://api.invertexto.com/v1/validator?token=${cpfCnpjApiToken}&value=${doc}`,
+        { signal: controller.signal }
+      );
+      if (res.data.valid) {
+        setNewCustomer(prev => ({ ...prev, document: res.data.formatted }));
+      }
       setDocValidation({ valid: res.data.valid, loading: false });
     } catch (err) {
+      if (axios.isCancel(err)) return;
       setDocValidation({ valid: false, loading: false });
       console.error('Document validation failed', err);
     }
   };
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawVal = e.target.value.replace(/\D/g, '');
+    let rawVal = e.target.value.replace(/\D/g, '').slice(0, 14);
     setNewCustomer({ ...newCustomer, document: rawVal });
-    if (rawVal.length >= 11) {
+    if (rawVal.length === 11 || rawVal.length === 14) {
       validateDocument(rawVal);
     } else {
       setDocValidation({ valid: null, loading: false });
@@ -451,7 +461,7 @@ export default function Customers() {
                     <div className="mb-3">
                       <label className="form-label text-secondary">Document (CNPJ/CPF) (Optional)</label>
                       <div className="input-group">
-                        <input type="text" className="form-control" value={newCustomer.document || ''} onChange={handleDocumentChange} placeholder="Type numbers only..." />
+                        <input type="text" className="form-control" value={newCustomer.document || ''} onChange={handleDocumentChange} placeholder="Type numbers only..." maxLength={18} />
                         {docValidation.loading && <span className="input-group-text bg-secondary text-white border-secondary">...</span>}
                         {!docValidation.loading && docValidation.valid === true && <span className="input-group-text bg-success text-white border-success">Valid</span>}
                         {!docValidation.loading && docValidation.valid === false && <span className="input-group-text bg-danger text-white border-danger">Invalid</span>}
