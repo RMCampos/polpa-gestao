@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [app-v2026.06.08.47] - 2026-06-08
+## [[app-v2026.06.08.47]](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.08.47) - 2026-06-08
 
 ### Added
 - Professional local development setup with Taskfile and Doppler for secure secret management.
@@ -34,6 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wrong Doppler secret name in multiple workflow files.
 - Prevented duplicate Customer and POS creation.
 
-## [app-v2026.06.03.45] - 2026-06-03
+## [[app-v2026.06.03.45]](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.03.45) - 2026-06-03
 
 - Initial tagged release.
