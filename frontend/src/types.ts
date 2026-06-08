@@ -73,6 +73,7 @@ export type Customer = {
   document?: string;
   phone: string;
   personName?: string;
+  notes?: string;
   pos?: CustomerPOS[];
   disabledAt?: string | null;
 };
