@@ -156,16 +156,24 @@ export default function Customers() {
   const formatPhone = (val: string) => {
     let r = val.replace(/\D/g, '');
     r = r.replace(/^0/, '');
+    if (!r) return '';
     if (r.length > 10) {
-      r = r.replace(/^(\d\d)(\d{5})(\d{4}).*/, '($1) $2-$3');
+      const ddd = r.slice(0, 2);
+      const part1 = r.slice(2, 7);
+      const part2 = r.slice(7, 11);
+      return `(${ddd}) ${part1}-${part2}`;
     } else if (r.length > 5) {
-      r = r.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+      const ddd = r.slice(0, 2);
+      const part1 = r.slice(2, 6);
+      const part2 = r.slice(6);
+      return `(${ddd}) ${part1}` + (part2 ? `-${part2}` : '');
     } else if (r.length > 2) {
-      r = r.replace(/^(\d\d)(\d{0,5})/, '($1) $2');
+      const ddd = r.slice(0, 2);
+      const part = r.slice(2);
+      return `(${ddd}) ${part}`;
     } else {
-      r = r.replace(/^(\d*)/, '($1');
+      return `(${r}`;
     }
-    return r;
   };
 
   const openNewModal = () => {
@@ -294,7 +302,7 @@ export default function Customers() {
     if (!posId) return;
     const confirmed = await toast.confirm({
       title: 'Delete POS',
-      message: 'Are you sure you want to delete this POS?',
+      message: 'Are you sure you want to permanently delete this POS? All related sales history and route assignments will be permanently deleted.',
       confirmText: 'Delete',
       cancelText: 'Cancel',
       isDangerous: true
@@ -303,7 +311,7 @@ export default function Customers() {
 
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`${apiBase}/api/customers/pos/${posId}`, config);
+      await axios.delete(`${apiBase}/api/customer-pos/${posId}`, config);
       fetchCustomers();
 
       if (selectedCustomer && selectedCustomer.id) {
@@ -329,8 +337,8 @@ export default function Customers() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`${apiBase}/api/customers/${editingCustomer}`, config);
+      const config = { headers: { Authorization: 'Bearer ' + token } };
+      await axios.patch(`${apiBase}/api/customers/${editingCustomer}/disable`, {}, config);
       setShowModal(false);
       setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
       setEditingCustomer(null);
@@ -338,6 +346,33 @@ export default function Customers() {
       toast.showToast('Customer disabled successfully.', 'success');
     } catch (err) {
       toast.showToast(`Failed to disable customer: ${toErrorMessage(err, 'Unknown error')}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!editingCustomer) return;
+    const confirmed = await toast.confirm({
+      title: 'Delete Customer',
+      message: 'Are you sure you want to permanently delete this customer? All associated POSes, sales history, and route assignments will be permanently deleted.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`${apiBase}/api/customers/${editingCustomer}`, config);
+      setShowModal(false);
+      setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
+      setEditingCustomer(null);
+      fetchCustomers();
+      toast.showToast('Customer deleted successfully.', 'success');
+    } catch (err) {
+      toast.showToast(`Failed to delete customer: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -490,7 +525,10 @@ export default function Customers() {
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
                     {editingCustomer && (
-                      <button type="button" className="btn btn-outline-danger" onClick={handleDisableCustomer}>Disable</button>
+                      <button type="button" className="btn btn-outline-warning" onClick={handleDisableCustomer}>Disable</button>
+                    )}
+                    {editingCustomer && (
+                      <button type="button" className="btn btn-outline-danger" onClick={handleDeleteCustomer}>Delete</button>
                     )}
                     <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? 'Saving...' : 'Save Customer'}</button>
                   </div>
@@ -553,7 +591,7 @@ export default function Customers() {
                         </div>
                         <div className="d-flex gap-2">
                           <button className="btn btn-sm btn-outline-primary" onClick={() => openEditPos(p)}>Edit</button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeletePos(p.id)}>Remove</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeletePos(p.id)}>Delete</button>
                         </div>
                       </li>
                     ))}

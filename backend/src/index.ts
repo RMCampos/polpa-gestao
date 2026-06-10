@@ -25,6 +25,7 @@ app.decorate('authenticate', async (request: any, reply: any) => {
 // Register Routes
 import usersRoutes from './routes/users';
 import customersRoutes from './routes/customers';
+import customerPosRoutes from './routes/customer-pos';
 import productsRoutes from './routes/products';
 import routesApi from './routes/routes';
 import salesRoutes from './routes/sales';
@@ -35,6 +36,7 @@ import publicRoutes from './routes/public';
 
 app.register(usersRoutes, { prefix: '/api/users' });
 app.register(customersRoutes, { prefix: '/api/customers' });
+app.register(customerPosRoutes, { prefix: '/api/customer-pos' });
 app.register(productsRoutes, { prefix: '/api/products' });
 app.register(routesApi, { prefix: '/api/routes' });
 app.register(salesRoutes, { prefix: '/api/sales' });

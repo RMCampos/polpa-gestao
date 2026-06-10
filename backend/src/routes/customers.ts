@@ -197,7 +197,7 @@ export default async function customersRoutes(app: FastifyInstance) {
           if (existingByDoc) throw conflictError('Document already exists for another customer');
         }
 
-        return tx.customer.update({ where: { id }, data: { name, document: docValue, phone, personName, notes: notesValue ?? null } });
+        return tx.customer.update({ where: { id }, data: { name, document: docValue, phone, personName, notes: notesValue ?? null, disabledAt: null } });
       });
     } catch (e: any) {
       if (e.statusCode === 409) return reply.code(409).send({ error: e.message });
@@ -208,11 +208,32 @@ export default async function customersRoutes(app: FastifyInstance) {
     }
   });
 
-  // Delete customer (soft)
+  // Disable customer (soft)
+  app.patch('/:id/disable', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { id } = request.params as any;
+    try {
+      const existingCustomer = await prisma.customer.findUnique({ where: { id }, select: { disabledAt: true } });
+      if (!existingCustomer) return reply.code(404).send({ error: 'Customer not found' });
+      if (existingCustomer.disabledAt) return reply.code(409).send({ error: 'Customer is already disabled' });
+
+      await prisma.customer.update({ where: { id }, data: { disabledAt: new Date() } });
+      return { success: true };
+    } catch (e) {
+      request.log.error({ err: e, customerId: id }, 'Failed to disable customer');
+      return reply.code(500).send({ error: 'Failed to disable customer' });
+    }
+  });
+
+  // Delete customer (hard)
   app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    await prisma.customer.update({ where: { id }, data: { disabledAt: new Date() } });
-    return { success: true };
+    try {
+      await prisma.customer.delete({ where: { id } });
+      return { success: true };
+    } catch (e: any) {
+      if (e?.code === 'P2025') return reply.code(404).send({ error: 'Customer not found' });
+      return reply.code(500).send({ error: 'Failed to delete customer' });
+    }
   });
 
   // --- Point of Sales for Customer ---
@@ -324,12 +345,4 @@ export default async function customersRoutes(app: FastifyInstance) {
     }
   });
 
-  app.delete('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
-    const { id } = request.params as any;
-    await prisma.customerPos.update({
-      where: { id },
-      data: { disabledAt: new Date() }
-    });
-    return { success: true };
-  });
 }

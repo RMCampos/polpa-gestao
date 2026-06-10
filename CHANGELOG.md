@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2026-06-10 #2
+
+### Added
+- Option do delete customers and POSes, with a confirmation modal to prevent accidental deletions.
+
+### Changed
+- Customer and POSes tables foreign keys recreating them with `ON DELETE CASCADE` to ensure related records are removed when a customer or POS is deleted.
+- Updates on a disabled customer make it enabled again.
+
+### Fixed
+- Clearing up the phone number input on the customer modal.
+
+### Docker images
+- [ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.06.10.48](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.10.48)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.31](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.31)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.31-prisma](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.31)
+
+
 ## 2026-06-10 #1
 
 ### Added
