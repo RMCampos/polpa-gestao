@@ -197,7 +197,7 @@ export default async function customersRoutes(app: FastifyInstance) {
           if (existingByDoc) throw conflictError('Document already exists for another customer');
         }
 
-        return tx.customer.update({ where: { id }, data: { name, document: docValue, phone, personName, notes: notesValue ?? null } });
+        return tx.customer.update({ where: { id }, data: { name, document: docValue, phone, personName, notes: notesValue ?? null, disabledAt: null } });
       });
     } catch (e: any) {
       if (e.statusCode === 409) return reply.code(409).send({ error: e.message });
