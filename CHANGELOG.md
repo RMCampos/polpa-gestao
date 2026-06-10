@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [[app-v2026.06.08.47]](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.08.47) - 2026-06-08
+## [Unreleased]
+
+## 2026-06-10 #1
+
+### Added
+- Card to the dashboard page displaying customer POSes and their last buying date for those who haven't bought anything in 10 days or more.
+
+### Docker images
+- [ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.06.10.48](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.10.48)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.31](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.31)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.31-prisma](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.31)
+
+## [app-v2026.06.08.47](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.08.47) - 2026-06-08
 
 ### Added
 - Professional local development setup with Taskfile and Doppler for secure secret management.
