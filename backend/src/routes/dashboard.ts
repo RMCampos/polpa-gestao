@@ -66,6 +66,9 @@ function getDateRange(range: string): { startDate: Date; endDate: Date | null } 
   return { startDate, endDate };
 }
 
+const INACTIVE_THRESHOLD_DAYS = 10;
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
 export default async function dashboardRoutes(app: FastifyInstance) {
   app.get('/sales-by-customer', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { range } = request.query as { range: string };
@@ -248,5 +251,41 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     return Array.from(summaryMap.entries())
       .map(([region, count]) => ({ region, count }))
       .sort((a, b) => b.count - a.count);
+  });
+
+  app.get('/inactive-pos', { preValidation: [app.authenticate] }, async () => {
+    const now = new Date();
+
+    const poses = await prisma.customerPos.findMany({
+      where: { disabledAt: null },
+      select: {
+        id: true,
+        address: true,
+        createdAt: true,
+        customer: { select: { name: true } },
+        sales: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { createdAt: true }
+        }
+      }
+    });
+
+    return poses
+      .map(pos => {
+        const lastSale = pos.sales[0] ?? null;
+        const lastBuyingDate = lastSale?.createdAt ?? null;
+        const referenceDate = lastBuyingDate ?? pos.createdAt;
+        const daysInactive = Math.floor((now.getTime() - referenceDate.getTime()) / MS_PER_DAY);
+        return {
+          posId: pos.id,
+          customerName: pos.customer.name,
+          posAddress: pos.address,
+          lastBuyingDate: lastBuyingDate?.toISOString() ?? null,
+          daysInactive
+        };
+      })
+      .filter(item => item.daysInactive >= INACTIVE_THRESHOLD_DAYS)
+      .sort((a, b) => b.daysInactive - a.daysInactive);
   });
 }
