@@ -35,7 +35,7 @@ model Customer {
 model CustomerPos {
   id         String   @id @default(uuid()) @db.Uuid
   customerId String   @db.Uuid
-  customer   Customer @relation(fields: [customerId], references: [id])
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   address    String
   phone      String
   industry   String?
@@ -68,7 +68,7 @@ model Product {
 model Sale {
   id             String         @id @default(uuid()) @db.Uuid
   customerPosId  String         @db.Uuid
-  customerPos    CustomerPos    @relation(fields: [customerPosId], references: [id])
+  customerPos    CustomerPos    @relation(fields: [customerPosId], references: [id], onDelete: Cascade)
   delivered      Boolean        @default(false)
   paymentMethod  String
   paymentDueDate DateTime?
@@ -84,7 +84,7 @@ model Sale {
 model SaleProduct {
   saleId    String   @db.Uuid
   productId String   @db.Uuid
-  sale      Sale     @relation(fields: [saleId], references: [id])
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id])
   quantity  Int
   createdAt DateTime @default(now())
@@ -107,7 +107,7 @@ model RouteCustomerPos {
   routeId       String      @db.Uuid
   customerPosId String      @db.Uuid
   route         Route       @relation(fields: [routeId], references: [id])
-  customerPos   CustomerPos @relation(fields: [customerPosId], references: [id])
+  customerPos   CustomerPos @relation(fields: [customerPosId], references: [id], onDelete: Cascade)
 
   @@id([routeId, customerPosId])
 }

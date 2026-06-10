@@ -208,11 +208,16 @@ export default async function customersRoutes(app: FastifyInstance) {
     }
   });
 
-  // Delete customer (soft)
+  // Delete customer (hard)
   app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
-    await prisma.customer.update({ where: { id }, data: { disabledAt: new Date() } });
-    return { success: true };
+    try {
+      await prisma.customer.delete({ where: { id } });
+      return { success: true };
+    } catch (e: any) {
+      if (e?.code === 'P2025') return reply.code(404).send({ error: 'Customer not found' });
+      return reply.code(500).send({ error: 'Failed to delete customer' });
+    }
   });
 
   // --- Point of Sales for Customer ---
@@ -324,12 +329,4 @@ export default async function customersRoutes(app: FastifyInstance) {
     }
   });
 
-  app.delete('/pos/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
-    const { id } = request.params as any;
-    await prisma.customerPos.update({
-      where: { id },
-      data: { disabledAt: new Date() }
-    });
-    return { success: true };
-  });
 }
