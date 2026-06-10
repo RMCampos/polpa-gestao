@@ -42,8 +42,7 @@ export default function Dashboard() {
         const resSummary = await axios.get(`${apiBase}/api/dashboard/sales-summary`, config);
         const resIndustries = await axios.get(`${apiBase}/api/dashboard/industries-summary`, config);
         const resRegions = await axios.get(`${apiBase}/api/dashboard/regions-summary`, config);
-        const authConfig = { headers: { Authorization: `Bearer ${token}` } };
-        const resInactivePoses = await axios.get(`${apiBase}/api/dashboard/inactive-pos`, authConfig);
+        const resInactivePoses = await axios.get(`${apiBase}/api/dashboard/inactive-pos`, config);
         
         setSalesByProduct(resProducts.data);
         setSalesByCustomer(resCustomers.data);
