@@ -212,10 +212,14 @@ export default async function customersRoutes(app: FastifyInstance) {
   app.patch('/:id/disable', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;
     try {
+      const existingCustomer = await prisma.customer.findUnique({ where: { id }, select: { disabledAt: true } });
+      if (!existingCustomer) return reply.code(404).send({ error: 'Customer not found' });
+      if (existingCustomer.disabledAt) return reply.code(409).send({ error: 'Customer is already disabled' });
+
       await prisma.customer.update({ where: { id }, data: { disabledAt: new Date() } });
       return { success: true };
-    } catch (e: any) {
-      if (e?.code === 'P2025') return reply.code(404).send({ error: 'Customer not found' });
+    } catch (e) {
+      request.log.error({ err: e, customerId: id }, 'Failed to disable customer');
       return reply.code(500).send({ error: 'Failed to disable customer' });
     }
   });

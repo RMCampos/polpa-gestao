@@ -330,7 +330,7 @@ export default function Customers() {
     setLoading(true);
     try {
       const config = { headers: { Authorization: 'Bearer ' + token } };
-      await axios.patch(`${apiBase}/api/customers/${editingCustomer}/disable`, undefined, config);
+      await axios.patch(`${apiBase}/api/customers/${editingCustomer}/disable`, {}, config);
       setShowModal(false);
       setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
       setEditingCustomer(null);
