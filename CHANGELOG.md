@@ -20,9 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clearing up the phone number input on the customer modal.
 
 ### Docker images
-- [ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.06.10.48](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.10.48)
-- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.31](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.31)
-- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.31-prisma](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.31)
+- [ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.06.10.49](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.10.49)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.32](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.32)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.10.32-prisma](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.10.32)
 
 
 ## 2026-06-10 #1
