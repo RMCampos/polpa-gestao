@@ -208,6 +208,18 @@ export default async function customersRoutes(app: FastifyInstance) {
     }
   });
 
+  // Disable customer (soft)
+  app.patch('/:id/disable', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const { id } = request.params as any;
+    try {
+      await prisma.customer.update({ where: { id }, data: { disabledAt: new Date() } });
+      return { success: true };
+    } catch (e: any) {
+      if (e?.code === 'P2025') return reply.code(404).send({ error: 'Customer not found' });
+      return reply.code(500).send({ error: 'Failed to disable customer' });
+    }
+  });
+
   // Delete customer (hard)
   app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
     const { id } = request.params as any;

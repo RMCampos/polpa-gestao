@@ -316,6 +316,33 @@ export default function Customers() {
     }
   };
 
+  const handleDisableCustomer = async () => {
+    if (!editingCustomer) return;
+    const confirmed = await toast.confirm({
+      title: 'Disable Customer',
+      message: 'Are you sure you want to disable this customer?',
+      confirmText: 'Disable',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: 'Bearer ' + token } };
+      await axios.patch(`${apiBase}/api/customers/${editingCustomer}/disable`, undefined, config);
+      setShowModal(false);
+      setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
+      setEditingCustomer(null);
+      fetchCustomers();
+      toast.showToast('Customer disabled successfully.', 'success');
+    } catch (err) {
+      toast.showToast(`Failed to disable customer: ${toErrorMessage(err, 'Unknown error')}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteCustomer = async () => {
     if (!editingCustomer) return;
     const confirmed = await toast.confirm({
@@ -489,6 +516,9 @@ export default function Customers() {
                   </div>
                   <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                     <button type="button" className="btn btn-outline-light" onClick={() => setShowModal(false)}>Cancel</button>
+                    {editingCustomer && (
+                      <button type="button" className="btn btn-outline-warning" onClick={handleDisableCustomer}>Disable</button>
+                    )}
                     {editingCustomer && (
                       <button type="button" className="btn btn-outline-danger" onClick={handleDeleteCustomer}>Delete</button>
                     )}
