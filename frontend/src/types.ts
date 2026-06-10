@@ -40,6 +40,14 @@ export type FridgePosSummary = {
   };
 }
 
+export type InactivePosSummary = {
+  posId: string;
+  customerName: string;
+  posAddress: string;
+  lastBuyingDate: string | null;
+  daysInactive: number;
+}
+
 /* Users page types */
 export type User = {
   id?: string;

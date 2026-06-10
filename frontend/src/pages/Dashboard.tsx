@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
-import type { FridgePosSummary, IndustriesSummary, RegionsSummary, SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
+import type { FridgePosSummary, InactivePosSummary, IndustriesSummary, RegionsSummary, SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
 
 export default function Dashboard() {
   const [range, setRange] = useState('last-30-days');
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [fridgePoses, setFridgePoses] = useState<FridgePosSummary[]>([]);
   const [showFridgesModal, setShowFridgesModal] = useState(false);
   const [loadingFridgePoses, setLoadingFridgePoses] = useState(false);
+  const [inactivePoses, setInactivePoses] = useState<InactivePosSummary[]>([]);
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
@@ -41,12 +42,15 @@ export default function Dashboard() {
         const resSummary = await axios.get(`${apiBase}/api/dashboard/sales-summary`, config);
         const resIndustries = await axios.get(`${apiBase}/api/dashboard/industries-summary`, config);
         const resRegions = await axios.get(`${apiBase}/api/dashboard/regions-summary`, config);
+        const authConfig = { headers: { Authorization: `Bearer ${token}` } };
+        const resInactivePoses = await axios.get(`${apiBase}/api/dashboard/inactive-pos`, authConfig);
         
         setSalesByProduct(resProducts.data);
         setSalesByCustomer(resCustomers.data);
         setSalesSummary(resSummary.data);
         setIndustriesSummary(resIndustries.data);
         setRegionsSummary(resRegions.data);
+        setInactivePoses(resInactivePoses.data);
       } catch (err) {
         console.error('Failed to load dashboard', err);
       }
@@ -269,6 +273,43 @@ export default function Dashboard() {
                   </li>
                 ))}
               </ul>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Inactive Customer POSes */}
+      <div className="row g-4 mt-0">
+        <div className="col-12">
+          <div className="glass-card p-4">
+            <h4 className="mb-3">Inactive Customer POSes (10+ days)</h4>
+            {inactivePoses.length === 0 ? (
+              <p className="text-secondary mb-0">No inactive POSes found.</p>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-dark table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>POS Address</th>
+                      <th>Last Buying Date</th>
+                      <th className="text-end">Days Inactive</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inactivePoses.map((item: InactivePosSummary) => (
+                      <tr key={item.posId}>
+                        <td>{item.customerName}</td>
+                        <td>{item.posAddress}</td>
+                        <td>{item.lastBuyingDate ? new Date(item.lastBuyingDate).toLocaleDateString() : '—'}</td>
+                        <td className="text-end">
+                          <span className="badge bg-danger rounded-pill">{item.daysInactive}d</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
