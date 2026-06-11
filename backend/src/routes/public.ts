@@ -5,9 +5,6 @@ type PosClosestResponse = {
   id: string;
   customerName: string;
   address: string;
-  lat: number;
-  lng: number;
-  lastBuyingDate: Date | null;
   distanceKm: number;
 };
 
@@ -31,7 +28,15 @@ const calculateDistanceKm = (originLat: number, originLng: number, destinationLa
 };
 
 export default async function publicRoutes(app: FastifyInstance) {
-  app.get('/pos/closest', async (request, reply) => {
+  app.get('/pos/closest', {
+    config: {
+      rateLimit: {
+        max: 15,
+        timeWindow: '1 minute',
+        keyGenerator: (request: any) => request.ip
+      }
+    }
+  }, async (request, reply) => {
     const { lat, lng } = request.query as { lat?: string; lng?: string };
     if (lat === undefined || lng === undefined) {
       return reply.code(400).send({ error: 'lat and lng query parameters are required' });
@@ -58,11 +63,6 @@ export default async function publicRoutes(app: FastifyInstance) {
         lng: true,
         customer: {
           select: { name: true }
-        },
-        sales: {
-          select: { createdAt: true },
-          orderBy: { createdAt: 'desc' },
-          take: 1
         }
       }
     });
@@ -75,9 +75,6 @@ export default async function publicRoutes(app: FastifyInstance) {
           id: pos.id,
           customerName: pos.customer.name,
           address: pos.address,
-          lat: posLat,
-          lng: posLng,
-          lastBuyingDate: pos.sales[0]?.createdAt ?? null,
           distanceKm: calculateDistanceKm(referenceLat, referenceLng, posLat, posLng)
         };
       })

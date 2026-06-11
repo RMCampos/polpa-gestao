@@ -75,8 +75,35 @@ export default async function usersRoutes(app: FastifyInstance) {
     loginFailures.delete(failureKey);
 
     const token = app.jwt.sign({ id: user.id, email: user.email, role: user.role }, { expiresIn: '8h' });
+
+    reply.setCookie('polpaAuth', token, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 8 * 60 * 60
+    });
+
     return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
   });
+
+  app.get('/me', { preValidation: [app.authenticate] }, async (request, reply) => {
+    const userPayload = request.user as any;
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userPayload.id }
+    });
+    if (!dbUser || dbUser.disabledAt) {
+      return reply.code(401).send({ error: 'User not found or disabled' });
+    }
+    const token = app.jwt.sign({ id: dbUser.id, email: dbUser.email, role: dbUser.role }, { expiresIn: '8h' });
+    return { token, user: { id: dbUser.id, name: dbUser.name, email: dbUser.email, role: dbUser.role } };
+  });
+
+  app.post('/logout', async (request, reply) => {
+    reply.clearCookie('polpaAuth', { path: '/' });
+    return { success: true };
+  });
+
 
   app.get('/', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const showDisabled = (request.query as any).showDisabled as string === 'true';

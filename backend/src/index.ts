@@ -3,6 +3,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
+import cookie from '@fastify/cookie';
 import { prisma } from './prisma';
 
 if (!process.env.JWT_SECRET) {
@@ -12,13 +13,24 @@ if (!process.env.JWT_SECRET) {
 
 const app = Fastify({ logger: true });
 
+app.register(cookie);
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:5173'];
+
 app.register(cors, {
-  origin: true,
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  credentials: true,
 });
 
 app.register(jwt, {
-  secret: process.env.JWT_SECRET
+  secret: process.env.JWT_SECRET,
+  cookie: {
+    cookieName: 'polpaAuth',
+    signed: false
+  }
 });
 
 app.register(rateLimit, {
@@ -69,6 +81,7 @@ import visitsRoutes from './routes/visits';
 import dashboardRoutes from './routes/dashboard';
 import healthRoutes from './routes/health';
 import publicRoutes from './routes/public';
+import proxyRoutes from './routes/proxy';
 
 app.register(usersRoutes, { prefix: '/api/users' });
 app.register(customersRoutes, { prefix: '/api/customers' });
@@ -80,6 +93,8 @@ app.register(visitsRoutes, { prefix: '/api/visits' });
 app.register(dashboardRoutes, { prefix: '/api/dashboard' });
 app.register(healthRoutes, { prefix: '/api/health' });
 app.register(publicRoutes, { prefix: '/api/public' });
+app.register(proxyRoutes, { prefix: '/api/proxy' });
+
 
 app.get('/health', async (request, reply) => {
   return { status: 'ok' };

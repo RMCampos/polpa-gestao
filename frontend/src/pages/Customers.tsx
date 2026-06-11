@@ -48,8 +48,7 @@ export default function Customers() {
   const [filterText, setFilterText] = useState<string>('');
   const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
-  const cpfCnpjApiToken = import.meta.env.VITE_CPF_CNPJ_API_TOKEN || '';
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
 
   const fetchCustomers = useCallback(async () => {
     try {
@@ -128,9 +127,13 @@ export default function Customers() {
     docAbortRef.current = controller;
     setDocValidation({ valid: null, loading: true });
     try {
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal
+      };
       const res = await axios.get(
-        `https://api.invertexto.com/v1/validator?token=${cpfCnpjApiToken}&value=${doc}`,
-        { signal: controller.signal }
+        `${apiBase}/api/proxy/validator?value=${doc}`,
+        config
       );
       if (res.data.valid) {
         setNewCustomer(prev => ({ ...prev, document: res.data.formatted }));
@@ -142,6 +145,7 @@ export default function Customers() {
       console.error('Document validation failed', err);
     }
   };
+
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = e.target.value.replace(/\D/g, '').slice(0, 14);
@@ -269,19 +273,13 @@ export default function Customers() {
       return;
     }
 
-    if (!googleMapsApiKey) {
-      toast.showToast('Geocoding is currently unavailable. Please contact support.', 'error');
-      return;
-    }
-
     setLoading(true);
     try {
-      const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-        params: {
-          address: newPos.address.trim(),
-          key: googleMapsApiKey
-        }
-      });
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { address: newPos.address.trim() }
+      };
+      const response = await axios.get(`${apiBase}/api/proxy/geocode`, config);
 
       const location = response.data?.results?.[0]?.geometry?.location;
       if (response.data?.status !== 'OK' || typeof location?.lat !== 'number' || typeof location?.lng !== 'number') {
@@ -291,6 +289,7 @@ export default function Customers() {
 
       setNewPos((prev) => ({ ...prev, lat: location.lat, lng: location.lng }));
       toast.showToast('Geocode set successfully.', 'success');
+
     } catch (err) {
       toast.showToast(`Failed to geocode address: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {

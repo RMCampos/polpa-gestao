@@ -64,8 +64,6 @@ services:
       context: ./frontend
       args:
         VITE_BACKEND_SERVER: http://localhost:3000
-        VITE_CPF_CNPJ_API_TOKEN: ${CPF_CNPJ_API_TOKEN}
-        VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
         VITE_BUILD_NUMBER: snapshot
     image: ghcr.io/rmcampos/polpa-gestao/frontend:latest
     container_name: polpa_frontend
