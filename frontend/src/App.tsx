@@ -27,7 +27,7 @@ export default function App() {
         const response = await axios.get(`${apiBase}/api/users/me`);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setToken(response.data.user?.id ?? null);
-      } catch (err) {
+      } catch {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setToken(null);
