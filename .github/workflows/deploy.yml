@@ -29,9 +29,6 @@ jobs:
       no_changes: ${{ steps.check-changes.outputs.no_changes }}
     permissions:
       contents: read
-    env:
-      CPF_CNPJ_API_TOKEN: ""
-      GOOGLE_MAPS_API_KEY: ""
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -98,13 +95,6 @@ jobs:
       - name: Terraform Validate
         working-directory: terraform
         run: terraform validate
-
-      - name: Fetch public tokens
-        env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_TOKENS }}
-        run: |
-          doppler secrets download --no-file --format env \
-            --config prd_tokens | sed 's/"//g' >> $GITHUB_ENV
 
       - name: Terraform Plan
         id: check-changes

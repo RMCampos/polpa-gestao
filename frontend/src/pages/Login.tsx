@@ -25,10 +25,9 @@ export default function Login({ setToken }: LoginProps) {
         password
       });
       
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
+      const { user } = response.data;
       localStorage.setItem('user', JSON.stringify(user));
-      setToken(token);
+      setToken(user.id);
       navigate('/dashboard');
     } catch (err) {
       if (axios.isAxiosError(err)) {

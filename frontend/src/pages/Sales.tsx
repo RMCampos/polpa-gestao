@@ -97,15 +97,12 @@ export default function Sales() {
   const [editingMode, setEditingMode] = useState(false);
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
 
-  const token = localStorage.getItem('token');
-
   const fetchData = useCallback(async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const [salesRes, custRes, prodRes] = await Promise.all([
-        axios.get(`${apiBase}/api/sales?showDelivered=${showDelivered}`, config),
-        axios.get(`${apiBase}/api/customers`, config),
-        axios.get(`${apiBase}/api/products`, config)
+        axios.get(`${apiBase}/api/sales?showDelivered=${showDelivered}`),
+        axios.get(`${apiBase}/api/customers`),
+        axios.get(`${apiBase}/api/products`)
       ]);
       setSales(salesRes.data);
       setCustomers(custRes.data);
@@ -113,7 +110,7 @@ export default function Sales() {
     } catch (err) {
       console.error('Failed to load sales data', err);
     }
-  }, [token, apiBase, showDelivered]);
+  }, [apiBase, showDelivered]);
 
   useEffect(() => {
     fetchData();
@@ -220,7 +217,6 @@ export default function Sales() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const payload = {
         customerPosId,
         paymentMethod,
@@ -232,12 +228,12 @@ export default function Sales() {
       };
 
       if (editingMode && editingSaleId) {
-        await axios.put(`${apiBase}/api/sales/${editingSaleId}`, payload, config);
+        await axios.put(`${apiBase}/api/sales/${editingSaleId}`, payload);
         handleCloseModal();
         fetchData();
         toast.showToast('Sale updated successfully.', 'success');
       } else {
-        await axios.post(`${apiBase}/api/sales`, payload, config);
+        await axios.post(`${apiBase}/api/sales`, payload);
         handleCloseModal();
         fetchData();
         toast.showToast('Sale recorded successfully.', 'success');
@@ -294,7 +290,6 @@ export default function Sales() {
   const handleCloneSale = async (sale: Sale) => {
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const payload = {
         customerPosId: sale.customerPosId,
         paymentMethod: sale.paymentMethod,
@@ -306,7 +301,7 @@ export default function Sales() {
           quantity: sp.quantity,
         })),
       };
-      await axios.post(`${apiBase}/api/sales`, payload, config);
+      await axios.post(`${apiBase}/api/sales`, payload);
       fetchData();
       toast.showToast('Sale cloned successfully.', 'success');
     } catch (err) {
@@ -336,8 +331,7 @@ export default function Sales() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`${apiBase}/api/sales/${sale.id}`, config);
+      await axios.delete(`${apiBase}/api/sales/${sale.id}`);
       setShowDetailsModal(false);
       fetchData();
       toast.showToast('Sale deleted successfully.', 'success');
@@ -365,9 +359,8 @@ export default function Sales() {
     setTogglingSaleId(sale.id);
 
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const nextPaymentDate = sale.paymentDate ? null : new Date().toISOString();
-      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { paymentDate: nextPaymentDate }, config);
+      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { paymentDate: nextPaymentDate });
       const updatedSale = response.data as Sale;
 
       setSales((currentSales) => currentSales.map((currentSale) => (
@@ -404,8 +397,7 @@ export default function Sales() {
     setTogglingDeliverySaleId(sale.id);
 
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { delivered: !sale.delivered }, config);
+      const response = await axios.put(`${apiBase}/api/sales/${sale.id}`, { delivered: !sale.delivered });
       const updatedSale = response.data as Sale;
 
       setSales((currentSales) => currentSales.map((currentSale) => (

@@ -12,18 +12,16 @@ export default function Users() {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
-  const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const fetchUsers = useCallback(async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/users?showDisabled=${showDisabled}`, config);
+      const res = await axios.get(`${apiBase}/api/users?showDisabled=${showDisabled}`);
       setUsers(res.data);
     } catch (err) {
       console.error('Failed to load users', err);
     }
-  }, [token, apiBase, showDisabled]);
+  }, [apiBase, showDisabled]);
 
   useEffect(() => {
     fetchUsers();
@@ -33,16 +31,15 @@ export default function Users() {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const payload: User = { ...newUser };
       if (editingUser && !payload.password) {
         delete payload.password;
       }
 
       if (editingUser) {
-        await axios.put(`${apiBase}/api/users/${editingUser}`, payload, config);
+        await axios.put(`${apiBase}/api/users/${editingUser}`, payload);
       } else {
-        await axios.post(`${apiBase}/api/users`, payload, config);
+        await axios.post(`${apiBase}/api/users`, payload);
       }
       setShowModal(false);
       setNewUser({ name: '', email: '', password: '', role: 'user' });
@@ -91,8 +88,7 @@ export default function Users() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`${apiBase}/api/users/${editingUser}`, { ...config });
+      await axios.delete(`${apiBase}/api/users/${editingUser}`);
       setShowModal(false);
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       setEditingUser(null);

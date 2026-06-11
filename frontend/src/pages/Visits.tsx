@@ -29,18 +29,16 @@ export default function Visits() {
   const [showVisited, setShowVisited] = useState(false);
   const [togglingVisitId, setTogglingVisitId] = useState<string | null>(null);
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
-  const token = localStorage.getItem('token');
 
   const fetchVisits = useCallback(async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/visits?showVisited=${showVisited}`, config);
+      const res = await axios.get(`${apiBase}/api/visits?showVisited=${showVisited}`);
       setVisits(res.data);
     } catch (err) {
       console.error('Failed to load visits', err);
       toast.showToast('Failed to load visits.', 'error');
     }
-  }, [token, apiBase, showVisited, toast]);
+  }, [apiBase, showVisited, toast]);
 
   useEffect(() => {
     fetchVisits();
@@ -51,9 +49,8 @@ export default function Visits() {
 
     setTogglingVisitId(visit.id);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const nextVisitedAt = visit.visitedAt ? null : new Date().toISOString();
-      await axios.put(`${apiBase}/api/sales/${visit.id}`, { visitedAt: nextVisitedAt }, config);
+      await axios.put(`${apiBase}/api/sales/${visit.id}`, { visitedAt: nextVisitedAt });
       toast.showToast(nextVisitedAt ? 'Visit marked as completed.' : 'Visit marked as pending.', 'success');
       await fetchVisits();
     } catch (err) {

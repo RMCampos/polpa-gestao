@@ -5,3 +5,5 @@ dist
 # IDE
 .idea
 .vscode
+
+backend/validate-security-fixes.mjs

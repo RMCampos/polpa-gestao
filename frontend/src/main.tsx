@@ -10,41 +10,31 @@ import axios from 'axios';
 
 axios.defaults.withCredentials = true;
 
-let memoryToken: string | null = null;
 let memoryUser: string | null = null;
 
-const originalGetItem = localStorage.getItem.bind(localStorage);
-const originalSetItem = localStorage.setItem.bind(localStorage);
-const originalRemoveItem = localStorage.removeItem.bind(localStorage);
+const _origGetItem    = Storage.prototype.getItem;
+const _origSetItem    = Storage.prototype.setItem;
+const _origRemoveItem = Storage.prototype.removeItem;
 
-localStorage.getItem = (key: string) => {
-  if (key === 'token') return memoryToken;
-  if (key === 'user') return memoryUser;
-  return originalGetItem(key);
+Storage.prototype.getItem = function (key: string): string | null {
+  if (this === localStorage) {
+    if (key === 'user') return memoryUser;
+  }
+  return _origGetItem.call(this, key);
 };
 
-localStorage.setItem = (key: string, value: string) => {
-  if (key === 'token') {
-    memoryToken = value;
-    return;
+Storage.prototype.setItem = function (key: string, value: string): void {
+  if (this === localStorage) {
+    if (key === 'user') { memoryUser = value; return; }
   }
-  if (key === 'user') {
-    memoryUser = value;
-    return;
-  }
-  originalSetItem(key, value);
+  _origSetItem.call(this, key, value);
 };
 
-localStorage.removeItem = (key: string) => {
-  if (key === 'token') {
-    memoryToken = null;
-    return;
+Storage.prototype.removeItem = function (key: string): void {
+  if (this === localStorage) {
+    if (key === 'user') { memoryUser = null; return; }
   }
-  if (key === 'user') {
-    memoryUser = null;
-    return;
-  }
-  originalRemoveItem(key);
+  _origRemoveItem.call(this, key);
 };
 
 

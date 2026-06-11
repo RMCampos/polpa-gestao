@@ -44,6 +44,7 @@ services:
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@polpa_db:5432/${DB_NAME}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
       JWT_SECRET: ${JWT_SECRET}
+      CPF_CNPJ_API_TOKEN: ${CPF_CNPJ_API_TOKEN}
     ports:
       - "3000:3000"
     depends_on:

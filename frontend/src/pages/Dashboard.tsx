@@ -14,7 +14,6 @@ export default function Dashboard() {
   const [showFridgesModal, setShowFridgesModal] = useState(false);
   const [loadingFridgePoses, setLoadingFridgePoses] = useState(false);
   const [inactivePoses, setInactivePoses] = useState<InactivePosSummary[]>([]);
-  const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const ranges = [
@@ -33,10 +32,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const config = { 
-          headers: { Authorization: `Bearer ${token}` },
-          params: { range }
-        };
+        const config = { params: { range } };
         const resProducts = await axios.get(`${apiBase}/api/dashboard/sales-by-product`, config);
         const resCustomers = await axios.get(`${apiBase}/api/dashboard/sales-by-customer`, config);
         const resSummary = await axios.get(`${apiBase}/api/dashboard/sales-summary`, config);
@@ -55,7 +51,7 @@ export default function Dashboard() {
       }
     };
     fetchDashboard();
-  }, [token, apiBase, range]);
+  }, [apiBase, range]);
 
   const top3Products = [...salesByProduct]
     .sort((a, b) => b.totalQuantity - a.totalQuantity)
@@ -71,8 +67,7 @@ export default function Dashboard() {
     setShowFridgesModal(true);
     setLoadingFridgePoses(true);
     try {
-      const config = { headers: { Authorization: 'Bearer ' + token } };
-      const response = await axios.get(`${apiBase}/api/dashboard/fridges`, config);
+      const response = await axios.get(`${apiBase}/api/dashboard/fridges`);
       setFridgePoses(response.data);
     } catch (err) {
       console.error('Failed to load fridge POS details', err);

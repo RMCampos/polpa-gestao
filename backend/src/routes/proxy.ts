@@ -13,7 +13,7 @@ export default async function proxyRoutes(app: FastifyInstance) {
     }
 
     try {
-      const response = await fetch(`https://api.invertexto.com/v1/validator?token=${token}&value=${value}`);
+      const response = await fetch(`https://api.invertexto.com/v1/validator?token=${encodeURIComponent(token)}&value=${encodeURIComponent(value)}`);
       if (!response.ok) {
         return reply.code(response.status).send({ error: 'Failed to validate document via proxy' });
       }
