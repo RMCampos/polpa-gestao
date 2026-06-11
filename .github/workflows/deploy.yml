@@ -186,5 +186,5 @@ jobs:
         working-directory: terraform
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_AT_SECRETS }}
-        run: doppler run --config prd_secrets -- timeout 1m terraform apply tfplan
+        run: doppler run --config prd_secrets -- timeout 2m terraform apply tfplan
 

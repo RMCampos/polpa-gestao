@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2026-06-11 #1
+
 ### Added
 - Scoped rate limiting using `@fastify/rate-limit` for `/api/users/login` endpoint keyed by IP + email.
 - In-memory login failure tracking with exponential backoff lockout after 3 consecutive failures.
@@ -24,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Zero role-based authorization model allowing non-admin users to reach admin endpoints (C3).
 - Potential authentication bypass due to fallback JWT secret when environment variable is missing (C1).
 - No brute-force protection on user login (C4).
+
+### Docker images
+- [ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.06.11.50](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.11.50)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.11.33](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.11.33)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.11.33-prisma](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.11.33)
 
 ## 2026-06-10 #2
 
