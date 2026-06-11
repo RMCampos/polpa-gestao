@@ -6,7 +6,6 @@ type ClosestPos = {
   customerName: string;
   address: string;
   distanceKm: number;
-  lastBuyingDate: string | null;
 };
 
 const formatDistance = (distanceKm: number): string => {
@@ -38,7 +37,6 @@ export default function ClosestPos() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
-  const locale = navigator.language || 'en-US';
 
   const fetchClosestPos = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -100,11 +98,6 @@ export default function ClosestPos() {
               <strong className="text-white fs-5">{pos.customerName}</strong>
               <div className="text-white-50 small mb-2">{pos.address}</div>
               <div className="text-secondary small mt-2">{formatDistance(pos.distanceKm)}</div>
-              <div className="text-secondary small mt-auto pt-3">
-                Last buying date: {pos.lastBuyingDate
-                  ? new Date(pos.lastBuyingDate).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
-                  : 'No sales yet'}
-              </div>
               <div className="d-flex justify-content-end gap-2 pt-3">
                 <button
                   type="button"

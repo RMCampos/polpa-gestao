@@ -17,12 +17,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/src/generated/prisma ./src/generated/prisma
 COPY package*.json ./
-COPY tsconfig.json ./
+COPY tsconfig.json tsconfig.prod.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
 COPY src ./src
 
-RUN npx tsc
+RUN npx tsc -p tsconfig.prod.json
 
 FROM node:22-bookworm-slim AS runner
 

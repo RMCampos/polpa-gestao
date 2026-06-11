@@ -111,3 +111,15 @@ model RouteCustomerPos {
 
   @@id([routeId, customerPosId])
 }
+
+model CustomerDeleted {
+  id         String   @id @default(uuid()) @db.Uuid
+  customerId String   @db.Uuid
+  name       String
+  document   String?
+  phone      String?
+  personName String?  @db.VarChar(30)
+  notes      String?
+  deletedAt  DateTime @default(now())
+}
+

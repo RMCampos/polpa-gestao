@@ -58,7 +58,8 @@ export const ModelName = {
   Sale: 'Sale',
   SaleProduct: 'SaleProduct',
   Route: 'Route',
-  RouteCustomerPos: 'RouteCustomerPos'
+  RouteCustomerPos: 'RouteCustomerPos',
+  CustomerDeleted: 'CustomerDeleted'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -187,6 +188,20 @@ export const RouteCustomerPosScalarFieldEnum = {
 } as const
 
 export type RouteCustomerPosScalarFieldEnum = (typeof RouteCustomerPosScalarFieldEnum)[keyof typeof RouteCustomerPosScalarFieldEnum]
+
+
+export const CustomerDeletedScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  name: 'name',
+  document: 'document',
+  phone: 'phone',
+  personName: 'personName',
+  notes: 'notes',
+  deletedAt: 'deletedAt'
+} as const
+
+export type CustomerDeletedScalarFieldEnum = (typeof CustomerDeletedScalarFieldEnum)[keyof typeof CustomerDeletedScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -228,13 +228,31 @@ export default async function customersRoutes(app: FastifyInstance) {
   app.delete('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     try {
-      await prisma.customer.delete({ where: { id } });
+      const existing = await prisma.customer.findUnique({
+        where: { id }
+      });
+      if (!existing) return reply.code(404).send({ error: 'Customer not found' });
+
+      await prisma.$transaction(async (tx) => {
+        await tx.customerDeleted.create({
+          data: {
+            customerId: existing.id,
+            name: existing.name,
+            document: existing.document,
+            phone: existing.phone,
+            personName: existing.personName,
+            notes: existing.notes
+          }
+        });
+        await tx.customer.delete({ where: { id } });
+      });
       return { success: true };
     } catch (e: any) {
       if (e?.code === 'P2025') return reply.code(404).send({ error: 'Customer not found' });
       return reply.code(500).send({ error: 'Failed to delete customer' });
     }
   });
+
 
   // --- Point of Sales for Customer ---
 

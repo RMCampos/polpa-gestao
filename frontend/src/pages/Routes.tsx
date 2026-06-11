@@ -58,28 +58,25 @@ export default function RoutesPage() {
   const [newRoute, setNewRoute] = useState<Route>({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
   const [editingRoute, setEditingRoute] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const fetchRoutes = useCallback(async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get<RouteApiResponse[]>(`${apiBase}/api/routes`, config);
+      const res = await axios.get<RouteApiResponse[]>(`${apiBase}/api/routes`);
       setRoutesData(res.data.map(normalizeRoute));
     } catch (err) {
       console.error('Failed to load routes', err);
     }
-  }, [token, apiBase]);
+  }, [apiBase]);
 
   const fetchCustomers = useCallback(async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get<Customer[]>(`${apiBase}/api/customers`, config);
+      const res = await axios.get<Customer[]>(`${apiBase}/api/customers`);
       setCustomers(res.data);
     } catch (err) {
       console.error('Failed to load customers', err);
     }
-  }, [token, apiBase]);
+  }, [apiBase]);
 
   useEffect(() => {
     fetchRoutes();
@@ -90,14 +87,13 @@ export default function RoutesPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingRoute) {
         const updatePayload = {
           name: newRoute.name,
           dayOfWeek: newRoute.dayOfWeek,
           completed: newRoute.completed,
         };
-        await axios.put(`${apiBase}/api/routes/${editingRoute}`, updatePayload, config);
+        await axios.put(`${apiBase}/api/routes/${editingRoute}`, updatePayload);
       } else {
         const createPayload = {
           name: newRoute.name,
@@ -106,7 +102,7 @@ export default function RoutesPage() {
             .map((cp: CustomerPOS) => cp.id)
             .filter((id): id is string => Boolean(id)),
         };
-        await axios.post(`${apiBase}/api/routes`, createPayload, config);
+        await axios.post(`${apiBase}/api/routes`, createPayload);
       }
       setShowModal(false);
       setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
@@ -122,8 +118,7 @@ export default function RoutesPage() {
 
   const toggleRouteCompleted = async (route: Route) => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put(`${apiBase}/api/routes/${route.id}`, { completed: !route.completed }, config);
+      await axios.put(`${apiBase}/api/routes/${route.id}`, { completed: !route.completed });
       fetchRoutes();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
@@ -162,7 +157,6 @@ export default function RoutesPage() {
     if (!selectedRoute || !selectedPosIdToAdd) return;
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const existingPosIds = (selectedRoute.customerPos || [])
         .map((cp: CustomerPOS) => cp.id)
         .filter((id): id is string => Boolean(id));
@@ -171,13 +165,13 @@ export default function RoutesPage() {
         setLoading(false);
         return;
       }
-      
+
       const newPosIds = [...existingPosIds, selectedPosIdToAdd];
-      await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
-      
+      await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds });
+
       setSelectedPosIdToAdd('');
       fetchRoutes();
-      const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`, config);
+      const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`);
       setSelectedRoute(normalizeRoute(res.data));
       toast.showToast('Stop added successfully', 'success');
     } catch (err) {
@@ -200,7 +194,6 @@ export default function RoutesPage() {
     
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       if (!selectedRoute.customerPos || selectedRoute.customerPos.length === 0) {
         toast.showToast('No stops to remove.', 'warning');
         setLoading(false);
@@ -216,11 +209,11 @@ export default function RoutesPage() {
         return;
       }
       const newPosIds: string[] = existingPosIds.filter((id: string) => id !== posIdToRemove);
-      
-      await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds }, config);
-      
+
+      await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds });
+
       fetchRoutes();
-      const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`, config);
+      const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`);
       setSelectedRoute(normalizeRoute(res.data));
       toast.showToast('Stop removed successfully', 'success');
     } catch (err) {
@@ -243,8 +236,7 @@ export default function RoutesPage() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`${apiBase}/api/routes/${editingRoute}`, config);
+      await axios.delete(`${apiBase}/api/routes/${editingRoute}`);
       setShowModal(false);
       setNewRoute({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
       setEditingRoute(null);

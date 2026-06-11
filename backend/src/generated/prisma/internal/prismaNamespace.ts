@@ -391,7 +391,8 @@ export const ModelName = {
   Sale: 'Sale',
   SaleProduct: 'SaleProduct',
   Route: 'Route',
-  RouteCustomerPos: 'RouteCustomerPos'
+  RouteCustomerPos: 'RouteCustomerPos',
+  CustomerDeleted: 'CustomerDeleted'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "customer" | "customerPos" | "product" | "sale" | "saleProduct" | "route" | "routeCustomerPos"
+    modelProps: "user" | "customer" | "customerPos" | "product" | "sale" | "saleProduct" | "route" | "routeCustomerPos" | "customerDeleted"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1003,6 +1004,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CustomerDeleted: {
+      payload: Prisma.$CustomerDeletedPayload<ExtArgs>
+      fields: Prisma.CustomerDeletedFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CustomerDeletedFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CustomerDeletedFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>
+        }
+        findFirst: {
+          args: Prisma.CustomerDeletedFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CustomerDeletedFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>
+        }
+        findMany: {
+          args: Prisma.CustomerDeletedFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>[]
+        }
+        create: {
+          args: Prisma.CustomerDeletedCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>
+        }
+        createMany: {
+          args: Prisma.CustomerDeletedCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CustomerDeletedCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>[]
+        }
+        delete: {
+          args: Prisma.CustomerDeletedDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>
+        }
+        update: {
+          args: Prisma.CustomerDeletedUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>
+        }
+        deleteMany: {
+          args: Prisma.CustomerDeletedDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CustomerDeletedUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CustomerDeletedUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>[]
+        }
+        upsert: {
+          args: Prisma.CustomerDeletedUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerDeletedPayload>
+        }
+        aggregate: {
+          args: Prisma.CustomerDeletedAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCustomerDeleted>
+        }
+        groupBy: {
+          args: Prisma.CustomerDeletedGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CustomerDeletedGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CustomerDeletedCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CustomerDeletedCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1152,6 +1227,20 @@ export const RouteCustomerPosScalarFieldEnum = {
 } as const
 
 export type RouteCustomerPosScalarFieldEnum = (typeof RouteCustomerPosScalarFieldEnum)[keyof typeof RouteCustomerPosScalarFieldEnum]
+
+
+export const CustomerDeletedScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  name: 'name',
+  document: 'document',
+  phone: 'phone',
+  personName: 'personName',
+  notes: 'notes',
+  deletedAt: 'deletedAt'
+} as const
+
+export type CustomerDeletedScalarFieldEnum = (typeof CustomerDeletedScalarFieldEnum)[keyof typeof CustomerDeletedScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1364,6 +1453,7 @@ export type GlobalOmitConfig = {
   saleProduct?: Prisma.SaleProductOmit
   route?: Prisma.RouteOmit
   routeCustomerPos?: Prisma.RouteCustomerPosOmit
+  customerDeleted?: Prisma.CustomerDeletedOmit
 }
 
 /* Types for Logging */

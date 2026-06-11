@@ -12,18 +12,16 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
-  const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
   const fetchProducts = useCallback(async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/products?showDisabled=${showDisabled}`, config);
+      const res = await axios.get(`${apiBase}/api/products?showDisabled=${showDisabled}`);
       setProducts(res.data);
     } catch (err) {
       console.error('Failed to load products', err);
     }
-  }, [token, apiBase, showDisabled]);
+  }, [apiBase, showDisabled]);
 
   useEffect(() => {
     fetchProducts();
@@ -33,11 +31,10 @@ export default function Products() {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingProduct) {
-        await axios.put(`${apiBase}/api/products/${editingProduct}`, newProduct, config);
+        await axios.put(`${apiBase}/api/products/${editingProduct}`, newProduct);
       } else {
-        await axios.post(`${apiBase}/api/products`, newProduct, config);
+        await axios.post(`${apiBase}/api/products`, newProduct);
       }
       setShowModal(false);
       setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
@@ -86,9 +83,8 @@ export default function Products() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       const disabledProduct: Product = { ...newProduct, disabledAt: new Date().toISOString() };
-      await axios.put(`${apiBase}/api/products/${editingProduct}`, disabledProduct, config);
+      await axios.put(`${apiBase}/api/products/${editingProduct}`, disabledProduct);
       setShowModal(false);
       setNewProduct({ id: '', name: '', price: 0, stock: 0, cost: 0 });
       setEditingProduct(null);

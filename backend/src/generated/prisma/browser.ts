@@ -57,3 +57,8 @@ export type Route = Prisma.RouteModel
  * 
  */
 export type RouteCustomerPos = Prisma.RouteCustomerPosModel
+/**
+ * Model CustomerDeleted
+ * 
+ */
+export type CustomerDeleted = Prisma.CustomerDeletedModel

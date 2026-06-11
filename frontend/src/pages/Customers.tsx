@@ -46,20 +46,17 @@ export default function Customers() {
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [showDisabled, setShowDisabled] = useState<boolean>(false);
   const [filterText, setFilterText] = useState<string>('');
-  const token = localStorage.getItem('token');
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
-  const cpfCnpjApiToken = import.meta.env.VITE_CPF_CNPJ_API_TOKEN || '';
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
 
   const fetchCustomers = useCallback(async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${apiBase}/api/customers?showDisabled=${showDisabled}`, config);
+      const res = await axios.get(`${apiBase}/api/customers?showDisabled=${showDisabled}`);
       setCustomers(res.data);
     } catch (err) {
       console.error('Failed to load customers', err);
     }
-  }, [token, apiBase, showDisabled]);
+  }, [apiBase, showDisabled]);
 
   useEffect(() => {
     fetchCustomers();
@@ -100,11 +97,10 @@ export default function Customers() {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingCustomer) {
-        await axios.put(`${apiBase}/api/customers/${editingCustomer}`, newCustomer, config);
+        await axios.put(`${apiBase}/api/customers/${editingCustomer}`, newCustomer);
       } else {
-        await axios.post(`${apiBase}/api/customers`, newCustomer, config);
+        await axios.post(`${apiBase}/api/customers`, newCustomer);
       }
       setShowModal(false);
       setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
@@ -129,7 +125,7 @@ export default function Customers() {
     setDocValidation({ valid: null, loading: true });
     try {
       const res = await axios.get(
-        `https://api.invertexto.com/v1/validator?token=${cpfCnpjApiToken}&value=${doc}`,
+        `${apiBase}/api/proxy/validator?value=${doc}`,
         { signal: controller.signal }
       );
       if (res.data.valid) {
@@ -142,6 +138,7 @@ export default function Customers() {
       console.error('Document validation failed', err);
     }
   };
+
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = e.target.value.replace(/\D/g, '').slice(0, 14);
@@ -242,19 +239,18 @@ export default function Customers() {
     if (!selectedCustomer) return;
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
       if (editingPos) {
-        await axios.put(`${apiBase}/api/customers/pos/${editingPos}`, newPos, config);
+        await axios.put(`${apiBase}/api/customers/pos/${editingPos}`, newPos);
         toast.showToast('Point of sale updated successfully.', 'success');
       } else {
-        await axios.post(`${apiBase}/api/customers/${selectedCustomer.id}/pos`, newPos, config);
+        await axios.post(`${apiBase}/api/customers/${selectedCustomer.id}/pos`, newPos);
         toast.showToast('Point of sale added successfully.', 'success');
       }
       setNewPos(emptyPos);
       setEditingPos(null);
       fetchCustomers();
 
-      const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
+      const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`);
       setSelectedCustomer(res.data);
     } catch (err) {
       toast.showToast(`Failed to save POS: ${toErrorMessage(err, 'Unknown error')}`, 'error');
@@ -269,19 +265,9 @@ export default function Customers() {
       return;
     }
 
-    if (!googleMapsApiKey) {
-      toast.showToast('Geocoding is currently unavailable. Please contact support.', 'error');
-      return;
-    }
-
     setLoading(true);
     try {
-      const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-        params: {
-          address: newPos.address.trim(),
-          key: googleMapsApiKey
-        }
-      });
+      const response = await axios.get(`${apiBase}/api/proxy/geocode`, { params: { address: newPos.address.trim() } });
 
       const location = response.data?.results?.[0]?.geometry?.location;
       if (response.data?.status !== 'OK' || typeof location?.lat !== 'number' || typeof location?.lng !== 'number') {
@@ -291,6 +277,7 @@ export default function Customers() {
 
       setNewPos((prev) => ({ ...prev, lat: location.lat, lng: location.lng }));
       toast.showToast('Geocode set successfully.', 'success');
+
     } catch (err) {
       toast.showToast(`Failed to geocode address: ${toErrorMessage(err, 'Unknown error')}`, 'error');
     } finally {
@@ -310,12 +297,11 @@ export default function Customers() {
     if (!confirmed) return;
 
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`${apiBase}/api/customer-pos/${posId}`, config);
+      await axios.delete(`${apiBase}/api/customer-pos/${posId}`);
       fetchCustomers();
 
       if (selectedCustomer && selectedCustomer.id) {
-        const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`, config);
+        const res = await axios.get(`${apiBase}/api/customers/${selectedCustomer.id}`);
         setSelectedCustomer(res.data);
       }
       toast.showToast('Point of sale deleted successfully.', 'success');
@@ -337,8 +323,7 @@ export default function Customers() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: 'Bearer ' + token } };
-      await axios.patch(`${apiBase}/api/customers/${editingCustomer}/disable`, {}, config);
+      await axios.patch(`${apiBase}/api/customers/${editingCustomer}/disable`, {});
       setShowModal(false);
       setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
       setEditingCustomer(null);
@@ -364,8 +349,7 @@ export default function Customers() {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`${apiBase}/api/customers/${editingCustomer}`, config);
+      await axios.delete(`${apiBase}/api/customers/${editingCustomer}`);
       setShowModal(false);
       setNewCustomer({ name: '', document: '', phone: '', personName: '', notes: '' });
       setEditingCustomer(null);

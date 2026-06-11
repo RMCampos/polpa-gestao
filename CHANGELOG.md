@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2026-06-11 #2
+
+### Added
+- Created `CustomerDeleted` audit database table and model to log details of deleted customers.
+- Created `/api/proxy/validator` and `/api/proxy/geocode` endpoints in backend to proxy third-party validation and mapping requests securely.
+- Added `/api/users/me` and `/api/users/logout` endpoints in backend for cookie session verification and cleanup.
+
+### Changed
+- Configured explicit allowed origins for CORS from `ALLOWED_ORIGINS` environment variable, defaulting to `http://localhost:5173`.
+- Gated public closest POS endpoint `/api/public/pos/closest` with rate-limiting (max 15/min) and removed `lat`, `lng`, and `lastBuyingDate` fields from its response.
+- Configured `@fastify/jwt` to read tokens from `polpaAuth` HttpOnly cookie.
+- Overrode frontend `localStorage` to store `token` and `user` strictly in-memory (JS variables) instead of persistent disk storage.
+- Proxy validation and geocoding in frontend `Customers.tsx` through backend instead of using direct third-party calls.
+- Compiled production backend build without TS source maps or declarations using a specialized `tsconfig.prod.json`.
+- JWT token is no longer returned in login or `/api/users/me` response bodies — token is exclusively transported via the `polpaAuth` HttpOnly cookie and never exposed to JavaScript.
+- Removed all `Authorization: Bearer` headers from frontend API calls — authentication relies solely on the HttpOnly cookie sent automatically by the browser.
+- `Storage.prototype` override now only intercepts the `user` key (token interception removed as token no longer exists in JS context).
+- Cookie signing reverted to `signed: false` — JWT's own HMAC signature provides integrity; `@fastify/cookie` layer was redundant and non-functional in v11.
+
+### Fixed
+- H1: Public endpoint leaks customer GPS + buying data.
+- H2: CORS reflects any origin.
+- H3: JWT in localStorage (XSS-accessible).
+- H4: API tokens baked into frontend Docker image.
+- H5: Hard delete of sales (no audit trail) mitigated by auditing customer deletes via `CustomerDeleted`.
+- H6: Source maps served in production.
+- Parameter injection vulnerability in `/api/proxy/validator`: `value` and `token` query parameters are now URL-encoded before being forwarded to the Invertexto API.
+- Session re-issue on every `/api/users/me` call removed — endpoint now returns user data only, without silently extending the session on each page load.
+- `Storage.prototype` override applied at prototype level instead of instance level, fixing Firefox compatibility where instance-level assignment was silently ignored.
+
 ## 2026-06-11 #1
 
 ### Added
