@@ -37,6 +37,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Session re-issue on every `/api/users/me` call removed — endpoint now returns user data only, without silently extending the session on each page load.
 - `Storage.prototype` override applied at prototype level instead of instance level, fixing Firefox compatibility where instance-level assignment was silently ignored.
 
+### Docker images
+- [ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.06.11.52](https://github.com/RMCampos/polpa-gestao/releases/tag/app-v2026.06.11.52)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.11.34](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.11.34)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.11.34-prisma](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.11.34)
+- 
 ## 2026-06-11 #1
 
 ### Added
