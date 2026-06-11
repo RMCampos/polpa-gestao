@@ -65,12 +65,12 @@ variable "r2_endpoint" {
 
 variable "backend_image" {
   type    = string
-  default = "ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.03.25.11"
+  default = "ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.11.34"
 }
 
 variable "frontend_image" {
   type    = string
-  default = "ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.03.25.11"
+  default = "ghcr.io/rmcampos/polpa-gestao/frontend:app-v2026.06.11.52"
 }
 
 resource "kubernetes_namespace_v1" "polpa_gestao" {
