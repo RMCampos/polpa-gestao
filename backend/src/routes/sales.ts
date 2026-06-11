@@ -42,7 +42,7 @@ export default async function salesRoutes(app: FastifyInstance) {
   });
 
   // Create sale
-  app.post('/', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.post('/', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const {
       customerPosId,
       paymentMethod,
@@ -105,7 +105,7 @@ export default async function salesRoutes(app: FastifyInstance) {
   });
 
   // Update sale (e.g. mark as paid, edit fields, replace products)
-  app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.put('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     const {
       customerPosId,
@@ -251,7 +251,7 @@ export default async function salesRoutes(app: FastifyInstance) {
   });
 
   // Delete sale (hard delete)
-  app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.delete('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     try {
       const existing = await prisma.sale.findUnique({

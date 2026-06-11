@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma';
 
 export default async function customerPosRoutes(app: FastifyInstance) {
-  app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.delete('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     try {
       await prisma.customerPos.delete({ where: { id } });
