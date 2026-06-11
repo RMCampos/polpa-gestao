@@ -215,7 +215,7 @@ resource "kubernetes_deployment_v1" "polpa_gestao_backend" {
           }
           env {
             name  = "ALLOWED_ORIGINS"
-            value = "https://polpa-gestao.darkroasted.vps-kinghost.net/"
+            value = "https://polpa-gestao.darkroasted.vps-kinghost.net"
           }
           resources {
             limits   = { memory = "512Mi", cpu = "500m" }
