@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Scoped rate limiting using `@fastify/rate-limit` for `/api/users/login` endpoint keyed by IP + email.
+- In-memory login failure tracking with exponential backoff lockout after 3 consecutive failures.
+- Role-based authorization middleware via `requireAdmin` decorator on Fastify backend.
+- Enforced admin role requirement on Users management, Product modification, Customer/POS deletion, Sale deletion, and Dashboard routes.
+- Frontend role guards and conditional sidebar rendering to restrict non-admin users from accessing Users or Dashboard views.
+
+### Changed
+- Removed hardcoded fallback JWT signature secret.
+- Seed script updated to read admin credentials from environment variables or generate a secure random password on first seed.
+- Docker compose configuration updated to forward `JWT_SECRET` to the backend container.
+
+### Fixed
+- Hardcoded default admin user credentials security vulnerability (C2).
+- Zero role-based authorization model allowing non-admin users to reach admin endpoints (C3).
+- Potential authentication bypass due to fallback JWT secret when environment variable is missing (C1).
+- No brute-force protection on user login (C4).
+
 ## 2026-06-10 #2
 
 ### Added

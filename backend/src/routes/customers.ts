@@ -136,7 +136,7 @@ export default async function customersRoutes(app: FastifyInstance) {
   });
 
   // Create customer
-  app.post('/', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.post('/', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { name, document, phone, personName, notes } = request.body as any;
     const docValue = document || null;
     const notesValue = normalizeOptionalString(notes);
@@ -171,7 +171,7 @@ export default async function customersRoutes(app: FastifyInstance) {
   });
 
   // Update customer
-  app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.put('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     const { name, document, phone, personName, notes } = request.body as any;
     const docValue = document || null;
@@ -209,7 +209,7 @@ export default async function customersRoutes(app: FastifyInstance) {
   });
 
   // Disable customer (soft)
-  app.patch('/:id/disable', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.patch('/:id/disable', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     try {
       const existingCustomer = await prisma.customer.findUnique({ where: { id }, select: { disabledAt: true } });
@@ -225,7 +225,7 @@ export default async function customersRoutes(app: FastifyInstance) {
   });
 
   // Delete customer (hard)
-  app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.delete('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     try {
       await prisma.customer.delete({ where: { id } });

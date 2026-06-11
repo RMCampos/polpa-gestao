@@ -1,7 +1,14 @@
+import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
+import rateLimit from '@fastify/rate-limit';
 import { prisma } from './prisma';
+
+if (!process.env.JWT_SECRET) {
+  console.error("CRITICAL ERROR: JWT_SECRET environment variable is not set. Exiting...");
+  process.exit(1);
+}
 
 const app = Fastify({ logger: true });
 
@@ -11,14 +18,43 @@ app.register(cors, {
 });
 
 app.register(jwt, {
-  secret: process.env.JWT_SECRET || 'supersecret'
+  secret: process.env.JWT_SECRET
+});
+
+app.register(rateLimit, {
+  global: false,
 });
 
 app.decorate('authenticate', async (request: any, reply: any) => {
   try {
     await request.jwtVerify()
+    const dbUser = await prisma.user.findUnique({
+      where: { id: (request.user as any).id },
+      select: { disabledAt: true }
+    });
+    if (!dbUser || dbUser.disabledAt) {
+      return reply.code(401).send({ error: 'Invalid credentials' });
+    }
   } catch (err) {
-    reply.send(err)
+    return reply.send(err)
+  }
+})
+
+app.decorate('requireAdmin', async (request: any, reply: any) => {
+  try {
+    await request.jwtVerify()
+    const dbUser = await prisma.user.findUnique({
+      where: { id: (request.user as any).id },
+      select: { disabledAt: true, role: true }
+    });
+    if (!dbUser || dbUser.disabledAt) {
+      return reply.code(401).send({ error: 'Invalid credentials' });
+    }
+    if (dbUser.role !== 'admin') {
+      return reply.code(403).send({ error: 'Forbidden: Admin access required' })
+    }
+  } catch (err) {
+    return reply.send(err)
   }
 })
 

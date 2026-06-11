@@ -7,7 +7,9 @@ interface SidebarProps {
 
 export default function Sidebar({ onLogout }: SidebarProps) {
   const location = useLocation();
-  const userName = JSON.parse(localStorage.getItem('user') || '{}').name;
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = user.name || 'User';
+  const isAdmin = user.role === 'admin';
   const buildNumber = import.meta.env.VITE_BUILD_NUMBER || 'dev';
   const [isOpen, setIsOpen] = useState(false);
 
@@ -43,20 +45,24 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       </div>
 
       <nav className="nav flex-column w-100 mb-auto">
-        <Link
-          to="/dashboard"
-          className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
-          onClick={closeMenu}
-        >
-          <i className="bi bi-speedometer2 me-2"></i> Dashboard
-        </Link>
-        <Link
-          to="/users"
-          className={`nav-link ${location.pathname === '/users' ? 'active' : ''}`}
-          onClick={closeMenu}
-        >
-          <i className="bi bi-people me-2"></i> Users
-        </Link>
+        {isAdmin && (
+          <Link
+            to="/dashboard"
+            className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+            onClick={closeMenu}
+          >
+            <i className="bi bi-speedometer2 me-2"></i> Dashboard
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
+            to="/users"
+            className={`nav-link ${location.pathname === '/users' ? 'active' : ''}`}
+            onClick={closeMenu}
+          >
+            <i className="bi bi-people me-2"></i> Users
+          </Link>
+        )}
         <Link
           to="/customers"
           className={`nav-link ${location.pathname === '/customers' ? 'active' : ''}`}

@@ -70,7 +70,8 @@ const INACTIVE_THRESHOLD_DAYS = 10;
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export default async function dashboardRoutes(app: FastifyInstance) {
-  app.get('/sales-by-customer', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.addHook('preValidation', app.requireAdmin);
+  app.get('/sales-by-customer', async (request, reply) => {
     const { range } = request.query as { range: string };
     const { startDate, endDate } = getDateRange(range);
 
@@ -117,7 +118,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       .sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
-  app.get('/sales-by-product', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.get('/sales-by-product', async (request, reply) => {
     const { range } = request.query as { range: string };
     const { startDate, endDate } = getDateRange(range);
 
@@ -147,7 +148,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       .sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
-  app.get('/sales-summary', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.get('/sales-summary', async (request, reply) => {
     const { range } = request.query as { range: string };
     const { startDate, endDate } = getDateRange(range);
 
@@ -192,7 +193,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     };
   });
 
-  app.get('/fridges', { preValidation: [app.authenticate] }, async () => {
+  app.get('/fridges', async () => {
     const fridges = await prisma.customerPos.findMany({
       where: {
         disabledAt: null,
@@ -213,7 +214,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     });
   });
 
-  app.get('/industries-summary', { preValidation: [app.authenticate] }, async () => {
+  app.get('/industries-summary', async () => {
     const grouped = await prisma.customerPos.groupBy({
       by: ['industry'],
       _count: { _all: true },
@@ -233,7 +234,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       .sort((a, b) => b.count - a.count);
   });
 
-  app.get('/regions-summary', { preValidation: [app.authenticate] }, async () => {
+  app.get('/regions-summary', async () => {
     const grouped = await prisma.customerPos.groupBy({
       by: ['region'],
       _count: { _all: true },
@@ -253,7 +254,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       .sort((a, b) => b.count - a.count);
   });
 
-  app.get('/inactive-pos', { preValidation: [app.authenticate] }, async () => {
+  app.get('/inactive-pos', async () => {
     const now = new Date();
 
     const poses = await prisma.customerPos.findMany({

@@ -18,7 +18,7 @@ export default async function productsRoutes(app: FastifyInstance) {
     return product;
   });
 
-  app.post('/', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.post('/', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { name, price, stock, cost } = request.body as any;
     try {
       return await prisma.product.create({
@@ -37,7 +37,7 @@ export default async function productsRoutes(app: FastifyInstance) {
     }
   });
 
-  app.put('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.put('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     const { name, price, stock, cost, disabledAt } = request.body as any;
     try {
@@ -58,7 +58,7 @@ export default async function productsRoutes(app: FastifyInstance) {
     }
   });
 
-  app.delete('/:id', { preValidation: [app.authenticate] }, async (request, reply) => {
+  app.delete('/:id', { preValidation: [app.requireAdmin] }, async (request, reply) => {
     const { id } = request.params as any;
     await prisma.product.update({
       where: { id },

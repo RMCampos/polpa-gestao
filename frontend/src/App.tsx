@@ -46,22 +46,26 @@ export default function App() {
     );
   }
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
+  const defaultRoute = isAdmin ? "/dashboard" : "/routes";
+
   return (
     <>
       <div className="app-container">
         <Sidebar onLogout={handleLogout} />
         <main className="main-content animate-fade-in">
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
+            <Route path="/" element={<Navigate to={defaultRoute} replace />} />
+            <Route path="/dashboard" element={isAdmin ? <Dashboard /> : <Navigate to="/routes" replace />} />
+            <Route path="/users" element={isAdmin ? <Users /> : <Navigate to="/routes" replace />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/products" element={<Products />} />
             <Route path="/routes" element={<RoutesPage />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/visits" element={<Visits />} />
             <Route path="/closest" element={<ClosestPos />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to={defaultRoute} replace />} />
           </Routes>
         </main>
       </div>
