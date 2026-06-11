@@ -43,6 +43,11 @@ variable "cpf_cnpj_api_token" {
   sensitive = true
 }
 
+variable "jwt_secret" {
+  type      = string
+  sensitive = true
+}
+
 variable "r2_access_key" {
   type      = string
   sensitive = true
@@ -90,6 +95,7 @@ resource "kubernetes_secret_v1" "polpa_gestao_secrets" {
     postgres_password  = var.db_password
     postgres_db        = var.db_name
     cpf_cnpj_api_token = var.cpf_cnpj_api_token
+    jwt_secret         = var.jwt_secret
   }
 }
 
@@ -216,6 +222,15 @@ resource "kubernetes_deployment_v1" "polpa_gestao_backend" {
           env {
             name  = "ALLOWED_ORIGINS"
             value = "https://polpa-gestao.darkroasted.vps-kinghost.net"
+          }
+          env {
+            name = "JWT_SECRET"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret_v1.polpa_gestao_secrets.metadata[0].name
+                key  = "jwt_secret"
+              }
+            }
           }
           resources {
             limits   = { memory = "512Mi", cpu = "500m" }

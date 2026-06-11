@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2026-06-11 #3
+
+### Fixed
+- Login issue due to jwt secrets missing in production.
+
 ## 2026-06-11 #2
 
 ### Added
