@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2026-06-13 #1
+
+### Fixed
+- Missing Google Maps API Key and CPF CNPJ API Key integration in backend deployment.
+
+### Docker images
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.11.34](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.11.34)
+- [ghcr.io/rmcampos/polpa-gestao/backend:api-v2026.06.11.34-prisma](https://github.com/RMCampos/polpa-gestao/releases/tag/api-v2026.06.11.34)
+
 ## 2026-06-11 #3
 
 ### Fixed

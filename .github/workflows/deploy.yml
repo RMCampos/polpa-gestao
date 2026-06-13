@@ -109,6 +109,7 @@ jobs:
             export TF_VAR_db_password="$DB_PASSWORD"
             export TF_VAR_db_name="$DB_NAME"
             export TF_VAR_cpf_cnpj_api_token="$CPF_CNPJ_API_TOKEN"
+            export TF_VAR_google_maps_api_key="$GOOGLE_MAPS_API_KEY"
             export TF_VAR_jwt_secret="$JWT_SECRET"
             export TF_VAR_r2_access_key="$AWS_ACCESS_KEY_ID"
             export TF_VAR_r2_secret_key="$AWS_SECRET_ACCESS_KEY"

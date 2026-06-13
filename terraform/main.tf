@@ -43,6 +43,11 @@ variable "cpf_cnpj_api_token" {
   sensitive = true
 }
 
+variable "google_maps_api_key" {
+  type      = string
+  sensitive = true
+}
+
 variable "jwt_secret" {
   type      = string
   sensitive = true
@@ -91,11 +96,12 @@ resource "kubernetes_secret_v1" "polpa_gestao_secrets" {
   }
 
   data = {
-    postgres_user      = var.db_user
-    postgres_password  = var.db_password
-    postgres_db        = var.db_name
-    cpf_cnpj_api_token = var.cpf_cnpj_api_token
-    jwt_secret         = var.jwt_secret
+    postgres_user       = var.db_user
+    postgres_password   = var.db_password
+    postgres_db         = var.db_name
+    cpf_cnpj_api_token  = var.cpf_cnpj_api_token
+    jwt_secret          = var.jwt_secret
+    google_maps_api_key = var.google_maps_api_key
   }
 }
 
@@ -229,6 +235,24 @@ resource "kubernetes_deployment_v1" "polpa_gestao_backend" {
               secret_key_ref {
                 name = kubernetes_secret_v1.polpa_gestao_secrets.metadata[0].name
                 key  = "jwt_secret"
+              }
+            }
+          }
+          env {
+            name = "CPF_CNPJ_API_TOKEN"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret_v1.polpa_gestao_secrets.metadata[0].name
+                key  = "cpf_cnpj_api_token"
+              }
+            }
+          }
+          env {
+            name = "GOOGLE_MAPS_API_KEY"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret_v1.polpa_gestao_secrets.metadata[0].name
+                key  = "google_maps_api_key"
               }
             }
           }
