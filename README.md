@@ -1,3 +1,7 @@
+# Archived repo
+
+The new content can be found in Gitea: https://lightroasted.vps-kinghost.net/rmcampos/polpa-gestao
+
 # Polpa Gestão
 
 A full-stack business management web application for managing customers, points-of-sale (POS), products, sales, and delivery routes.
