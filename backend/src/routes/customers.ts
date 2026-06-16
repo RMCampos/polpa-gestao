@@ -8,18 +8,19 @@ type PosCoordinates = {
 
 const POS_INDUSTRIES = new Set([
   'Academia',
+  'Arena de esporte',
+  'Assadão',
   'Conveniência',
   'Hamburgueria',
   'Lanchonete',
   'Mercado',
   'Panificadora',
+  'Parque Aquático',
+  'Pesque e Pague',
+  'Recanto',
   'Restaurante',
   'Sorveteria',
-  'Verdureira/Frutaria',
-  'Parque aquático',
-  'Recanto',
-  'Pesque e pague',
-  'Arena de esporte'
+  'Verdureira/Frutaria'
 ]);
 
 const parseFridgeCount = (value: unknown): number | undefined => {

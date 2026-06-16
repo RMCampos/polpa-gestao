@@ -6,18 +6,19 @@ import type { Customer, CustomerPOS } from '../types';
 
 const POS_INDUSTRY_OPTIONS = [
   'Academia',
+  'Arena de esporte',
+  'Assadão',
   'Conveniência',
   'Hamburgueria',
   'Lanchonete',
   'Mercado',
   'Panificadora',
+  'Parque Aquático',
+  'Pesque e Pague',
+  'Recanto',
   'Restaurante',
   'Sorveteria',
-  'Verdureira/Frutaria',
-  'Parque aquático',
-  'Recanto',
-  'Pesque e pague',
-  'Arena de esporte'
+  'Verdureira/Frutaria'
 ] as const;
 
 const toErrorMessage = (err: unknown, fallback: string): string => {

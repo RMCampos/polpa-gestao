@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## api-v2026.06.16.7 && app-v2026.06.16.8 - 2026-06-16
+
+### Changed
+- Container Registry to Docker Hub.
+- Migrated from GitHub to Gitea.
+
+### Docker images
+- [rmcampos/polpa-gestao-app:app-v2026.06.16.8](https://hub.docker.com/layers/rmcampos/polpa-gestao-app/app-v2026.06.16.8/images/sha256-030671a44d04701da05abdf15dec4f1c834745a1c13bf404eca19050b92bcf3a)
+- [rmcampos/polpa-gestao-api:api-v2026.06.16.7](https://hub.docker.com/layers/rmcampos/polpa-gestao-api/api-v2026.06.16.7/images/sha256-57e283fffcaac2a48d95f0ca11f73d8b1937ffc2346a9f4d93dc7b4cd7a3eaa6)
+- [rmcampos/polpa-gestao-api:api-v2026.06.16.7-prisma](https://hub.docker.com/layers/rmcampos/polpa-gestao-api/api-v2026.06.16.7-prisma/images/sha256-74225e87715fea0803e78ffd1d7f1d9f2c14d058650caa5db2dd504ae7454e46)
+
 ## 2026-06-13 #1
 
 ### Fixed
