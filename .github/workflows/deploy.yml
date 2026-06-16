@@ -24,14 +24,14 @@ on:
 jobs:
   terraform-plan:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: easynode-debian
     outputs:
       no_changes: ${{ steps.check-changes.outputs.no_changes }}
     permissions:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -134,7 +134,7 @@ jobs:
           path: terraform/tfplan
 
   terraform-apply:
-    runs-on: ubuntu-latest
+    runs-on: easynode-debian
     needs: terraform-plan
     if: >
       (github.event_name == 'push' || github.event_name == 'workflow_run' || inputs.apply == 'true')
@@ -146,7 +146,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
