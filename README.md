@@ -122,5 +122,5 @@ The application is deployed using **Terraform**. The infrastructure-as-code conf
 
 Docker images are built and published to the GitHub Container Registry automatically via GitHub Actions on every push:
 
-- `ghcr.io/rmcampos/polpa-gestao/backend:latest`
-- `ghcr.io/rmcampos/polpa-gestao/frontend:latest`
+- `docker.io/rmcampos/polpa-gestao-app:latest`
+- `docker.io/rmcampos/polpa-gestao-api:latest`

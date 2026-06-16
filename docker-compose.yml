@@ -24,7 +24,7 @@ services:
     build:
       context: ./backend
       target: prisma
-    image: ghcr.io/rmcampos/polpa-gestao/backend-prisma:latest
+    image: docker.io/rmcampos/polpa-gestao-api:latest-prisma
     container_name: polpa_prisma
     environment:
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@polpa_db:5432/${DB_NAME}
@@ -38,7 +38,7 @@ services:
 
   polpa_backend:
     build: ./backend
-    image: ghcr.io/rmcampos/polpa-gestao/backend:latest
+    image: docker.io/rmcampos/polpa-gestao-api:latest
     container_name: polpa_backend
     environment:
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@polpa_db:5432/${DB_NAME}
@@ -66,7 +66,7 @@ services:
       args:
         VITE_BACKEND_SERVER: http://localhost:3000
         VITE_BUILD_NUMBER: snapshot
-    image: ghcr.io/rmcampos/polpa-gestao/frontend:latest
+    image: docker.io/rmcampos/polpa-gestao-app:latest
     container_name: polpa_frontend
     ports:
       - "5173:80"

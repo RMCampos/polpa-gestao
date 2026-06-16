@@ -70,10 +70,10 @@ jobs:
           echo "latest frontend tag=$latest_frontend_tag"
 
           if [ -z "$backend_image" ]; then
-            backend_image="ghcr.io/rmcampos/polpa-gestao/backend:$latest_backend_tag"
+            backend_image="docker.io/rmcampos/polpa-gestao-api:$latest_backend_tag"
           fi
           if [ -z "$frontend_image" ]; then
-            frontend_image="ghcr.io/rmcampos/polpa-gestao/frontend:$latest_frontend_tag"
+            frontend_image="docker.io/rmcampos/polpa-gestao-app:$latest_frontend_tag"
           fi
 
           echo "Resolved backend_image=$backend_image"
@@ -128,7 +128,7 @@ jobs:
           fi
 
       - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: tfplan
           path: terraform/tfplan
@@ -152,7 +152,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Download plan artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: tfplan
           path: terraform
