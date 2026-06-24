@@ -35,12 +35,6 @@ jobs:
         run: npm run lint
         working-directory: ./frontend
 
-      - name: Run build
-        run: npm run build
-        working-directory: ./frontend
-        env:
-          VITE_BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
-
       - name: Generate version tag
         id: version
         run: |
@@ -50,8 +44,13 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "build_number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
           echo "Generated tag: ${TAG}"
-          echo "Generated build number: ${BUILD_NUMBER}"      
+          echo "Generated build number: ${BUILD_NUMBER}"
 
+      - name: Run build
+        run: npm run build
+        working-directory: ./frontend
+        env:
+          VITE_BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
 
       - name: Set up Docker Buildx
         run: docker buildx inspect --bootstrap
@@ -83,7 +82,20 @@ jobs:
           build-args: |
             VITE_BACKEND_SERVER=${{ vars.BACKEND_SERVER_URL }}
             VITE_BUILD=${{ steps.version.outputs.tag }}
-  
+
+      - name: Output Docker image URLs
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "🚀 Docker Images Published Successfully!"
+          echo "=========================================="
+          echo ""
+          echo "App Image:"
+          echo "  docker.io/rmcampos/polpa-gestao-app:${{ steps.version.outputs.tag }}"
+          echo "  docker.io/rmcampos/polpa-gestao-app:latest"
+          echo ""
+          echo "=========================================="
+
       - name: Create and push Git tag
         run: |
           git config user.name "gitea-actions[bot]"
