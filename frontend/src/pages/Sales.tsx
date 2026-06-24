@@ -113,10 +113,19 @@ export default function Sales() {
   }, [apiBase, showDelivered]);
 
   useEffect(function fetchDataEffect() {
-    const doFetchData = async () => {
-      await fetchData();
+    let cancelled = false;
+
+    const loadData = async () => {
+      if (!cancelled) {
+        await fetchData();
+      }
     };
-    doFetchData();
+
+    loadData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [fetchData]);
 
   const filteredSales = useMemo(() => {
