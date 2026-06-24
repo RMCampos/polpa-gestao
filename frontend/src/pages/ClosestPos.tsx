@@ -70,7 +70,7 @@ export default function ClosestPos() {
   }, [apiBase]);
 
   useEffect(function fetchClosestPosEffect() {
-    const doFetchClosestPos = () => {
+    const doFetchClosestPos = async () => {
       await fetchClosestPos();
     };
     doFetchClosestPos();

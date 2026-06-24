@@ -59,7 +59,7 @@ export default function Customers() {
   }, [apiBase, showDisabled]);
 
   useEffect(function fetchCustomersEffect() {
-    const doFetchCustomers = () => {
+    const doFetchCustomers = async () => {
       await fetchCustomers();
     };
     doFetchCustomers();

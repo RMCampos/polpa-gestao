@@ -113,7 +113,7 @@ export default function Sales() {
   }, [apiBase, showDelivered]);
 
   useEffect(function fetchDataEffect() {
-    const doFetchData = () => {
+    const doFetchData = async () => {
       await fetchData();
     };
     doFetchData();

@@ -79,8 +79,8 @@ export default function RoutesPage() {
   }, [apiBase]);
 
   useEffect(function fetchRoutesAndCustomersEffect() {
-    const doFetchRoutesAndCustomers = () => {
-      await Promise.settled([
+    const doFetchRoutesAndCustomers = async () => {
+      await Promise.allSettled([
         fetchRoutes(),
         fetchCustomers()
       ]);
