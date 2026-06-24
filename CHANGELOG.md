@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## api-v2026.06.24.7 && app-v2026.06.24.8 - 2026-06-24
+## api-v2026.06.24.22 && app-v2026.06.24.23 - 2026-06-24
 
 ## Changed
 - Bumped frontend dependencies to the latest version, including React
@@ -16,8 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build number not showing up correctly in prod.
 
 ### Docker images
-- here 1
-- here 2
+- `docker.io/rmcampos/polpa-gestao-api:api-v2026.06.24.22`
+- `docker.io/rmcampos/polpa-gestao-app:app-v2026.06.24.23`
 
 ## api-v2026.06.16.7 && app-v2026.06.16.8 - 2026-06-16
 
