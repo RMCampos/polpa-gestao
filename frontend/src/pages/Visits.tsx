@@ -41,7 +41,10 @@ export default function Visits() {
   }, [apiBase, showVisited, toast]);
 
   useEffect(() => {
-    fetchVisits();
+    const doFetchVisits = async () => {
+      await fetchVisits();
+    };
+    doFetchVisits();
   }, [fetchVisits]);
 
   const handleMarkVisited = async (visit: Sale) => {

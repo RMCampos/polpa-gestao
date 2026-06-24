@@ -23,8 +23,11 @@ export default function Products() {
     }
   }, [apiBase, showDisabled]);
 
-  useEffect(() => {
-    fetchProducts();
+  useEffect(function fetchProductsEffect() {
+    const doFetchProducts = async () => {
+      await fetchProducts();
+    };
+    doFetchProducts();
   }, [fetchProducts]);
 
   const handleSaveProduct = async (e: React.FormEvent) => {

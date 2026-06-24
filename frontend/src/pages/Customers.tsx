@@ -58,8 +58,11 @@ export default function Customers() {
     }
   }, [apiBase, showDisabled]);
 
-  useEffect(() => {
-    fetchCustomers();
+  useEffect(function fetchCustomersEffect() {
+    const doFetchCustomers = () => {
+      await fetchCustomers();
+    };
+    doFetchCustomers();
   }, [fetchCustomers]);
 
   const addressFilterMatches = (pos: CustomerPOS[] | undefined, text: string): boolean => {

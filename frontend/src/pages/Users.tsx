@@ -23,8 +23,11 @@ export default function Users() {
     }
   }, [apiBase, showDisabled]);
 
-  useEffect(() => {
-    fetchUsers();
+  useEffect(function fetchUsersEffect() {
+    const doFetchUsers = async () => {
+      await fetchUsers();
+    };
+    doFetchUsers();
   }, [fetchUsers]);
 
   const handleSaveUser = async (e: React.FormEvent) => {

@@ -112,8 +112,11 @@ export default function Sales() {
     }
   }, [apiBase, showDelivered]);
 
-  useEffect(() => {
-    fetchData();
+  useEffect(function fetchDataEffect() {
+    const doFetchData = () => {
+      await fetchData();
+    };
+    doFetchData();
   }, [fetchData]);
 
   const filteredSales = useMemo(() => {

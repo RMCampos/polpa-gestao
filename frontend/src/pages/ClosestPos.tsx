@@ -69,8 +69,11 @@ export default function ClosestPos() {
     });
   }, [apiBase]);
 
-  useEffect(() => {
-    fetchClosestPos();
+  useEffect(function fetchClosestPosEffect() {
+    const doFetchClosestPos = () => {
+      await fetchClosestPos();
+    };
+    doFetchClosestPos();
   }, [fetchClosestPos]);
 
   return (

@@ -78,9 +78,14 @@ export default function RoutesPage() {
     }
   }, [apiBase]);
 
-  useEffect(() => {
-    fetchRoutes();
-    fetchCustomers();
+  useEffect(function fetchRoutesAndCustomersEffect() {
+    const doFetchRoutesAndCustomers = () => {
+      await Promise.settled([
+        fetchRoutes(),
+        fetchCustomers()
+      ]);
+    };
+    doFetchRoutesAndCustomers();
   }, [fetchRoutes, fetchCustomers]);
 
   const handleSaveRoute = async (e: React.FormEvent) => {
