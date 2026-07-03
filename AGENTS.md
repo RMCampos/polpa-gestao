@@ -1,10 +1,10 @@
 # AGENTS.md
 
-This document provides context and guidelines for AI agents interacting with the Polpa Gestão project.
+This document provides context and guidelines for AI agents interacting with the Polpa Go project.
 
 ## Project Overview
 
-Polpa Gestão is a full-stack business management web application designed for managing customers, products, sales, and delivery routes. It serves as a comprehensive platform for administrative tasks within a business.
+Polpa Go is a full-stack business management web application designed for managing customers, products, sales, and delivery routes. It serves as a comprehensive platform for administrative tasks within a business.
 
 ## Architecture
 

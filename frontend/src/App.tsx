@@ -65,7 +65,7 @@ export default function App() {
           <div className="spinner-border text-primary mb-3" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
-          <p className="m-0 text-white-50">Loading Polpa Gestão...</p>
+          <p className="m-0 text-white-50">Loading Polpa Go...</p>
         </div>
       </div>
     );

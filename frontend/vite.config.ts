@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['assets/*.png', 'assets/*.ico', 'assets/*.xml'],
       manifest: {
-        name: 'Polpa Gestão',
-        short_name: 'Polpa Gestão',
+        name: 'Polpa Go',
+        short_name: 'Polpa Go',
         description: 'Manage point of sales, products, routes and sales.',
         theme_color: '#0f172a',
         background_color: '#0f172a',

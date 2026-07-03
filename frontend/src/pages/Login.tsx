@@ -46,7 +46,7 @@ export default function Login({ setToken }: LoginProps) {
     <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh', width: '100vw', padding: '1rem' }}>
       <div className="glass-card p-5 animate-fade-in" style={{ width: '100%', maxWidth: '450px' }}>
         <div className="text-center mb-4">
-          <h2 className="fw-bold" style={{ color: 'var(--primary-color)' }}>Polpa Gestão</h2>
+          <h2 className="fw-bold" style={{ color: 'var(--primary-color)' }}>Polpa Go</h2>
           <p className="text-secondary">Sign in to your account</p>
         </div>
 

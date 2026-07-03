@@ -1,4 +1,4 @@
-# Gemini Context: Polpa Gestão
+# Gemini Context: Polpa Go
 
 This project is a full-stack business management web application designed for managing customers, products, sales, and delivery routes.
 

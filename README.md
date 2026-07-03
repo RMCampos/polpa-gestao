@@ -1,4 +1,4 @@
-# Polpa Gestão
+# Polpa Go
 
 A full-stack business management web application for managing customers, points-of-sale (POS), products, sales, and delivery routes.
 
