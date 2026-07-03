@@ -19,7 +19,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
     <>
       {/* Mobile top bar */}
       <div className="mobile-topbar d-flex d-md-none">
-        <h3 className="fw-bold m-0" style={{ color: 'var(--primary-color)' }}>Polpa Gestão</h3>
+        <h3 className="fw-bold m-0" style={{ color: 'var(--primary-color)' }}>Polpa Go</h3>
         <button
           className="btn btn-link p-0"
           style={{ color: 'var(--text-primary)', fontSize: '1.5rem', lineHeight: 1 }}
@@ -36,7 +36,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       <div className={`sidebar d-flex flex-column${isOpen ? ' open' : ''}`}>
       <div className="mb-3 px-2 d-flex align-items-center justify-content-between">
         <div>
-          <h3 className="fw-bold m-0" style={{ color: 'var(--primary-color)' }}>Polpa Gestão</h3>
+          <h3 className="fw-bold m-0" style={{ color: 'var(--primary-color)' }}>Polpa Go</h3>
           <small className="text-secondary">Welcome, {userName}</small>
         </div>
         <button className="btn btn-link p-0 d-md-none" style={{ color: 'var(--text-secondary)', fontSize: '1.25rem' }} onClick={closeMenu} aria-label="Close menu">

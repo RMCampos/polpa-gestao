@@ -128,7 +128,7 @@ export default function ClosestPos() {
         <div className="text-secondary mt-4">No points of sale with coordinates were found.</div>
       )}
 
-      <footer className="text-center text-secondary small mt-auto pt-4">© 2026 Polpa Gestão</footer>
+      <footer className="text-center text-secondary small mt-auto pt-4">© 2026 Polpa Go</footer>
     </div>
   );
 }
