@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
@@ -73,6 +74,7 @@ const buildSaleCopyText = (sale: Sale) => {
 
 export default function Sales() {
   const toast = useToast();
+  const [searchParams] = useSearchParams();
   const [sales, setSales] = useState<Sale[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -127,6 +129,31 @@ export default function Sales() {
       cancelled = true;
     };
   }, [fetchData]);
+
+  useEffect(function posIdFromUrlEffect() {
+    const posId = searchParams.get('posId');
+    if (!posId || customers.length === 0) return;
+
+    const customerWithPos = customers.find((c) =>
+      c.pos?.some((p) => p.id === posId)
+    );
+    if (!customerWithPos) return;
+
+    const pos = customerWithPos.pos?.find((p) => p.id === posId);
+    if (!pos) return;
+
+    setEditingMode(false);
+    setEditingSaleId(null);
+    setCustomerFilter(formatCustomerPosDisplay(customerWithPos.name, pos.address));
+    setCustomerPosId(posId);
+    setPaymentMethod('Cash');
+    setPaymentDueDate('');
+    setPaymentDate('');
+    setComments('');
+    setNextVisitDate('');
+    setCart([]);
+    setShowModal(true);
+  }, [customers, searchParams]);
 
   const filteredSales = useMemo(() => {
     if (!filterText.trim()) return sales;

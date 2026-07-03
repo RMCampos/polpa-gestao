@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## api-v2026.07.03.xyz - 2026-07-03
+## api-v2026.07.03.xyz - 03/07/2026
+
+## Added
+- Botão para iniciar uma venda a partir de um PDV na lista de rotas.
 
 ## Changed
-- Routes page in the Manage Stops modal, replaced the dropdown by an input search.
+- Tela de gerenciar Paradas na página de Rotas, removido o dropdown e adicionado um campo de texto para pesquisa manual.
 
 ### Docker images
 - `docker.io/rmcampos/polpa-gestao-app:app-v2026.07.03.xyz`

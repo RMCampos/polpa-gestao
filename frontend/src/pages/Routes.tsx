@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
 import type { Customer, CustomerPOS, Route } from '../types';
@@ -50,6 +51,7 @@ const normalizeRoute = (route: RouteApiResponse | Route): Route => {
 
 export default function RoutesPage() {
   const toast = useToast();
+  const navigate = useNavigate();
   const [routesData, setRoutesData] = useState<Route[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -293,6 +295,9 @@ export default function RoutesPage() {
                         {cp.address && (
                           <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cp.address)}`} target="_blank" rel="noopener noreferrer" className="text-secondary small">View on Google Maps</a>
                         )}
+                      </div>
+                      <div className="d-flex gap-2">
+                        <button className="btn btn-sm btn-outline-success" onClick={() => navigate(`/sales?posId=${cp.id}`)}>New Sale</button>
                       </div>
                     </li>
                   ))}
