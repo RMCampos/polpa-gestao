@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## api-v2026.07.03.32 - 03/07/2026
+## api-v2026.07.03.34; app-v2026.07.03.35 - 03/07/2026
 
 ## Added
 - Botão para iniciar uma venda a partir de um PDV na lista de rotas.
