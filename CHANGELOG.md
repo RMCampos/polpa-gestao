@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## api-v2026.07.03.xyz - 2026-07-03
+
+## Changed
+- Routes page in the Manage Stops modal, replaced the dropdown by an input search.
+
+### Docker images
+- `docker.io/rmcampos/polpa-gestao-app:app-v2026.07.03.xyz`
+
 ## api-v2026.06.24.22 && app-v2026.06.24.23 - 2026-06-24
 
 ## Changed

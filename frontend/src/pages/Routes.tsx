@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { useToast } from '../context/toast';
 import type { Customer, CustomerPOS, Route } from '../types';
+import { CustomerPosCombobox } from '../components/CustomerPosCombobox';
 
 type RouteStopApiItem = {
   customerPosId?: string;
@@ -55,6 +56,7 @@ export default function RoutesPage() {
   const [showStopsModal, setShowStopsModal] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [selectedPosIdToAdd, setSelectedPosIdToAdd] = useState('');
+  const [stopFilterText, setStopFilterText] = useState('');
   const [newRoute, setNewRoute] = useState<Route>({ name: '', completed: false, dayOfWeek: 0, customerPos: [] });
   const [editingRoute, setEditingRoute] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -153,6 +155,7 @@ export default function RoutesPage() {
   const openStopsModal = (route: Route) => {
     setSelectedRoute(normalizeRoute(route));
     setSelectedPosIdToAdd('');
+    setStopFilterText('');
     fetchCustomers();
     setShowStopsModal(true);
   };
@@ -175,6 +178,7 @@ export default function RoutesPage() {
       await axios.put(`${apiBase}/api/routes/${selectedRoute.id}`, { customerPosIds: newPosIds });
 
       setSelectedPosIdToAdd('');
+      setStopFilterText('');
       fetchRoutes();
       const res = await axios.get<RouteApiResponse>(`${apiBase}/api/routes/${selectedRoute.id}`);
       setSelectedRoute(normalizeRoute(res.data));
@@ -396,20 +400,21 @@ export default function RoutesPage() {
                       <form onSubmit={handleAddStop}>
                         <div className="row g-3">
                           <div className="col-md-9">
-                            <select className="form-select form-select-sm" value={selectedPosIdToAdd} onChange={e => setSelectedPosIdToAdd(e.target.value)} required>
-                              <option value="" disabled>Select a Customer POS...</option>
-                              {customers.map((c: Customer) => (
-                                c.pos && c.pos.length > 0 && (
-                                  <optgroup key={c.id} label={c.name}>
-                                    {c.pos
-                                      .filter((p: CustomerPOS) => Boolean(p.id))
-                                      .map((p: CustomerPOS) => (
-                                        <option key={p.id} value={p.id}>{p.address} {p.phone ? `(${p.phone})` : ''}</option>
-                                      ))}
-                                  </optgroup>
-                                )
-                              ))}
-                            </select>
+                            <CustomerPosCombobox
+                              customers={customers}
+                              selectedPosId={selectedPosIdToAdd}
+                              filterText={stopFilterText}
+                              onFilterTextChange={(value) => {
+                                setStopFilterText(value);
+                                if (selectedPosIdToAdd) {
+                                  setSelectedPosIdToAdd('');
+                                }
+                              }}
+                              onSelectPos={(posId, displayText) => {
+                                setSelectedPosIdToAdd(posId);
+                                setStopFilterText(displayText);
+                              }}
+                            />
                           </div>
                           <div className="col-md-3">
                             <button type="submit" className="btn btn-sm btn-success w-100" disabled={loading || !selectedPosIdToAdd}>{loading ? '...' : 'Add Stop'}</button>
