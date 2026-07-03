@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## api-v2026.07.03.xyz - 03/07/2026
+## api-v2026.07.03.32 - 03/07/2026
 
 ## Added
 - Botão para iniciar uma venda a partir de um PDV na lista de rotas.
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nome do app alterado de Polpa Gestão para Polpa Go
 
 ### Docker images
-- `docker.io/rmcampos/polpa-gestao-app:app-v2026.07.03.xyz`
+- `docker.io/rmcampos/polpa-gestao-app:app-v2026.07.03.32`
 
 ## api-v2026.06.24.22 && app-v2026.06.24.23 - 2026-06-24
 
