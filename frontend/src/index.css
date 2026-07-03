@@ -14,6 +14,10 @@
   --warning-color: #f59e0b;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-dark);
@@ -76,6 +80,7 @@ body {
 
 .main-content {
   flex-grow: 1;
+  min-width: 0;
   padding: 2rem;
   margin-left: 250px; /* Sidebar width */
 }
@@ -158,7 +163,7 @@ body {
     top: 0;
     border-right: 1px solid var(--glass-border);
     border-bottom: none;
-    padding: 1.5rem 1rem;
+    padding: calc(60px + 1.5rem) 1rem 1.5rem;
   }
   .sidebar.open {
     transform: translateX(0);

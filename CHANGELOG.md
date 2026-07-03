@@ -14,7 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 - Tela de gerenciar Paradas na página de Rotas, removido o dropdown e adicionado um campo de texto para pesquisa manual.
-- Nome do app alterado de Polpa Gestão para Polpa Go
+- Nome do app alterado de Polpa Gestão para Polpa Go.
+- Versão das dependências no frontend e backend, atualizado para as últimas versões disponíveis.
+
+## Fixed
+- Tamanho e viewport em dispositivos móveis empurrando components para fora da tela visíveil.
 
 ### Docker images
 - `docker.io/rmcampos/polpa-gestao-app:app-v2026.07.03.32`

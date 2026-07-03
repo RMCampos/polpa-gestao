@@ -79,10 +79,10 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <h2 className="m-0 fw-bold">Dashboard</h2>
-        <div style={{ width: '200px' }}>
-          <select 
+        <div style={{ width: '100%', maxWidth: '200px' }}>
+          <select
             className="form-select bg-dark text-white border-secondary"
             aria-label="Date range"
             value={range}
