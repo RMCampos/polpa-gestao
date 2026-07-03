@@ -142,6 +142,10 @@ export default function Sales() {
     const pos = customerWithPos.pos?.find((p) => p.id === posId);
     if (!pos) return;
 
+    // Syncing local modal state from a URL param (posId) is a legitimate use of an
+    // effect here; there's no way to compute this during render since it depends on
+    // async-loaded `customers`. See tech-debt issue for a proper render-time rewrite.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditingMode(false);
     setEditingSaleId(null);
     setCustomerFilter(formatCustomerPosDisplay(customerWithPos.name, pos.address));
