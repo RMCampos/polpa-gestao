@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS deps
+FROM node:24-bookworm-slim AS deps
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN npm ci && DATABASE_URL=postgres://dummy npx prisma generate
 
 FROM deps AS prisma
 
-FROM node:22-bookworm-slim AS builder
+FROM node:24-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ COPY src ./src
 
 RUN npx tsc -p tsconfig.prod.json
 
-FROM node:22-bookworm-slim AS runner
+FROM node:24-bookworm-slim AS runner
 
 WORKDIR /app
 
