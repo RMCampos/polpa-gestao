@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-backend:
+    name: Build
+    runs-on: easynode-debian
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm- 
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm i
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npx tsc -p tsconfig.prod.json
+
+  build-frontend:
+    name: Build
+    runs-on: easynode-debian
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm- 
+      
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm i
+
+      - name: Run lint
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
