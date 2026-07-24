@@ -91,10 +91,20 @@ jobs:
           echo "=========================================="
           echo ""
           echo "App Image:"
-          echo "  docker.io/rmcampos/polpa-gestao-app:${{ steps.version.outputs.tag }}"
-          echo "  docker.io/rmcampos/polpa-gestao-app:latest"
+          echo "  rmcampos/polpa-gestao-app:${{ steps.version.outputs.tag }}"
+          echo "  rmcampos/polpa-gestao-app:latest"
           echo ""
           echo "=========================================="
+
+          {
+            echo "## 🚀 Docker Images Published Successfully!"
+            echo ""
+            echo "### App Image"
+            echo '```'
+            echo "rmcampos/polpa-gestao-app:${{ steps.version.outputs.tag }}"
+            echo "rmcampos/polpa-gestao-app:latest"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create and push Git tag
         run: |

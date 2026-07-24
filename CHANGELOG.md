@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ```bash
 # Docker images
-docker pull rmcampos/polpa-gestao-app:app-?
-docker pull rmcampos/polpa-gestao-api:api-?
+docker pull rmcampos/polpa-gestao-app:app-v2026.07.24.44
+docker pull rmcampos/polpa-gestao-api:api-v2026.07.24.43
 ```
 
 ---
