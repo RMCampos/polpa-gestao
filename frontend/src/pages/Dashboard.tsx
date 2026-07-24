@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
-import type { FridgePosSummary, InactivePosSummary, IndustriesSummary, RegionsSummary, SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
+import type { FridgePosSummary, IndustryPosDetail, InactivePosSummary, IndustriesSummary, RegionsSummary, SalesByCustomer, SalesByProduct, SalesSummary } from '../types';
 
 export default function Dashboard() {
   const [range, setRange] = useState('last-30-days');
@@ -13,6 +13,10 @@ export default function Dashboard() {
   const [fridgePoses, setFridgePoses] = useState<FridgePosSummary[]>([]);
   const [showFridgesModal, setShowFridgesModal] = useState(false);
   const [loadingFridgePoses, setLoadingFridgePoses] = useState(false);
+  const [showIndustryModal, setShowIndustryModal] = useState(false);
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+  const [industryPoses, setIndustryPoses] = useState<IndustryPosDetail[]>([]);
+  const [loadingIndustryPoses, setLoadingIndustryPoses] = useState(false);
   const [inactivePoses, setInactivePoses] = useState<InactivePosSummary[]>([]);
   const apiBase = import.meta.env.VITE_BACKEND_SERVER || '/api';
 
@@ -75,6 +79,29 @@ export default function Dashboard() {
     } finally {
       setLoadingFridgePoses(false);
     }
+  };
+
+  const openIndustryModal = async (industry: string) => {
+    setSelectedIndustry(industry);
+    setShowIndustryModal(true);
+    setLoadingIndustryPoses(true);
+    try {
+      const response = await axios.get(`${apiBase}/api/dashboard/pos-by-industry`, {
+        params: { industry }
+      });
+      setIndustryPoses(response.data);
+    } catch (err) {
+      console.error('Failed to load industry POS details', err);
+      setIndustryPoses([]);
+    } finally {
+      setLoadingIndustryPoses(false);
+    }
+  };
+
+  const closeIndustryModal = () => {
+    setShowIndustryModal(false);
+    setSelectedIndustry(null);
+    setIndustryPoses([]);
   };
 
   return (
@@ -200,7 +227,20 @@ export default function Dashboard() {
             ) : (
               <ul className="list-group list-group-flush" style={{ background: 'transparent' }}>
                 {industriesSummary.map((item) => (
-                  <li key={item.industry} className="list-group-item d-flex justify-content-between align-items-center text-white px-0" style={{ background: 'transparent', borderBottomColor: 'var(--glass-border)' }}>
+                  <li
+                    key={item.industry}
+                    className="list-group-item d-flex justify-content-between align-items-center text-white px-0"
+                    style={{ background: 'transparent', borderBottomColor: 'var(--glass-border)', cursor: 'pointer' }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openIndustryModal(item.industry)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openIndustryModal(item.industry);
+                      }
+                    }}
+                  >
                     <span>{item.industry}</span>
                     <span className="badge bg-secondary rounded-pill">{item.count}</span>
                   </li>
@@ -356,6 +396,63 @@ export default function Dashboard() {
                 </div>
                 <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
                   <button type="button" className="btn btn-outline-light" onClick={() => setShowFridgesModal(false)}>Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+
+      {showIndustryModal && selectedIndustry && createPortal(
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="industry-modal-title"
+            style={{ zIndex: 1050 }}
+          >
+            <div className="modal-dialog modal-dialog-centered modal-lg">
+              <div className="modal-content glass-card">
+                <div className="modal-header border-bottom-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <h5 id="industry-modal-title" className="modal-title text-white">{selectedIndustry}</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={closeIndustryModal}></button>
+                </div>
+                <div className="modal-body">
+                  {loadingIndustryPoses ? (
+                    <p className="text-secondary mb-0">Loading...</p>
+                  ) : industryPoses.length === 0 ? (
+                    <p className="text-secondary mb-0">No POS found for this industry.</p>
+                  ) : (
+                    <div className="table-responsive">
+                      <table className="table table-dark table-hover align-middle mb-0">
+                        <thead>
+                          <tr>
+                            <th>Customer</th>
+                            <th>Address</th>
+                            <th>Contact Person</th>
+                            <th>Phone</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {industryPoses.map((pos) => (
+                            <tr key={pos.id}>
+                              <td>{pos.customerName}</td>
+                              <td>{pos.address}</td>
+                              <td>{pos.personName || '—'}</td>
+                              <td>{pos.phone || '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer border-top-0" style={{ borderColor: 'var(--glass-border)' }}>
+                  <button type="button" className="btn btn-outline-light" onClick={closeIndustryModal}>Close</button>
                 </div>
               </div>
             </div>

@@ -254,6 +254,45 @@ export default async function dashboardRoutes(app: FastifyInstance) {
       .sort((a, b) => b.count - a.count);
   });
 
+  app.get('/pos-by-industry', async (request, reply) => {
+    const { industry } = request.query as { industry?: string };
+
+    if (!industry || industry.trim() === '') {
+      return reply.status(400).send({ error: 'Industry query parameter is required' });
+    }
+
+    const fallbackIndustry = 'Não Informado';
+    const normalizedIndustry = industry.trim();
+    const isFallback = normalizedIndustry === fallbackIndustry;
+
+    const poses = await prisma.customerPos.findMany({
+      where: {
+        disabledAt: null,
+        ...(isFallback
+          ? { OR: [{ industry: { equals: null } }, { industry: { equals: '' } }] }
+          : { industry: normalizedIndustry })
+      },
+      include: {
+        customer: {
+          select: { name: true }
+        }
+      },
+      orderBy: [
+        { customer: { name: 'asc' } },
+        { address: 'asc' }
+      ]
+    });
+
+    return poses.map((pos) => ({
+      id: pos.id,
+      customerName: pos.customer.name,
+      address: pos.address,
+      personName: pos.personName,
+      phone: pos.phone,
+      industry: pos.industry?.trim() || fallbackIndustry
+    }));
+  });
+
   app.get('/inactive-pos', async () => {
     const now = new Date();
 

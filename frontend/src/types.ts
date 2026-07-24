@@ -26,6 +26,15 @@ export type IndustriesSummary = {
   count: number;
 }
 
+export type IndustryPosDetail = {
+  id: string;
+  customerName: string;
+  address: string;
+  personName: string | null;
+  phone: string;
+  industry: string;
+}
+
 export type RegionsSummary = {
   region: string;
   count: number;

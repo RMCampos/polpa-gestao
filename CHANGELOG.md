@@ -7,44 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## api-v2026.07.03.34; app-v2026.07.03.35 - 03/07/2026
+## 24/07/2026
 
-## Added
+### Adicionado
+- Opção de clicar para ver ou expandir os clientes por indústria na tela de dashboard.
+
+```bash
+# Docker images
+docker pull rmcampos/polpa-gestao-app:app-?
+docker pull rmcampos/polpa-gestao-api:api-?
+```
+
+---
+
+## 03/07/2026
+
+### Adicionado
 - Botão para iniciar uma venda a partir de um PDV na lista de rotas.
 
-## Changed
+### Alterado
 - Tela de gerenciar Paradas na página de Rotas, removido o dropdown e adicionado um campo de texto para pesquisa manual.
 - Nome do app alterado de Polpa Gestão para Polpa Go.
 - Versão das dependências no frontend e backend, atualizado para as últimas versões disponíveis.
 
-## Fixed
+### Corrigido
 - Tamanho e viewport em dispositivos móveis empurrando components para fora da tela visíveil.
 
-### Docker images
-- `docker.io/rmcampos/polpa-gestao-app:app-v2026.07.03.32`
+```bash
+# Docker images
+docker pull rmcampos/polpa-gestao-app:app-v2026.07.03.32
+```
 
-## api-v2026.06.24.22 && app-v2026.06.24.23 - 2026-06-24
+---
 
-## Changed
-- Bumped frontend dependencies to the latest version, including React
+## 24/06/2026
 
-## Fixed
-- Build number not showing up correctly in prod.
+### Alterado
+- Dependências do projeto atualizadas para a última versão, incluindo React.
 
-### Docker images
-- `docker.io/rmcampos/polpa-gestao-api:api-v2026.06.24.22`
-- `docker.io/rmcampos/polpa-gestao-app:app-v2026.06.24.23`
+### Corrigido
+- Número do build da versão não aparecendo corretamente.
 
-## api-v2026.06.16.7 && app-v2026.06.16.8 - 2026-06-16
+```bash
+# Docker images
+docker pull rmcampos/polpa-gestao-api:api-v2026.06.24.22
+docker pull rmcampos/polpa-gestao-app:app-v2026.06.24.23
+```
+
+---
+
+## 2026-06-16
 
 ### Changed
 - Container Registry to Docker Hub.
 - Migrated from GitHub to Gitea.
 
-### Docker images
-- [rmcampos/polpa-gestao-app:app-v2026.06.16.8](https://hub.docker.com/layers/rmcampos/polpa-gestao-app/app-v2026.06.16.8/images/sha256-030671a44d04701da05abdf15dec4f1c834745a1c13bf404eca19050b92bcf3a)
-- [rmcampos/polpa-gestao-api:api-v2026.06.16.7](https://hub.docker.com/layers/rmcampos/polpa-gestao-api/api-v2026.06.16.7/images/sha256-57e283fffcaac2a48d95f0ca11f73d8b1937ffc2346a9f4d93dc7b4cd7a3eaa6)
-- [rmcampos/polpa-gestao-api:api-v2026.06.16.7-prisma](https://hub.docker.com/layers/rmcampos/polpa-gestao-api/api-v2026.06.16.7-prisma/images/sha256-74225e87715fea0803e78ffd1d7f1d9f2c14d058650caa5db2dd504ae7454e46)
+```bash
+# Docker images
+docker pull rmcampos/polpa-gestao-app:app-v2026.06.16.8
+docker pull rmcampos/polpa-gestao-api:api-v2026.06.16.7
+```
+
+---
 
 ## 2026-06-13 #1
 
