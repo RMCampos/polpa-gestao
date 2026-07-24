@@ -86,37 +86,37 @@ jobs:
             docker.io/rmcampos/polpa-gestao-api:latest-prisma
 
       - name: Output Docker image URLs
-          run: |
-            echo ""
-            echo "=========================================="
-            echo "🚀 Docker Images Published Successfully!"
-            echo "=========================================="
-            echo ""
-            echo "API Image:"
-            echo "  rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}"
-            echo "  rmcampos/polpa-gestao-api:latest"
-            echo ""
-            echo "Prisma Image:"
-            echo "  rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}-prisma"
-            echo "  rmcampos/polpa-gestao-api:latest-prisma"
-            echo ""
-            echo "=========================================="
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "🚀 Docker Images Published Successfully!"
+          echo "=========================================="
+          echo ""
+          echo "API Image:"
+          echo "  rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}"
+          echo "  rmcampos/polpa-gestao-api:latest"
+          echo ""
+          echo "Prisma Image:"
+          echo "  rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}-prisma"
+          echo "  rmcampos/polpa-gestao-api:latest-prisma"
+          echo ""
+          echo "=========================================="
 
-            {
-              echo "## 🚀 Docker Images Published Successfully!"
-              echo ""
-              echo "### API Image"
-              echo '```'
-              echo "rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}"
-              echo "rmcampos/polpa-gestao-api:latest"
-              echo '```'
-              echo ""
-              echo "### Prisma Image"
-              echo '```'
-              echo "rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}-prisma"
-              echo "rmcampos/polpa-gestao-api:latest-prisma"
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## 🚀 Docker Images Published Successfully!"
+            echo ""
+            echo "### API Image"
+            echo '```'
+            echo "rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}"
+            echo "rmcampos/polpa-gestao-api:latest"
+            echo '```'
+            echo ""
+            echo "### Prisma Image"
+            echo '```'
+            echo "rmcampos/polpa-gestao-api:${{ steps.version.outputs.tag }}-prisma"
+            echo "rmcampos/polpa-gestao-api:latest-prisma"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create and push Git tag
         run: |
