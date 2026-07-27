@@ -10,6 +10,7 @@ const POS_INDUSTRIES = new Set([
   'Academia',
   'Arena de esporte',
   'Assadão',
+  'Casa de carnes',
   'Conveniência',
   'Hamburgueria',
   'Lanchonete',

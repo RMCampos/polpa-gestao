@@ -8,6 +8,7 @@ const POS_INDUSTRY_OPTIONS = [
   'Academia',
   'Arena de esporte',
   'Assadão',
+  'Casa de carnes',
   'Conveniência',
   'Hamburgueria',
   'Lanchonete',

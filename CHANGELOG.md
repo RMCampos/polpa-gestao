@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 27/07/2026
 
+### Adicionado
+- Nova categoria para POS by Industry: Casa de carnes
+
 ### Corrigido
 - Bug de filtro na tela de Customers agora filtra corretamente.
 - Na tela de dashboard na consulta POS By Industry agora considera apenas customers ativos.
