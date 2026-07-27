@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Corrigido
 - Bug de filtro na tela de Customers agora filtra corretamente.
 - Na tela de dashboard na consulta POS By Industry agora considera apenas customers ativos.
+- Notificaçao Toast agora pode ser clicada para fechar corretamente.
 
 ```bash
 # Docker images
