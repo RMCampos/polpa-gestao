@@ -92,10 +92,11 @@ export default function Customers() {
     const normalizedFilter = filterText.trim().toLowerCase();
     if (!normalizedFilter) return customers;
     const digits = normalizedFilter.replace(/\D/g, '');
+    const isPhoneSearch = /^\d+$/.test(normalizedFilter) && digits.length >= 3;
     return customers.filter((c: Customer) =>
       c.name.toLowerCase().includes(normalizedFilter) ||
       (c.personName && c.personName.toLowerCase().includes(normalizedFilter)) ||
-      (digits && c.phone && c.phone.replace(/\D/g, '').includes(digits)) ||
+      (isPhoneSearch && c.phone && c.phone.replace(/\D/g, '').includes(digits)) ||
       addressFilterMatches(c.pos, normalizedFilter)
     );
   }, [customers, filterText]);
