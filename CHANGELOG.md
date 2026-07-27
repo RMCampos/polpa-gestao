@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 27/07/2026
+
+### Corrigido
+- Bug de filtro na tela de Customers agora filtra corretamente.
+- Na tela de dashboard na consulta POS By Industry agora considera apenas customers ativos.
+
+```bash
+# Docker images
+docker pull rmcampos/polpa-gestao-app:app-v2026-07-
+docker pull rmcampos/polpa-gestao-api:api-v2026-07-
+```
+
+---
+
 ## 24/07/2026
 
 ### Adicionado

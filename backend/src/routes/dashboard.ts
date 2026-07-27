@@ -268,6 +268,7 @@ export default async function dashboardRoutes(app: FastifyInstance) {
     const poses = await prisma.customerPos.findMany({
       where: {
         disabledAt: null,
+        customer: { disabledAt: null },
         ...(isFallback
           ? { OR: [{ industry: { equals: null } }, { industry: { equals: '' } }] }
           : { industry: normalizedIndustry })
